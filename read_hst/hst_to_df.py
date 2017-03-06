@@ -112,4 +112,4 @@ if __name__ == "__main__":
     df.to_hdf(os.path.splitext(filename)[0] + '.h5', key='main')
     print('\n---End of Convert---')
     print('Using %s.h5 file, type below...' % os.path.splitext(filename)[0])
-    print('`df = pd.read_hdf(%s.h5, key="main")`' % os.path.splitext(filename)[0])
+    print('`df = pd.read_hdf(\"%s.h5\", key="main")`' % os.path.splitext(filename)[0])

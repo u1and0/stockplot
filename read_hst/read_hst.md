@@ -81,5 +81,26 @@
 
 
 ```python
+df = pd.read_hdf('EURUSD/EURUSD.h5', key="main")
+```
+
+
+```python
+df.ix[:,['close']].plot()
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x1b807c3ea58>
+
+
+
+
+![png](read_hst_files/read_hst_2_1.png)
+
+
+
+```python
 
 ```
