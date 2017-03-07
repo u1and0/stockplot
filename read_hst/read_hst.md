@@ -1100,10 +1100,23 @@ import matplotlib.finance as fi
 
 
 ```python
-plt.grid()
 ax = plt.subplot()
-fi.candlestick2_ohlc(ax, df.index, df.values[:,0], df.values[:,1], df.values[:,2], df.values[:,3])
+fi.candlestick2_ohlc(ax, opens=dfl.values[:,0], closes=dfl.values[:,1],
+                     lows=dfl.values[:,2], highs=dfl.values[:,3],
+                     width=0.8, colorup='r', colordown='b')
 ```
+
+
+
+
+    (<matplotlib.collections.LineCollection at 0x29d84e08978>,
+     <matplotlib.collections.PolyCollection at 0x29d84e53860>)
+
+
+
+
+![png](read_hst_files/read_hst_7_1.png)
+
 
 
 ```python

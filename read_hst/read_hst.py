@@ -34,16 +34,17 @@ dfl = dff[-100:]
 dfl.plot()
 
 
-# In[4]:
+# In[65]:
 
 import matplotlib.finance as fi
 
 
-# In[ ]:
+# In[85]:
 
-plt.grid()
 ax = plt.subplot()
-fi.candlestick2_ohlc(ax, df.index, df.values[:,0], df.values[:,1], df.values[:,2], df.values[:,3])
+fi.candlestick2_ohlc(ax, opens=dfl.values[:,0], closes=dfl.values[:,1],
+                     lows=dfl.values[:,2], highs=dfl.values[:,3],
+                     width=0.8, colorup='r', colordown='b')
 
 
 # In[ ]:
