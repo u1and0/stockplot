@@ -1,7 +1,10 @@
 
+# ヒストリカルデータの読み込み
+
+
 
 ```python
- %run hst_to_df.py  -f EURUSD/EURUSD.hst -ty old 
+ %run hst_to_df.py  -f data/EURUSD.hst -ty old 
 ```
 
     --- Convert Start ---
@@ -81,7 +84,7 @@
 
 
 ```python
-df = pd.read_hdf('EURUSD/EURUSD.h5', key="main")
+df = pd.read_hdf('data/EURUSD.h5', key="main")
 df
 ```
 
@@ -626,10 +629,10 @@ dff
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>open</th>
-      <th>close</th>
       <th>low</th>
+      <th>open</th>
       <th>high</th>
+      <th>close</th>
     </tr>
     <tr>
       <th>openTime</th>
@@ -643,212 +646,212 @@ dff
     <tr>
       <th>2005-01-10</th>
       <td>1.30470</td>
-      <td>1.30830</td>
       <td>1.30470</td>
       <td>1.31220</td>
+      <td>1.30830</td>
     </tr>
     <tr>
       <th>2005-01-11</th>
-      <td>1.30830</td>
-      <td>1.31110</td>
       <td>1.30650</td>
+      <td>1.30830</td>
       <td>1.31700</td>
+      <td>1.31110</td>
     </tr>
     <tr>
       <th>2005-01-12</th>
-      <td>1.31100</td>
-      <td>1.32630</td>
       <td>1.30810</td>
+      <td>1.31100</td>
       <td>1.32920</td>
+      <td>1.32630</td>
     </tr>
     <tr>
       <th>2005-01-13</th>
-      <td>1.32620</td>
-      <td>1.32190</td>
       <td>1.31920</td>
+      <td>1.32620</td>
       <td>1.32660</td>
+      <td>1.32190</td>
     </tr>
     <tr>
       <th>2005-01-14</th>
-      <td>1.32210</td>
-      <td>1.31070</td>
       <td>1.30550</td>
+      <td>1.32210</td>
       <td>1.32260</td>
+      <td>1.31070</td>
     </tr>
     <tr>
       <th>2005-01-17</th>
-      <td>1.31040</td>
-      <td>1.30670</td>
       <td>1.30630</td>
+      <td>1.31040</td>
       <td>1.31250</td>
+      <td>1.30670</td>
     </tr>
     <tr>
       <th>2005-01-18</th>
-      <td>1.30660</td>
-      <td>1.30200</td>
       <td>1.29930</td>
+      <td>1.30660</td>
       <td>1.30750</td>
+      <td>1.30200</td>
     </tr>
     <tr>
       <th>2005-01-19</th>
-      <td>1.30210</td>
-      <td>1.30050</td>
       <td>1.29640</td>
+      <td>1.30210</td>
       <td>1.31180</td>
+      <td>1.30050</td>
     </tr>
     <tr>
       <th>2005-01-20</th>
-      <td>1.30050</td>
-      <td>1.29710</td>
       <td>1.29200</td>
+      <td>1.30050</td>
       <td>1.30220</td>
+      <td>1.29710</td>
     </tr>
     <tr>
       <th>2005-01-21</th>
-      <td>1.29700</td>
-      <td>1.30540</td>
       <td>1.29330</td>
+      <td>1.29700</td>
       <td>1.30650</td>
+      <td>1.30540</td>
     </tr>
     <tr>
       <th>2005-01-24</th>
-      <td>1.30460</td>
-      <td>1.30580</td>
       <td>1.30270</td>
+      <td>1.30460</td>
       <td>1.30990</td>
+      <td>1.30580</td>
     </tr>
     <tr>
       <th>2005-01-25</th>
-      <td>1.30570</td>
-      <td>1.29680</td>
       <td>1.29440</td>
+      <td>1.30570</td>
       <td>1.30760</td>
+      <td>1.29680</td>
     </tr>
     <tr>
       <th>2005-01-26</th>
-      <td>1.29690</td>
-      <td>1.30730</td>
       <td>1.29650</td>
+      <td>1.29690</td>
       <td>1.31070</td>
+      <td>1.30730</td>
     </tr>
     <tr>
       <th>2005-01-27</th>
-      <td>1.30730</td>
-      <td>1.30340</td>
       <td>1.30120</td>
+      <td>1.30730</td>
       <td>1.31230</td>
+      <td>1.30340</td>
     </tr>
     <tr>
       <th>2005-01-28</th>
-      <td>1.30330</td>
-      <td>1.30400</td>
       <td>1.29840</td>
+      <td>1.30330</td>
       <td>1.30770</td>
+      <td>1.30400</td>
     </tr>
     <tr>
       <th>2005-01-31</th>
-      <td>1.30190</td>
-      <td>1.30330</td>
       <td>1.29730</td>
+      <td>1.30190</td>
       <td>1.30580</td>
+      <td>1.30330</td>
     </tr>
     <tr>
       <th>2005-02-01</th>
-      <td>1.30340</td>
-      <td>1.30430</td>
       <td>1.30010</td>
+      <td>1.30340</td>
       <td>1.30630</td>
+      <td>1.30430</td>
     </tr>
     <tr>
       <th>2005-02-02</th>
-      <td>1.30440</td>
-      <td>1.30320</td>
       <td>1.30080</td>
+      <td>1.30440</td>
       <td>1.30910</td>
+      <td>1.30320</td>
     </tr>
     <tr>
       <th>2005-02-03</th>
-      <td>1.30310</td>
-      <td>1.29710</td>
       <td>1.29370</td>
+      <td>1.30310</td>
       <td>1.30350</td>
+      <td>1.29710</td>
     </tr>
     <tr>
       <th>2005-02-04</th>
-      <td>1.29700</td>
-      <td>1.28730</td>
       <td>1.28660</td>
+      <td>1.29700</td>
       <td>1.30410</td>
+      <td>1.28730</td>
     </tr>
     <tr>
       <th>2005-02-07</th>
-      <td>1.28710</td>
-      <td>1.27630</td>
       <td>1.27290</td>
       <td>1.28710</td>
+      <td>1.28710</td>
+      <td>1.27630</td>
     </tr>
     <tr>
       <th>2005-02-08</th>
-      <td>1.27640</td>
-      <td>1.27660</td>
       <td>1.27320</td>
+      <td>1.27640</td>
       <td>1.27960</td>
+      <td>1.27660</td>
     </tr>
     <tr>
       <th>2005-02-09</th>
-      <td>1.27670</td>
-      <td>1.28040</td>
       <td>1.27380</td>
+      <td>1.27670</td>
       <td>1.28120</td>
+      <td>1.28040</td>
     </tr>
     <tr>
       <th>2005-02-10</th>
-      <td>1.28030</td>
-      <td>1.28700</td>
       <td>1.27370</td>
+      <td>1.28030</td>
       <td>1.29040</td>
+      <td>1.28700</td>
     </tr>
     <tr>
       <th>2005-02-11</th>
-      <td>1.28690</td>
-      <td>1.28650</td>
       <td>1.28460</td>
+      <td>1.28690</td>
       <td>1.28930</td>
+      <td>1.28650</td>
     </tr>
     <tr>
       <th>2005-02-14</th>
       <td>1.28750</td>
-      <td>1.29600</td>
       <td>1.28750</td>
       <td>1.29890</td>
+      <td>1.29600</td>
     </tr>
     <tr>
       <th>2005-02-15</th>
-      <td>1.29610</td>
-      <td>1.30170</td>
       <td>1.29530</td>
+      <td>1.29610</td>
       <td>1.30500</td>
+      <td>1.30170</td>
     </tr>
     <tr>
       <th>2005-02-16</th>
-      <td>1.30170</td>
-      <td>1.30240</td>
       <td>1.29590</td>
+      <td>1.30170</td>
       <td>1.30640</td>
+      <td>1.30240</td>
     </tr>
     <tr>
       <th>2005-02-17</th>
-      <td>1.30240</td>
-      <td>1.30750</td>
       <td>1.30130</td>
+      <td>1.30240</td>
       <td>1.30870</td>
+      <td>1.30750</td>
     </tr>
     <tr>
       <th>2005-02-18</th>
-      <td>1.30740</td>
-      <td>1.30630</td>
       <td>1.30130</td>
+      <td>1.30740</td>
       <td>1.30800</td>
+      <td>1.30630</td>
     </tr>
     <tr>
       <th>...</th>
@@ -859,213 +862,213 @@ dff
     </tr>
     <tr>
       <th>2016-11-14</th>
-      <td>1.08269</td>
-      <td>1.07359</td>
       <td>1.07081</td>
+      <td>1.08269</td>
       <td>1.08394</td>
+      <td>1.07359</td>
     </tr>
     <tr>
       <th>2016-11-15</th>
-      <td>1.07357</td>
-      <td>1.07186</td>
       <td>1.07132</td>
+      <td>1.07357</td>
       <td>1.08155</td>
+      <td>1.07186</td>
     </tr>
     <tr>
       <th>2016-11-16</th>
-      <td>1.07190</td>
-      <td>1.06893</td>
       <td>1.06652</td>
+      <td>1.07190</td>
       <td>1.07586</td>
+      <td>1.06893</td>
     </tr>
     <tr>
       <th>2016-11-17</th>
-      <td>1.06892</td>
-      <td>1.06258</td>
       <td>1.06191</td>
+      <td>1.06892</td>
       <td>1.07447</td>
+      <td>1.06258</td>
     </tr>
     <tr>
       <th>2016-11-18</th>
-      <td>1.06261</td>
-      <td>1.05905</td>
       <td>1.05683</td>
+      <td>1.06261</td>
       <td>1.06419</td>
+      <td>1.05905</td>
     </tr>
     <tr>
       <th>2016-11-21</th>
-      <td>1.05908</td>
-      <td>1.06263</td>
       <td>1.05775</td>
+      <td>1.05908</td>
       <td>1.06483</td>
+      <td>1.06263</td>
     </tr>
     <tr>
       <th>2016-11-22</th>
-      <td>1.06255</td>
-      <td>1.06256</td>
       <td>1.05828</td>
+      <td>1.06255</td>
       <td>1.06569</td>
+      <td>1.06256</td>
     </tr>
     <tr>
       <th>2016-11-23</th>
-      <td>1.06228</td>
-      <td>1.05518</td>
       <td>1.05252</td>
+      <td>1.06228</td>
       <td>1.06427</td>
+      <td>1.05518</td>
     </tr>
     <tr>
       <th>2016-11-24</th>
-      <td>1.05494</td>
-      <td>1.05501</td>
       <td>1.05171</td>
+      <td>1.05494</td>
       <td>1.05844</td>
+      <td>1.05501</td>
     </tr>
     <tr>
       <th>2016-11-25</th>
-      <td>1.05482</td>
-      <td>1.05947</td>
       <td>1.05376</td>
+      <td>1.05482</td>
       <td>1.06265</td>
+      <td>1.05947</td>
     </tr>
     <tr>
       <th>2016-11-28</th>
-      <td>1.06049</td>
-      <td>1.06125</td>
       <td>1.05627</td>
+      <td>1.06049</td>
       <td>1.06847</td>
+      <td>1.06125</td>
     </tr>
     <tr>
       <th>2016-11-29</th>
-      <td>1.06117</td>
-      <td>1.06484</td>
       <td>1.05641</td>
+      <td>1.06117</td>
       <td>1.06534</td>
+      <td>1.06484</td>
     </tr>
     <tr>
       <th>2016-11-30</th>
-      <td>1.06473</td>
-      <td>1.05871</td>
       <td>1.05518</td>
+      <td>1.06473</td>
       <td>1.06657</td>
+      <td>1.05871</td>
     </tr>
     <tr>
       <th>2016-12-01</th>
-      <td>1.05872</td>
-      <td>1.06583</td>
       <td>1.05837</td>
+      <td>1.05872</td>
       <td>1.06678</td>
+      <td>1.06583</td>
     </tr>
     <tr>
       <th>2016-12-02</th>
-      <td>1.06588</td>
-      <td>1.06676</td>
       <td>1.06243</td>
+      <td>1.06588</td>
       <td>1.06889</td>
+      <td>1.06676</td>
     </tr>
     <tr>
       <th>2016-12-05</th>
-      <td>1.06263</td>
-      <td>1.07618</td>
       <td>1.05040</td>
+      <td>1.06263</td>
       <td>1.07956</td>
+      <td>1.07618</td>
     </tr>
     <tr>
       <th>2016-12-06</th>
-      <td>1.07618</td>
-      <td>1.07176</td>
       <td>1.06976</td>
+      <td>1.07618</td>
       <td>1.07844</td>
+      <td>1.07176</td>
     </tr>
     <tr>
       <th>2016-12-07</th>
-      <td>1.07154</td>
-      <td>1.07514</td>
       <td>1.07090</td>
+      <td>1.07154</td>
       <td>1.07673</td>
+      <td>1.07514</td>
     </tr>
     <tr>
       <th>2016-12-08</th>
-      <td>1.07513</td>
-      <td>1.06116</td>
       <td>1.05963</td>
+      <td>1.07513</td>
       <td>1.08728</td>
+      <td>1.06116</td>
     </tr>
     <tr>
       <th>2016-12-09</th>
-      <td>1.06113</td>
-      <td>1.05554</td>
       <td>1.05301</td>
+      <td>1.06113</td>
       <td>1.06289</td>
+      <td>1.05554</td>
     </tr>
     <tr>
       <th>2016-12-12</th>
-      <td>1.05287</td>
-      <td>1.06336</td>
       <td>1.05244</td>
+      <td>1.05287</td>
       <td>1.06508</td>
+      <td>1.06336</td>
     </tr>
     <tr>
       <th>2016-12-13</th>
-      <td>1.06323</td>
-      <td>1.06238</td>
       <td>1.06030</td>
+      <td>1.06323</td>
       <td>1.06664</td>
+      <td>1.06238</td>
     </tr>
     <tr>
       <th>2016-12-14</th>
-      <td>1.06238</td>
-      <td>1.05328</td>
       <td>1.04954</td>
+      <td>1.06238</td>
       <td>1.06693</td>
+      <td>1.05328</td>
     </tr>
     <tr>
       <th>2016-12-15</th>
-      <td>1.05324</td>
-      <td>1.04118</td>
       <td>1.03657</td>
+      <td>1.05324</td>
       <td>1.05386</td>
+      <td>1.04118</td>
     </tr>
     <tr>
       <th>2016-12-16</th>
-      <td>1.04118</td>
-      <td>1.04483</td>
       <td>1.03999</td>
+      <td>1.04118</td>
       <td>1.04734</td>
+      <td>1.04483</td>
     </tr>
     <tr>
       <th>2016-12-19</th>
-      <td>1.04369</td>
-      <td>1.04005</td>
       <td>1.03916</td>
+      <td>1.04369</td>
       <td>1.04786</td>
+      <td>1.04005</td>
     </tr>
     <tr>
       <th>2016-12-20</th>
-      <td>1.04003</td>
-      <td>1.03869</td>
       <td>1.03514</td>
+      <td>1.04003</td>
       <td>1.04173</td>
+      <td>1.03869</td>
     </tr>
     <tr>
       <th>2016-12-21</th>
-      <td>1.03869</td>
-      <td>1.04228</td>
       <td>1.03816</td>
+      <td>1.03869</td>
       <td>1.04502</td>
+      <td>1.04228</td>
     </tr>
     <tr>
       <th>2016-12-22</th>
-      <td>1.04214</td>
-      <td>1.04355</td>
       <td>1.04213</td>
+      <td>1.04214</td>
       <td>1.04986</td>
+      <td>1.04355</td>
     </tr>
     <tr>
       <th>2016-12-23</th>
-      <td>1.04340</td>
-      <td>1.04526</td>
       <td>1.04256</td>
+      <td>1.04340</td>
       <td>1.04682</td>
+      <td>1.04526</td>
     </tr>
   </tbody>
 </table>
@@ -1074,7 +1077,7 @@ dff
 
 
 
-最新100日、約3か月分のプロット
+## 最新100日、約3か月分のプロット
 
 
 ```python
@@ -1085,13 +1088,15 @@ dfl.plot()
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x29d80046e80>
+    <matplotlib.axes._subplots.AxesSubplot at 0x191bb118470>
 
 
 
 
-![png](read_hst_files/read_hst_5_1.png)
+![png](read_hst_files/read_hst_6_1.png)
 
+
+# ローソク足のプロット
 
 
 ```python
@@ -1100,22 +1105,617 @@ import matplotlib.finance as fi
 
 
 ```python
-ax = plt.subplot()
-fi.candlestick2_ohlc(ax, opens=dfl.values[:,0], closes=dfl.values[:,1],
-                     lows=dfl.values[:,2], highs=dfl.values[:,3],
-                     width=0.8, colorup='r', colordown='b')
+dfl
 ```
 
 
 
 
-    (<matplotlib.collections.LineCollection at 0x29d84e08978>,
-     <matplotlib.collections.PolyCollection at 0x29d84e53860>)
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>low</th>
+      <th>open</th>
+      <th>high</th>
+      <th>close</th>
+    </tr>
+    <tr>
+      <th>openTime</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2016-08-18</th>
+      <td>1.12832</td>
+      <td>1.12868</td>
+      <td>1.13654</td>
+      <td>1.13516</td>
+    </tr>
+    <tr>
+      <th>2016-08-19</th>
+      <td>1.13032</td>
+      <td>1.13516</td>
+      <td>1.13589</td>
+      <td>1.13201</td>
+    </tr>
+    <tr>
+      <th>2016-08-21</th>
+      <td>1.13201</td>
+      <td>1.13201</td>
+      <td>1.13201</td>
+      <td>1.13201</td>
+    </tr>
+    <tr>
+      <th>2016-08-22</th>
+      <td>1.12701</td>
+      <td>1.13037</td>
+      <td>1.13298</td>
+      <td>1.13185</td>
+    </tr>
+    <tr>
+      <th>2016-08-23</th>
+      <td>1.13023</td>
+      <td>1.13183</td>
+      <td>1.13544</td>
+      <td>1.13036</td>
+    </tr>
+    <tr>
+      <th>2016-08-24</th>
+      <td>1.12443</td>
+      <td>1.13037</td>
+      <td>1.13105</td>
+      <td>1.12623</td>
+    </tr>
+    <tr>
+      <th>2016-08-25</th>
+      <td>1.12583</td>
+      <td>1.12623</td>
+      <td>1.12966</td>
+      <td>1.12831</td>
+    </tr>
+    <tr>
+      <th>2016-08-26</th>
+      <td>1.11799</td>
+      <td>1.12781</td>
+      <td>1.13399</td>
+      <td>1.11947</td>
+    </tr>
+    <tr>
+      <th>2016-08-28</th>
+      <td>1.11751</td>
+      <td>1.11947</td>
+      <td>1.11947</td>
+      <td>1.11754</td>
+    </tr>
+    <tr>
+      <th>2016-08-29</th>
+      <td>1.11571</td>
+      <td>1.11775</td>
+      <td>1.12068</td>
+      <td>1.11874</td>
+    </tr>
+    <tr>
+      <th>2016-08-30</th>
+      <td>1.11312</td>
+      <td>1.11873</td>
+      <td>1.11914</td>
+      <td>1.11413</td>
+    </tr>
+    <tr>
+      <th>2016-08-31</th>
+      <td>1.11222</td>
+      <td>1.11413</td>
+      <td>1.11646</td>
+      <td>1.11567</td>
+    </tr>
+    <tr>
+      <th>2016-09-01</th>
+      <td>1.11267</td>
+      <td>1.11567</td>
+      <td>1.12042</td>
+      <td>1.11955</td>
+    </tr>
+    <tr>
+      <th>2016-09-02</th>
+      <td>1.11494</td>
+      <td>1.11954</td>
+      <td>1.12513</td>
+      <td>1.11546</td>
+    </tr>
+    <tr>
+      <th>2016-09-05</th>
+      <td>1.11388</td>
+      <td>1.11550</td>
+      <td>1.11814</td>
+      <td>1.11457</td>
+    </tr>
+    <tr>
+      <th>2016-09-06</th>
+      <td>1.11399</td>
+      <td>1.11457</td>
+      <td>1.12622</td>
+      <td>1.12527</td>
+    </tr>
+    <tr>
+      <th>2016-09-07</th>
+      <td>1.12280</td>
+      <td>1.12535</td>
+      <td>1.12707</td>
+      <td>1.12383</td>
+    </tr>
+    <tr>
+      <th>2016-09-08</th>
+      <td>1.12336</td>
+      <td>1.12382</td>
+      <td>1.13261</td>
+      <td>1.12591</td>
+    </tr>
+    <tr>
+      <th>2016-09-09</th>
+      <td>1.11976</td>
+      <td>1.12593</td>
+      <td>1.12842</td>
+      <td>1.12310</td>
+    </tr>
+    <tr>
+      <th>2016-09-11</th>
+      <td>1.12310</td>
+      <td>1.12310</td>
+      <td>1.12310</td>
+      <td>1.12310</td>
+    </tr>
+    <tr>
+      <th>2016-09-12</th>
+      <td>1.12095</td>
+      <td>1.12355</td>
+      <td>1.12674</td>
+      <td>1.12337</td>
+    </tr>
+    <tr>
+      <th>2016-09-13</th>
+      <td>1.12031</td>
+      <td>1.12337</td>
+      <td>1.12597</td>
+      <td>1.12175</td>
+    </tr>
+    <tr>
+      <th>2016-09-14</th>
+      <td>1.12107</td>
+      <td>1.12175</td>
+      <td>1.12732</td>
+      <td>1.12466</td>
+    </tr>
+    <tr>
+      <th>2016-09-15</th>
+      <td>1.12182</td>
+      <td>1.12466</td>
+      <td>1.12829</td>
+      <td>1.12424</td>
+    </tr>
+    <tr>
+      <th>2016-09-16</th>
+      <td>1.11487</td>
+      <td>1.12423</td>
+      <td>1.12491</td>
+      <td>1.11552</td>
+    </tr>
+    <tr>
+      <th>2016-09-18</th>
+      <td>1.11552</td>
+      <td>1.11552</td>
+      <td>1.11552</td>
+      <td>1.11552</td>
+    </tr>
+    <tr>
+      <th>2016-09-19</th>
+      <td>1.11488</td>
+      <td>1.11514</td>
+      <td>1.11969</td>
+      <td>1.11727</td>
+    </tr>
+    <tr>
+      <th>2016-09-20</th>
+      <td>1.11492</td>
+      <td>1.11725</td>
+      <td>1.12126</td>
+      <td>1.11497</td>
+    </tr>
+    <tr>
+      <th>2016-09-21</th>
+      <td>1.11222</td>
+      <td>1.11499</td>
+      <td>1.11958</td>
+      <td>1.11861</td>
+    </tr>
+    <tr>
+      <th>2016-09-22</th>
+      <td>1.11839</td>
+      <td>1.11860</td>
+      <td>1.12564</td>
+      <td>1.12067</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2016-11-14</th>
+      <td>1.07081</td>
+      <td>1.08269</td>
+      <td>1.08394</td>
+      <td>1.07359</td>
+    </tr>
+    <tr>
+      <th>2016-11-15</th>
+      <td>1.07132</td>
+      <td>1.07357</td>
+      <td>1.08155</td>
+      <td>1.07186</td>
+    </tr>
+    <tr>
+      <th>2016-11-16</th>
+      <td>1.06652</td>
+      <td>1.07190</td>
+      <td>1.07586</td>
+      <td>1.06893</td>
+    </tr>
+    <tr>
+      <th>2016-11-17</th>
+      <td>1.06191</td>
+      <td>1.06892</td>
+      <td>1.07447</td>
+      <td>1.06258</td>
+    </tr>
+    <tr>
+      <th>2016-11-18</th>
+      <td>1.05683</td>
+      <td>1.06261</td>
+      <td>1.06419</td>
+      <td>1.05905</td>
+    </tr>
+    <tr>
+      <th>2016-11-21</th>
+      <td>1.05775</td>
+      <td>1.05908</td>
+      <td>1.06483</td>
+      <td>1.06263</td>
+    </tr>
+    <tr>
+      <th>2016-11-22</th>
+      <td>1.05828</td>
+      <td>1.06255</td>
+      <td>1.06569</td>
+      <td>1.06256</td>
+    </tr>
+    <tr>
+      <th>2016-11-23</th>
+      <td>1.05252</td>
+      <td>1.06228</td>
+      <td>1.06427</td>
+      <td>1.05518</td>
+    </tr>
+    <tr>
+      <th>2016-11-24</th>
+      <td>1.05171</td>
+      <td>1.05494</td>
+      <td>1.05844</td>
+      <td>1.05501</td>
+    </tr>
+    <tr>
+      <th>2016-11-25</th>
+      <td>1.05376</td>
+      <td>1.05482</td>
+      <td>1.06265</td>
+      <td>1.05947</td>
+    </tr>
+    <tr>
+      <th>2016-11-28</th>
+      <td>1.05627</td>
+      <td>1.06049</td>
+      <td>1.06847</td>
+      <td>1.06125</td>
+    </tr>
+    <tr>
+      <th>2016-11-29</th>
+      <td>1.05641</td>
+      <td>1.06117</td>
+      <td>1.06534</td>
+      <td>1.06484</td>
+    </tr>
+    <tr>
+      <th>2016-11-30</th>
+      <td>1.05518</td>
+      <td>1.06473</td>
+      <td>1.06657</td>
+      <td>1.05871</td>
+    </tr>
+    <tr>
+      <th>2016-12-01</th>
+      <td>1.05837</td>
+      <td>1.05872</td>
+      <td>1.06678</td>
+      <td>1.06583</td>
+    </tr>
+    <tr>
+      <th>2016-12-02</th>
+      <td>1.06243</td>
+      <td>1.06588</td>
+      <td>1.06889</td>
+      <td>1.06676</td>
+    </tr>
+    <tr>
+      <th>2016-12-05</th>
+      <td>1.05040</td>
+      <td>1.06263</td>
+      <td>1.07956</td>
+      <td>1.07618</td>
+    </tr>
+    <tr>
+      <th>2016-12-06</th>
+      <td>1.06976</td>
+      <td>1.07618</td>
+      <td>1.07844</td>
+      <td>1.07176</td>
+    </tr>
+    <tr>
+      <th>2016-12-07</th>
+      <td>1.07090</td>
+      <td>1.07154</td>
+      <td>1.07673</td>
+      <td>1.07514</td>
+    </tr>
+    <tr>
+      <th>2016-12-08</th>
+      <td>1.05963</td>
+      <td>1.07513</td>
+      <td>1.08728</td>
+      <td>1.06116</td>
+    </tr>
+    <tr>
+      <th>2016-12-09</th>
+      <td>1.05301</td>
+      <td>1.06113</td>
+      <td>1.06289</td>
+      <td>1.05554</td>
+    </tr>
+    <tr>
+      <th>2016-12-12</th>
+      <td>1.05244</td>
+      <td>1.05287</td>
+      <td>1.06508</td>
+      <td>1.06336</td>
+    </tr>
+    <tr>
+      <th>2016-12-13</th>
+      <td>1.06030</td>
+      <td>1.06323</td>
+      <td>1.06664</td>
+      <td>1.06238</td>
+    </tr>
+    <tr>
+      <th>2016-12-14</th>
+      <td>1.04954</td>
+      <td>1.06238</td>
+      <td>1.06693</td>
+      <td>1.05328</td>
+    </tr>
+    <tr>
+      <th>2016-12-15</th>
+      <td>1.03657</td>
+      <td>1.05324</td>
+      <td>1.05386</td>
+      <td>1.04118</td>
+    </tr>
+    <tr>
+      <th>2016-12-16</th>
+      <td>1.03999</td>
+      <td>1.04118</td>
+      <td>1.04734</td>
+      <td>1.04483</td>
+    </tr>
+    <tr>
+      <th>2016-12-19</th>
+      <td>1.03916</td>
+      <td>1.04369</td>
+      <td>1.04786</td>
+      <td>1.04005</td>
+    </tr>
+    <tr>
+      <th>2016-12-20</th>
+      <td>1.03514</td>
+      <td>1.04003</td>
+      <td>1.04173</td>
+      <td>1.03869</td>
+    </tr>
+    <tr>
+      <th>2016-12-21</th>
+      <td>1.03816</td>
+      <td>1.03869</td>
+      <td>1.04502</td>
+      <td>1.04228</td>
+    </tr>
+    <tr>
+      <th>2016-12-22</th>
+      <td>1.04213</td>
+      <td>1.04214</td>
+      <td>1.04986</td>
+      <td>1.04355</td>
+    </tr>
+    <tr>
+      <th>2016-12-23</th>
+      <td>1.04256</td>
+      <td>1.04340</td>
+      <td>1.04682</td>
+      <td>1.04526</td>
+    </tr>
+  </tbody>
+</table>
+<p>100 rows × 4 columns</p>
+</div>
 
 
 
 
-![png](read_hst_files/read_hst_7_1.png)
+```python
+dfl.y
+```
+
+
+```python
+import matplotlib.ticker as ticker
+import datetime
+
+fig, ax = plt.subplots()
+fi.candlestick2_ohlc(ax, opens=dfl.values[:,['open']], closes=dfl.values[:,['close']],
+                     lows=dfl.values[:,['low']], highs=dfl.values[:,['high']],
+                     width=0.8, colorup='r', colordown='b')
+
+xdate = dfl.index
+ax.xaxis.set_major_locator(ticker.MaxNLocator(6))
+
+def mydate(x,pos):
+    try:
+        return xdate[int(x)]
+    except IndexError:
+        return ''
+
+ax.xaxis.set_major_formatter(ticker.FuncFormatter(mydate))
+
+fig.autofmt_xdate()
+fig.tight_layout()
+
+```
+
+    C:\Anaconda3\lib\site-packages\ipykernel\__main__.py:5: VisibleDeprecationWarning: non integer (and non boolean) array-likes will not be accepted as indices in the future
+    
+
+
+    ---------------------------------------------------------------------------
+
+    IndexError                                Traceback (most recent call last)
+
+    <ipython-input-71-8bcadeeb8c3d> in <module>()
+          3 
+          4 fig, ax = plt.subplots()
+    ----> 5 fi.candlestick2_ohlc(ax, opens=dfl.values[:,['open']], closes=dfl.values[:,['close']],
+          6                      lows=dfl.values[:,['low']], highs=dfl.values[:,['high']],
+          7                      width=0.8, colorup='r', colordown='b')
+    
+
+    IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+
+
+
+![png](read_hst_files/read_hst_11_2.png)
+
+
+
+```python
+ax
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x191c99a42e8>
+
+
+
+
+```python
+dfl.index.astype(float)
+```
+
+
+    ---------------------------------------------------------------------------
+
+    ValueError                                Traceback (most recent call last)
+
+    <ipython-input-49-1ee1bc47bf46> in <module>()
+    ----> 1 dfl.index.astype(float)
+    
+
+    C:\Anaconda3\lib\site-packages\pandas\tseries\index.py in astype(self, dtype, copy)
+        848         elif is_period_dtype(dtype):
+        849             return self.to_period(freq=dtype.freq)
+    --> 850         raise ValueError('Cannot cast DatetimeIndex to dtype %s' % dtype)
+        851 
+        852     def _get_time_micros(self):
+    
+
+    ValueError: Cannot cast DatetimeIndex to dtype float64
+
+
+
+```python
+ax = plt.subplot()
+# dfl['close'].plot()
+fi.candlestick2_ohlc(ax, opens=dfl.values[:,0], closes=dfl.values[:,1],
+                     lows=dfl.values[:,2], highs=dfl.values[:,3],
+                     width=0.8, colorup='r', colordown='b')
+tfl = dfl.index.values.astype(float)[::5]
+plt.xticks(tfl, [x for x in tfl])
+```
+
+
+
+
+    ([<matplotlib.axis.XTick at 0x191c9ae7a20>,
+      <matplotlib.axis.XTick at 0x191c9ae7f98>,
+      <matplotlib.axis.XTick at 0x191c9adecf8>,
+      <matplotlib.axis.XTick at 0x191c9b392e8>,
+      <matplotlib.axis.XTick at 0x191c9b39f60>,
+      <matplotlib.axis.XTick at 0x191c9b3bc18>,
+      <matplotlib.axis.XTick at 0x191c9b408d0>,
+      <matplotlib.axis.XTick at 0x191c9b44588>,
+      <matplotlib.axis.XTick at 0x191c9b47240>,
+      <matplotlib.axis.XTick at 0x191c9b47eb8>,
+      <matplotlib.axis.XTick at 0x191c9b4ab70>,
+      <matplotlib.axis.XTick at 0x191c9b4d828>,
+      <matplotlib.axis.XTick at 0x191c9b504e0>,
+      <matplotlib.axis.XTick at 0x191c9b55198>,
+      <matplotlib.axis.XTick at 0x191c9b55e10>,
+      <matplotlib.axis.XTick at 0x191c9b57ac8>,
+      <matplotlib.axis.XTick at 0x191c9b5b780>,
+      <matplotlib.axis.XTick at 0x191c9b5d438>,
+      <matplotlib.axis.XTick at 0x191c9b610f0>,
+      <matplotlib.axis.XTick at 0x191c9b61d68>],
+     <a list of 20 Text xticklabel objects>)
+
+
+
+
+![png](read_hst_files/read_hst_14_1.png)
+
+
+
+```python
+tfl.astype('datetime64[D]')
+```
+
+
+
+
+    array(['4028771021994208-01-14', '4030190352986630-11-17',
+           '4031609683979053-09-20', '4033265570136880-05-14',
+           '4034684901129303-03-19', '4036104232121726-01-20',
+           '4037287007948745-02-02', '4038706338941167-12-07',
+           '4040125669933590-10-10', '4041781556091417-06-04',
+           '4043437442249244-01-27', '4044856773241666-11-30',
+           '4046512659399493-07-25', '4048168545557320-03-19',
+           '4049587876549743-01-21', '4051243762707569-09-15',
+           '4052899648865396-05-09', '4054555535023223-01-02',
+           '4056211421181049-08-27', '4057867307338876-04-20'], dtype='datetime64[D]')
+
 
 
 
