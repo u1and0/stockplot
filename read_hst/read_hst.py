@@ -66,37 +66,7 @@ dfl
 dfl.open.values
 
 
-# In[95]:
-
-def candlechart(ohlc, width=0.8):
-    """入力されたデータフレームに対してローソク足チャートを返す
-        引数: ohlc: 
-            *データフレーム
-            * 列名に'open'", 'close', 'low', 'high'を入れること
-            * 順不同"
-        戻り値: ax: subplot"""
-    fig, ax = plt.subplots()
-    fi.candlestick2_ohlc(ax, opens=ohlc.open.values, closes=ohlc.close.values,
-                         lows=ohlc.low.values, highs=ohlc.high.values,
-                         width=width, colorup='r', colordown='b')
-    return ax
-
-
-# In[96]:
-
-candlechart(dfl)
-
-
-# In[90]:
-
-import matplotlib.ticker as ticker
-import datetime
-
-fig, ax = plt.subplots()
-ax = candlechart(dfl)
-
-xdate = dfl.index
-ax.xaxis.set_major_locator(ticker.MaxNLocator(6))
+# In[103]:
 
 def mydate(x,pos):
     try:
@@ -104,36 +74,36 @@ def mydate(x,pos):
     except IndexError:
         return ''
 
-ax.xaxis.set_major_formatter(ticker.FuncFormatter(mydate))
 
-fig.autofmt_xdate()
-fig.tight_layout()
+def candlechart(ohlc, width=0.8):
+    """入力されたデータフレームに対してローソク足チャートを返す
+        引数:
+            * ohlc: 
+                *データフレーム
+                * 列名に'open'", 'close', 'low', 'high'を入れること
+                * 順不同"
+            * widrh: ローソクの線幅 
+        戻り値: ax: subplot"""
+    fig, ax = plt.subplots()
+    # ローソク足
+    fi.candlestick2_ohlc(ax, opens=ohlc.open.values, closes=ohlc.close.values,
+                         lows=ohlc.low.values, highs=ohlc.high.values,
+                         width=width, colorup='r', colordown='b')
+    
+    # x軸を時間にする
+    xdate = dfl.index
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(6))
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(mydate))
+
+    fig.autofmt_xdate()
+    fig.tight_layout()
+
+    return fig, ax
 
 
-# In[61]:
+# In[105]:
 
-ax
-
-
-# In[49]:
-
-dfl.index.astype(float)
-
-
-# In[30]:
-
-ax = plt.subplot()
-# dfl['close'].plot()
-fi.candlestick2_ohlc(ax, opens=dfl.values[:,0], closes=dfl.values[:,1],
-                     lows=dfl.values[:,2], highs=dfl.values[:,3],
-                     width=0.8, colorup='r', colordown='b')
-tfl = dfl.index.values.astype(float)[::5]
-plt.xticks(tfl, [x for x in tfl])
-
-
-# In[41]:
-
-tfl.astype('datetime64[D]')
+candlechart(dfl)
 
 
 # In[ ]:

@@ -1606,18 +1606,37 @@ dfl.open.values
 
 
 ```python
+def mydate(x,pos):
+    try:
+        return xdate[int(x)]
+    except IndexError:
+        return ''
+
+
 def candlechart(ohlc, width=0.8):
     """入力されたデータフレームに対してローソク足チャートを返す
-        引数: ohlc: 
-            *データフレーム
-            * 列名に'open'", 'close', 'low', 'high'を入れること
-            * 順不同"
+        引数:
+            * ohlc: 
+                *データフレーム
+                * 列名に'open'", 'close', 'low', 'high'を入れること
+                * 順不同"
+            * widrh: ローソクの線幅 
         戻り値: ax: subplot"""
     fig, ax = plt.subplots()
+    # ローソク足
     fi.candlestick2_ohlc(ax, opens=ohlc.open.values, closes=ohlc.close.values,
                          lows=ohlc.low.values, highs=ohlc.high.values,
                          width=width, colorup='r', colordown='b')
-    return ax
+    
+    # x軸を時間にする
+    xdate = dfl.index
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(6))
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(mydate))
+
+    fig.autofmt_xdate()
+    fig.tight_layout()
+
+    return fig, ax
 ```
 
 
@@ -1628,144 +1647,13 @@ candlechart(dfl)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x191caeabc18>
+    (<matplotlib.figure.Figure at 0x191cc5bd208>,
+     <matplotlib.axes._subplots.AxesSubplot at 0x191cb3afcf8>)
 
 
 
 
 ![png](read_hst_files/read_hst_16_1.png)
-
-
-
-```python
-import matplotlib.ticker as ticker
-import datetime
-
-fig, ax = plt.subplots()
-ax = candlechart(dfl)
-
-xdate = dfl.index
-ax.xaxis.set_major_locator(ticker.MaxNLocator(6))
-
-def mydate(x,pos):
-    try:
-        return xdate[int(x)]
-    except IndexError:
-        return ''
-
-ax.xaxis.set_major_formatter(ticker.FuncFormatter(mydate))
-
-fig.autofmt_xdate()
-fig.tight_layout()
-
-```
-
-
-![png](read_hst_files/read_hst_17_0.png)
-
-
-
-![png](read_hst_files/read_hst_17_1.png)
-
-
-
-```python
-ax
-```
-
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x191c99a42e8>
-
-
-
-
-```python
-dfl.index.astype(float)
-```
-
-
-    ---------------------------------------------------------------------------
-
-    ValueError                                Traceback (most recent call last)
-
-    <ipython-input-49-1ee1bc47bf46> in <module>()
-    ----> 1 dfl.index.astype(float)
-    
-
-    C:\Anaconda3\lib\site-packages\pandas\tseries\index.py in astype(self, dtype, copy)
-        848         elif is_period_dtype(dtype):
-        849             return self.to_period(freq=dtype.freq)
-    --> 850         raise ValueError('Cannot cast DatetimeIndex to dtype %s' % dtype)
-        851 
-        852     def _get_time_micros(self):
-    
-
-    ValueError: Cannot cast DatetimeIndex to dtype float64
-
-
-
-```python
-ax = plt.subplot()
-# dfl['close'].plot()
-fi.candlestick2_ohlc(ax, opens=dfl.values[:,0], closes=dfl.values[:,1],
-                     lows=dfl.values[:,2], highs=dfl.values[:,3],
-                     width=0.8, colorup='r', colordown='b')
-tfl = dfl.index.values.astype(float)[::5]
-plt.xticks(tfl, [x for x in tfl])
-```
-
-
-
-
-    ([<matplotlib.axis.XTick at 0x191c9ae7a20>,
-      <matplotlib.axis.XTick at 0x191c9ae7f98>,
-      <matplotlib.axis.XTick at 0x191c9adecf8>,
-      <matplotlib.axis.XTick at 0x191c9b392e8>,
-      <matplotlib.axis.XTick at 0x191c9b39f60>,
-      <matplotlib.axis.XTick at 0x191c9b3bc18>,
-      <matplotlib.axis.XTick at 0x191c9b408d0>,
-      <matplotlib.axis.XTick at 0x191c9b44588>,
-      <matplotlib.axis.XTick at 0x191c9b47240>,
-      <matplotlib.axis.XTick at 0x191c9b47eb8>,
-      <matplotlib.axis.XTick at 0x191c9b4ab70>,
-      <matplotlib.axis.XTick at 0x191c9b4d828>,
-      <matplotlib.axis.XTick at 0x191c9b504e0>,
-      <matplotlib.axis.XTick at 0x191c9b55198>,
-      <matplotlib.axis.XTick at 0x191c9b55e10>,
-      <matplotlib.axis.XTick at 0x191c9b57ac8>,
-      <matplotlib.axis.XTick at 0x191c9b5b780>,
-      <matplotlib.axis.XTick at 0x191c9b5d438>,
-      <matplotlib.axis.XTick at 0x191c9b610f0>,
-      <matplotlib.axis.XTick at 0x191c9b61d68>],
-     <a list of 20 Text xticklabel objects>)
-
-
-
-
-![png](read_hst_files/read_hst_20_1.png)
-
-
-
-```python
-tfl.astype('datetime64[D]')
-```
-
-
-
-
-    array(['4028771021994208-01-14', '4030190352986630-11-17',
-           '4031609683979053-09-20', '4033265570136880-05-14',
-           '4034684901129303-03-19', '4036104232121726-01-20',
-           '4037287007948745-02-02', '4038706338941167-12-07',
-           '4040125669933590-10-10', '4041781556091417-06-04',
-           '4043437442249244-01-27', '4044856773241666-11-30',
-           '4046512659399493-07-25', '4048168545557320-03-19',
-           '4049587876549743-01-21', '4051243762707569-09-15',
-           '4052899648865396-05-09', '4054555535023223-01-02',
-           '4056211421181049-08-27', '4057867307338876-04-20'], dtype='datetime64[D]')
-
 
 
 
