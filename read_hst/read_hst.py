@@ -2,12 +2,18 @@
 # coding: utf-8
 
 # # ヒストリカルデータの読み込み
-# 
+
+# ## ヒストリカルデータの扱い方
+# * [FXDD - メタトレーダのヒストリカルデータ](http://www.fxdd.com/bm/jp/forex-resources/forex-trading-tools/metatrader-1-minute-data/)よりzipファイルをダウンロード。
+# * 解凍して.hstを取り出す。
+# * 以下の`hst_to_df.py`に食べさせると.h5ファイルのうんこを出す。
 
 # In[6]:
 
 get_ipython().magic('run hst_to_df.py  -f data/EURUSD.hst -ty old')
 
+
+# ## hdfファイル(.h5)の扱い
 
 # In[1]:
 
@@ -19,6 +25,8 @@ df
 # resampleで指定した期間だけデータを丸める
 # 
 # 休日はbfill()かdropna()でなくす
+
+# ## 日足に圧縮する
 
 # In[2]:
 
@@ -49,20 +57,43 @@ import matplotlib.finance as fi
 dfl
 
 
-# In[ ]:
+# 各列をnp.arrayで取り出すには、ドットで列名綴って、valuesメソッドで取り出す。
+# 
+# ixなどで列番号を使って取り出す時と比べて、列の入れ替え問題が解消される。
 
-dfl.y
+# In[87]:
+
+dfl.open.values
 
 
-# In[71]:
+# In[95]:
+
+def candlechart(ohlc, width=0.8):
+    """入力されたデータフレームに対してローソク足チャートを返す
+        引数: ohlc: 
+            *データフレーム
+            * 列名に'open'", 'close', 'low', 'high'を入れること
+            * 順不同"
+        戻り値: ax: subplot"""
+    fig, ax = plt.subplots()
+    fi.candlestick2_ohlc(ax, opens=ohlc.open.values, closes=ohlc.close.values,
+                         lows=ohlc.low.values, highs=ohlc.high.values,
+                         width=width, colorup='r', colordown='b')
+    return ax
+
+
+# In[96]:
+
+candlechart(dfl)
+
+
+# In[90]:
 
 import matplotlib.ticker as ticker
 import datetime
 
 fig, ax = plt.subplots()
-fi.candlestick2_ohlc(ax, opens=dfl.values[:,['open']], closes=dfl.values[:,['close']],
-                     lows=dfl.values[:,['low']], highs=dfl.values[:,['high']],
-                     width=0.8, colorup='r', colordown='b')
+ax = candlechart(dfl)
 
 xdate = dfl.index
 ax.xaxis.set_major_locator(ticker.MaxNLocator(6))

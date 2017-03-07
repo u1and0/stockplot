@@ -1,6 +1,10 @@
 
 # ヒストリカルデータの読み込み
 
+## ヒストリカルデータの扱い方
+* [FXDD - メタトレーダのヒストリカルデータ](http://www.fxdd.com/bm/jp/forex-resources/forex-trading-tools/metatrader-1-minute-data/)よりzipファイルをダウンロード。
+* 解凍して.hstを取り出す。
+* 以下の`hst_to_df.py`に食べさせると.h5ファイルのうんこを出す。
 
 
 ```python
@@ -81,6 +85,8 @@
     Using EURUSD/EURUSD.h5 file, type below...
     `df = pd.read_hdf(EURUSD/EURUSD.h5, key="main")`
     
+
+## hdfファイル(.h5)の扱い
 
 
 ```python
@@ -612,6 +618,8 @@ resampleで指定した期間だけデータを丸める
 
 休日はbfill()かdropna()でなくす
 
+## 日足に圧縮する
+
 
 ```python
 dff = df.ix[:, :4].resample('d').agg({'open':'first',
@@ -1093,7 +1101,7 @@ dfl.plot()
 
 
 
-![png](read_hst_files/read_hst_6_1.png)
+![png](read_hst_files/read_hst_9_1.png)
 
 
 # ローソク足のプロット
@@ -1564,10 +1572,69 @@ dfl
 
 
 
+各列をnp.arrayで取り出すには、ドットで列名綴って、valuesメソッドで取り出す。
+
+ixなどで列番号を使って取り出す時と比べて、列の入れ替え問題が解消される。
+
 
 ```python
-dfl.y
+dfl.open.values
 ```
+
+
+
+
+    array([ 1.12868,  1.13516,  1.13201,  1.13037,  1.13183,  1.13037,
+            1.12623,  1.12781,  1.11947,  1.11775,  1.11873,  1.11413,
+            1.11567,  1.11954,  1.1155 ,  1.11457,  1.12535,  1.12382,
+            1.12593,  1.1231 ,  1.12355,  1.12337,  1.12175,  1.12466,
+            1.12423,  1.11552,  1.11514,  1.11725,  1.11499,  1.1186 ,
+            1.12068,  1.12265,  1.1228 ,  1.12527,  1.12133,  1.1216 ,
+            1.12209,  1.12396,  1.12254,  1.12093,  1.12031,  1.1203 ,
+            1.11486,  1.11753,  1.11366,  1.10523,  1.1005 ,  1.10548,
+            1.09671,  1.09975,  1.09785,  1.09723,  1.09284,  1.088  ,
+            1.0876 ,  1.08799,  1.08862,  1.09068,  1.08946,  1.09893,
+            1.0979 ,  1.10538,  1.10959,  1.11035,  1.1056 ,  1.10372,
+            1.1024 ,  1.0907 ,  1.08897,  1.08301,  1.08269,  1.07357,
+            1.0719 ,  1.06892,  1.06261,  1.05908,  1.06255,  1.06228,
+            1.05494,  1.05482,  1.06049,  1.06117,  1.06473,  1.05872,
+            1.06588,  1.06263,  1.07618,  1.07154,  1.07513,  1.06113,
+            1.05287,  1.06323,  1.06238,  1.05324,  1.04118,  1.04369,
+            1.04003,  1.03869,  1.04214,  1.0434 ])
+
+
+
+
+```python
+def candlechart(ohlc, width=0.8):
+    """入力されたデータフレームに対してローソク足チャートを返す
+        引数: ohlc: 
+            *データフレーム
+            * 列名に'open'", 'close', 'low', 'high'を入れること
+            * 順不同"
+        戻り値: ax: subplot"""
+    fig, ax = plt.subplots()
+    fi.candlestick2_ohlc(ax, opens=ohlc.open.values, closes=ohlc.close.values,
+                         lows=ohlc.low.values, highs=ohlc.high.values,
+                         width=width, colorup='r', colordown='b')
+    return ax
+```
+
+
+```python
+candlechart(dfl)
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x191caeabc18>
+
+
+
+
+![png](read_hst_files/read_hst_16_1.png)
+
 
 
 ```python
@@ -1575,9 +1642,7 @@ import matplotlib.ticker as ticker
 import datetime
 
 fig, ax = plt.subplots()
-fi.candlestick2_ohlc(ax, opens=dfl.values[:,['open']], closes=dfl.values[:,['close']],
-                     lows=dfl.values[:,['low']], highs=dfl.values[:,['high']],
-                     width=0.8, colorup='r', colordown='b')
+ax = candlechart(dfl)
 
 xdate = dfl.index
 ax.xaxis.set_major_locator(ticker.MaxNLocator(6))
@@ -1595,27 +1660,12 @@ fig.tight_layout()
 
 ```
 
-    C:\Anaconda3\lib\site-packages\ipykernel\__main__.py:5: VisibleDeprecationWarning: non integer (and non boolean) array-likes will not be accepted as indices in the future
-    
 
-
-    ---------------------------------------------------------------------------
-
-    IndexError                                Traceback (most recent call last)
-
-    <ipython-input-71-8bcadeeb8c3d> in <module>()
-          3 
-          4 fig, ax = plt.subplots()
-    ----> 5 fi.candlestick2_ohlc(ax, opens=dfl.values[:,['open']], closes=dfl.values[:,['close']],
-          6                      lows=dfl.values[:,['low']], highs=dfl.values[:,['high']],
-          7                      width=0.8, colorup='r', colordown='b')
-    
-
-    IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+![png](read_hst_files/read_hst_17_0.png)
 
 
 
-![png](read_hst_files/read_hst_11_2.png)
+![png](read_hst_files/read_hst_17_1.png)
 
 
 
@@ -1694,7 +1744,7 @@ plt.xticks(tfl, [x for x in tfl])
 
 
 
-![png](read_hst_files/read_hst_14_1.png)
+![png](read_hst_files/read_hst_20_1.png)
 
 
 
