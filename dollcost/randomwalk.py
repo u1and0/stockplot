@@ -133,19 +133,20 @@ df.plot(grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
 # 
 # つまり来週になるまで「購入」の行動を無視するわけだね。
 
-# In[ ]:
+# In[210]:
+
+pd.date_range(start=pd.datetime.today().date(), periods=100, freq='B')
 
 
-
-
-# In[200]:
+# In[218]:
 
 def randomwalk(periods, start=pd.datetime.today().date()):
-    ts = pd.date_range(start=start, periods=periods)
-    bullbear = pd.Series(np.random.randint(-1, 2, n), index=ts, name='DateTime')
+    """periods日分だけランダムウォークを返す"""
+    ts = pd.date_range(start=start, periods=periods, freq='B')
+    bullbear = pd.Series(np.random.randint(-1, 2, periods), index=ts, name='DateTime')
     price = bullbear.cumsum()
     return price
-price=randomwalk(1000)
+price=randomwalk(100)
 price.plot()
 
 
@@ -154,14 +155,26 @@ price.plot()
 p2b(price)
 
 
-# In[ ]:
+# In[155]:
+
+def lowprice(price):
+    """bullbearが負になったところだけのpriceを収集したpd.Seriesを返す
+    ただし、1度購入すると次の週になるまで購入できない"""
+    return price[np.array(p2b(price))<0]
 
 
+# In[230]:
+
+ts = pd.date_range('20170312', periods=100)
+df = pd.DataFrame(np.random.rand(len(ts)), index=ts)
+df.asfreq('W', how='start')
 
 
-# In[ ]:
+# In[224]:
 
-
+p = pd.Period('20170312', )
+p.asfreq('W',)
+# pd.Period(pd.datetime.today().date(), freq='W')
 
 
 # In[ ]:

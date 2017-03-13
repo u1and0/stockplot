@@ -365,24 +365,57 @@ df.plot(grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
 
 
 ```python
-
+pd.date_range(start=pd.datetime.today().date(), periods=100, freq='B')
 ```
+
+
+
+
+    DatetimeIndex(['2017-03-13', '2017-03-14', '2017-03-15', '2017-03-16',
+                   '2017-03-17', '2017-03-20', '2017-03-21', '2017-03-22',
+                   '2017-03-23', '2017-03-24', '2017-03-27', '2017-03-28',
+                   '2017-03-29', '2017-03-30', '2017-03-31', '2017-04-03',
+                   '2017-04-04', '2017-04-05', '2017-04-06', '2017-04-07',
+                   '2017-04-10', '2017-04-11', '2017-04-12', '2017-04-13',
+                   '2017-04-14', '2017-04-17', '2017-04-18', '2017-04-19',
+                   '2017-04-20', '2017-04-21', '2017-04-24', '2017-04-25',
+                   '2017-04-26', '2017-04-27', '2017-04-28', '2017-05-01',
+                   '2017-05-02', '2017-05-03', '2017-05-04', '2017-05-05',
+                   '2017-05-08', '2017-05-09', '2017-05-10', '2017-05-11',
+                   '2017-05-12', '2017-05-15', '2017-05-16', '2017-05-17',
+                   '2017-05-18', '2017-05-19', '2017-05-22', '2017-05-23',
+                   '2017-05-24', '2017-05-25', '2017-05-26', '2017-05-29',
+                   '2017-05-30', '2017-05-31', '2017-06-01', '2017-06-02',
+                   '2017-06-05', '2017-06-06', '2017-06-07', '2017-06-08',
+                   '2017-06-09', '2017-06-12', '2017-06-13', '2017-06-14',
+                   '2017-06-15', '2017-06-16', '2017-06-19', '2017-06-20',
+                   '2017-06-21', '2017-06-22', '2017-06-23', '2017-06-26',
+                   '2017-06-27', '2017-06-28', '2017-06-29', '2017-06-30',
+                   '2017-07-03', '2017-07-04', '2017-07-05', '2017-07-06',
+                   '2017-07-07', '2017-07-10', '2017-07-11', '2017-07-12',
+                   '2017-07-13', '2017-07-14', '2017-07-17', '2017-07-18',
+                   '2017-07-19', '2017-07-20', '2017-07-21', '2017-07-24',
+                   '2017-07-25', '2017-07-26', '2017-07-27', '2017-07-28'],
+                  dtype='datetime64[ns]', freq='B')
+
+
 
 
 ```python
 def randomwalk(periods, start=pd.datetime.today().date()):
-    ts = pd.date_range(start=start, periods=periods)
-    bullbear = pd.Series(np.random.randint(-1, 2, n), index=ts, name='DateTime')
+    """periods日分だけランダムウォークを返す"""
+    ts = pd.date_range(start=start, periods=periods, freq='B')
+    bullbear = pd.Series(np.random.randint(-1, 2, periods), index=ts, name='DateTime')
     price = bullbear.cumsum()
     return price
-price=randomwalk(1000)
+price=randomwalk(100)
 price.plot()
 ```
 
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x1d5b85e4668>
+    <matplotlib.axes._subplots.AxesSubplot at 0x1d5bee2b550>
 
 
 
@@ -465,13 +498,117 @@ p2b(price)
 
 
 ```python
-
+def lowprice(price):
+    """bullbearが負になったところだけのpriceを収集したpd.Seriesを返す
+    ただし、1度購入すると次の週になるまで購入できない"""
+    return price[np.array(p2b(price))<0]
 ```
 
 
 ```python
-
+ts = pd.date_range('20170312', periods=100)
+df = pd.DataFrame(np.random.rand(len(ts)), index=ts)
+df.asfreq('W', how='start')
 ```
+
+
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2017-03-12</th>
+      <td>0.871618</td>
+    </tr>
+    <tr>
+      <th>2017-03-19</th>
+      <td>0.471682</td>
+    </tr>
+    <tr>
+      <th>2017-03-26</th>
+      <td>0.990041</td>
+    </tr>
+    <tr>
+      <th>2017-04-02</th>
+      <td>0.070391</td>
+    </tr>
+    <tr>
+      <th>2017-04-09</th>
+      <td>0.409347</td>
+    </tr>
+    <tr>
+      <th>2017-04-16</th>
+      <td>0.829733</td>
+    </tr>
+    <tr>
+      <th>2017-04-23</th>
+      <td>0.343741</td>
+    </tr>
+    <tr>
+      <th>2017-04-30</th>
+      <td>0.144179</td>
+    </tr>
+    <tr>
+      <th>2017-05-07</th>
+      <td>0.368244</td>
+    </tr>
+    <tr>
+      <th>2017-05-14</th>
+      <td>0.018673</td>
+    </tr>
+    <tr>
+      <th>2017-05-21</th>
+      <td>0.029138</td>
+    </tr>
+    <tr>
+      <th>2017-05-28</th>
+      <td>0.354458</td>
+    </tr>
+    <tr>
+      <th>2017-06-04</th>
+      <td>0.592045</td>
+    </tr>
+    <tr>
+      <th>2017-06-11</th>
+      <td>0.551283</td>
+    </tr>
+    <tr>
+      <th>2017-06-18</th>
+      <td>0.587059</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+p = pd.Period('20170312', )
+p.asfreq('W',)
+# pd.Period(pd.datetime.today().date(), freq='W')
+```
+
+
+    ---------------------------------------------------------------------------
+
+    AttributeError                            Traceback (most recent call last)
+
+    <ipython-input-224-94a0d4482924> in <module>()
+          1 p = pd.Timestamp('20170312')
+    ----> 2 p.asfreq('W')
+          3 # pd.Period(pd.datetime.today().date(), freq='W')
+    
+
+    AttributeError: 'Timestamp' object has no attribute 'asfreq'
+
 
 
 ```python
