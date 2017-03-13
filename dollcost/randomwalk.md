@@ -372,7 +372,7 @@ price.plot()
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x1d5bedd88d0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x1d5c4258fd0>
 
 
 
@@ -384,8 +384,8 @@ price.plot()
 関数化してみた。
 
 * 縦軸が単位[円]だとする
-* 例えば10000円ずつ買っていくとする
-* 口数はint型
+* 例えば10000円(unit_cost)ずつ買っていくとする
+* 口数(ticket)はint型
 
 
 ```python
@@ -407,7 +407,7 @@ ticket, int(ticket)
 ```python
 tickets = unit_cost / price
 pd.DataFrame([price, tickets, tickets.astype(int)],
-             index=['price', 'ticket(float)', 'ticket(int)']).T
+             index=['price', 'ticket(float)', 'ticket(int)']).T.head()
 ```
 
 
@@ -438,361 +438,24 @@ pd.DataFrame([price, tickets, tickets.astype(int)],
     </tr>
     <tr>
       <th>2017-03-15</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
     </tr>
     <tr>
       <th>2017-03-16</th>
-      <td>104.0</td>
-      <td>96.153846</td>
-      <td>96.0</td>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
     </tr>
     <tr>
       <th>2017-03-17</th>
-      <td>105.0</td>
-      <td>95.238095</td>
-      <td>95.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-20</th>
-      <td>105.0</td>
-      <td>95.238095</td>
-      <td>95.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-21</th>
-      <td>105.0</td>
-      <td>95.238095</td>
-      <td>95.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-22</th>
-      <td>105.0</td>
-      <td>95.238095</td>
-      <td>95.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-23</th>
-      <td>104.0</td>
-      <td>96.153846</td>
-      <td>96.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-24</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-27</th>
       <td>102.0</td>
       <td>98.039216</td>
       <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-28</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-29</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-30</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-31</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-03</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-04</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-05</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-06</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-07</th>
-      <td>101.0</td>
-      <td>99.009901</td>
-      <td>99.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-10</th>
-      <td>101.0</td>
-      <td>99.009901</td>
-      <td>99.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-11</th>
-      <td>101.0</td>
-      <td>99.009901</td>
-      <td>99.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-12</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-13</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-14</th>
-      <td>104.0</td>
-      <td>96.153846</td>
-      <td>96.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-17</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-18</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-19</th>
-      <td>104.0</td>
-      <td>96.153846</td>
-      <td>96.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-20</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
-    </tr>
-    <tr>
-      <th>2017-04-21</th>
-      <td>104.0</td>
-      <td>96.153846</td>
-      <td>96.0</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>2017-06-19</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
-    </tr>
-    <tr>
-      <th>2017-06-20</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-06-21</th>
-      <td>101.0</td>
-      <td>99.009901</td>
-      <td>99.0</td>
-    </tr>
-    <tr>
-      <th>2017-06-22</th>
-      <td>101.0</td>
-      <td>99.009901</td>
-      <td>99.0</td>
-    </tr>
-    <tr>
-      <th>2017-06-23</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-06-26</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
-    </tr>
-    <tr>
-      <th>2017-06-27</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-06-28</th>
-      <td>101.0</td>
-      <td>99.009901</td>
-      <td>99.0</td>
-    </tr>
-    <tr>
-      <th>2017-06-29</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-06-30</th>
-      <td>101.0</td>
-      <td>99.009901</td>
-      <td>99.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-03</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-04</th>
-      <td>102.0</td>
-      <td>98.039216</td>
-      <td>98.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-05</th>
-      <td>103.0</td>
-      <td>97.087379</td>
-      <td>97.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-06</th>
-      <td>104.0</td>
-      <td>96.153846</td>
-      <td>96.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-07</th>
-      <td>105.0</td>
-      <td>95.238095</td>
-      <td>95.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-10</th>
-      <td>106.0</td>
-      <td>94.339623</td>
-      <td>94.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-11</th>
-      <td>107.0</td>
-      <td>93.457944</td>
-      <td>93.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-12</th>
-      <td>107.0</td>
-      <td>93.457944</td>
-      <td>93.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-13</th>
-      <td>108.0</td>
-      <td>92.592593</td>
-      <td>92.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-14</th>
-      <td>109.0</td>
-      <td>91.743119</td>
-      <td>91.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-17</th>
-      <td>109.0</td>
-      <td>91.743119</td>
-      <td>91.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-18</th>
-      <td>109.0</td>
-      <td>91.743119</td>
-      <td>91.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-19</th>
-      <td>108.0</td>
-      <td>92.592593</td>
-      <td>92.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-20</th>
-      <td>109.0</td>
-      <td>91.743119</td>
-      <td>91.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-21</th>
-      <td>108.0</td>
-      <td>92.592593</td>
-      <td>92.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-24</th>
-      <td>109.0</td>
-      <td>91.743119</td>
-      <td>91.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-25</th>
-      <td>108.0</td>
-      <td>92.592593</td>
-      <td>92.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-26</th>
-      <td>109.0</td>
-      <td>91.743119</td>
-      <td>91.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-27</th>
-      <td>110.0</td>
-      <td>90.909091</td>
-      <td>90.0</td>
-    </tr>
-    <tr>
-      <th>2017-07-28</th>
-      <td>109.0</td>
-      <td>91.743119</td>
-      <td>91.0</td>
     </tr>
   </tbody>
 </table>
-<p>100 rows × 3 columns</p>
 </div>
 
 
@@ -808,119 +471,60 @@ def dollcost(price, unit_cost):
     引数: 
         price: 価格変動値
         unit_cost: 購入するときの一定金額
-    lp: 前日より価格が低い時に買いを行った時の時間と価格のSeries返す
+    lowprice関数: 前日より価格が低い時に買いを行った時の時間と価格のSeries返す
     戻り値:
         tickets: 購入したチケット数
     """
-    lp = lowprice(price)
-    tickets = unit_cost / lp
-    return tickets.astype(int) * price
+    tickets = unit_cost / lowprice(price)
+    return tickets.astype(int)
 ```
 
 
 ```python
-df
-```
+tickets = dollcost(price, 10000)
+cost = tickets * price
+asset = cost.cumsum()
+profit = tickets.cumsum() * price - asset
 
-
-
-
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>price</th>
-      <th>cost</th>
-      <th>asset</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2017-03-13</th>
-      <td>101.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2017-03-14</th>
-      <td>102.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2017-03-15</th>
-      <td>102.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2017-03-16</th>
-      <td>103.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2017-03-17</th>
-      <td>102.0</td>
-      <td>9996.0</td>
-      <td>9996.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-20</th>
-      <td>102.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2017-03-21</th>
-      <td>102.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2017-03-22</th>
-      <td>101.0</td>
-      <td>9999.0</td>
-      <td>19995.0</td>
-    </tr>
-    <tr>
-      <th>2017-03-23</th>
-      <td>102.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2017-03-24</th>
-      <td>102.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
-```python
-price = randomwalk(10)+100
-cost = dollcost(price, 10000)
-df = pd.DataFrame([price, cost, cost.cumsum()], index=['price', 'cost', 'asset']).T
+df = pd.DataFrame([price, tickets, cost, asset, profit],
+                  index=['price', 'tickets', 'cost', 'asset', 'profit']).T
+print(df.head())
 df.plot(style='.', subplots=True, figsize=(4,9))
 ```
 
+                price  tickets     cost    asset  profit
+    2017-03-13  101.0      NaN      NaN      NaN     NaN
+    2017-03-14  102.0      NaN      NaN      NaN     NaN
+    2017-03-15  101.0     99.0   9999.0   9999.0     0.0
+    2017-03-16  101.0      NaN      NaN      NaN     NaN
+    2017-03-17  100.0    100.0  10000.0  19999.0   -99.0
+    
 
 
 
-    array([<matplotlib.axes._subplots.AxesSubplot object at 0x000001D5C29B6898>,
-           <matplotlib.axes._subplots.AxesSubplot object at 0x000001D5C2C0E0B8>,
-           <matplotlib.axes._subplots.AxesSubplot object at 0x000001D5C2C231D0>], dtype=object)
+
+    array([<matplotlib.axes._subplots.AxesSubplot object at 0x000001D5C5F32AC8>,
+           <matplotlib.axes._subplots.AxesSubplot object at 0x000001D5C5FA2B70>,
+           <matplotlib.axes._subplots.AxesSubplot object at 0x000001D5C5FB9F98>,
+           <matplotlib.axes._subplots.AxesSubplot object at 0x000001D5C6036F28>,
+           <matplotlib.axes._subplots.AxesSubplot object at 0x000001D5C6052FD0>], dtype=object)
 
 
 
 
-![png](randomwalk_files/randomwalk_35_1.png)
+![png](randomwalk_files/randomwalk_34_2.png)
+
+
+
+```python
+price[-1] * tickets.sum() - cost.sum()  # 最終損益
+```
+
+
+
+
+    -22828.0
+
 
 
 ## 特定期間で買い

@@ -127,7 +127,7 @@ df.plot(grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
 # ## 一定金額を買い
 # ドルコスト平均法の(2)
 
-# In[256]:
+# In[291]:
 
 def randomwalk(periods, start=pd.datetime.today().date(), name=None):
     """periods日分だけランダムウォークを返す"""
@@ -143,8 +143,8 @@ price.plot()
 # 関数化してみた。
 
 # * 縦軸が単位[円]だとする
-# * 例えば10000円ずつ買っていくとする
-# * 口数はint型
+# * 例えば10000円(unit_cost)ずつ買っていくとする
+# * 口数(ticket)はint型
 
 # In[257]:
 
@@ -155,44 +155,48 @@ ticket, int(ticket)
 
 # 0インデックス目
 
-# In[263]:
+# In[283]:
 
 tickets = unit_cost / price
 pd.DataFrame([price, tickets, tickets.astype(int)],
-             index=['price', 'ticket(float)', 'ticket(int)']).T
+             index=['price', 'ticket(float)', 'ticket(int)']).T.head()
 
 
 # 全期間に適用。
 # 
 # 切り捨てすると時は`astype(int)`メソッドを使う。
 
-# In[264]:
+# In[284]:
 
 def dollcost(price, unit_cost):
     """
     引数: 
         price: 価格変動値
         unit_cost: 購入するときの一定金額
-    lp: 前日より価格が低い時に買いを行った時の時間と価格のSeries返す
+    lowprice関数: 前日より価格が低い時に買いを行った時の時間と価格のSeries返す
     戻り値:
         tickets: 購入したチケット数
     """
-    lp = lowprice(price)
-    tickets = unit_cost / lp
-    return tickets.astype(int) * price
+    tickets = unit_cost / lowprice(price)
+    return tickets.astype(int)
 
 
-# In[282]:
+# In[302]:
 
-df
+tickets = dollcost(price, 10000)
+cost = tickets * price
+asset = cost.cumsum()
+profit = tickets.cumsum() * price - asset
 
-
-# In[281]:
-
-price = randomwalk(10)+100
-cost = dollcost(price, 10000)
-df = pd.DataFrame([price, cost, cost.cumsum()], index=['price', 'cost', 'asset']).T
+df = pd.DataFrame([price, tickets, cost, asset, profit],
+                  index=['price', 'tickets', 'cost', 'asset', 'profit']).T
+print(df.head())
 df.plot(style='.', subplots=True, figsize=(4,9))
+
+
+# In[303]:
+
+price[-1] * tickets.sum() - cost.sum()  # 最終損益
 
 
 # ## 特定期間で買い
