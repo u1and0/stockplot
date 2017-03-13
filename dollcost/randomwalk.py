@@ -9,7 +9,7 @@
 # 
 # あとで使う画像です。
 
-# # ざっくり用語説明
+# # 用語説明
 # リンク先はwikipediaです。
 
 # ## [ドルコスト平均法](https://ja.wikipedia.org/wiki/%E3%83%89%E3%83%AB%E3%83%BB%E3%82%B3%E3%82%B9%E3%83%88%E5%B9%B3%E5%9D%87%E6%B3%95)
@@ -143,7 +143,7 @@ def lowprice(price):
 get_ipython().magic('timeit lowprice(price)')
 
 
-# pd.Serieesから直接引き出すので高速。10倍速を実現した
+# Seriesから直接引き出すので高速。10倍速を実現した
 
 # ## 可視化
 # 価格(price)と購入した時の額(low)と合計資産(asset)を描画する
