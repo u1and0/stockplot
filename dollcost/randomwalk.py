@@ -7,18 +7,19 @@
 
 # ## ランダムウォークのシリーズを作成
 
-# In[46]:
+# In[145]:
 
 n = 1000
 bullbear = pd.Series(np.random.randint(-1, 2, n))
 price = bullbear.cumsum()
+price.index.name='DateTime'
 price.plot()
 
 
 # ## 前日より値が低かったら買い、高かったら見過ごし
 # ドルコスト平均法の(1)
 
-# In[48]:
+# In[146]:
 
 position = np.zeros(len(se))  # seと同じ長さの配列を作成
 for i in price.index[:-1]:
@@ -27,7 +28,7 @@ for i in price.index[:-1]:
 position
 
 
-# In[50]:
+# In[147]:
 
 fig, ax = plt.subplots()
 price.plot(ax=ax)
@@ -36,13 +37,13 @@ pd.DataFrame(position).cumsum().plot(ax=ax, secondary_y=True)  # ポジション
 
 # ### priceからbullbearの計算
 
-# In[80]:
+# In[148]:
 
 def p2b(price):
     return price.sub(price.shift(1), fill_value=0)
 
 
-# In[81]:
+# In[149]:
 
 np.array_equal(p2b(price), np.array(bullbear))
 
@@ -50,8 +51,9 @@ np.array_equal(p2b(price), np.array(bullbear))
 # `p2b`関数によってbullbearの計算が可能となった。
 
 # ## 効率化
+# 前日の値より低かった日の終値だけを収集する関数
 
-# In[51]:
+# In[150]:
 
 def dob(price):
     pos = np.zeros(len(price))  # priceと同じ長さの配列を作成
@@ -61,17 +63,21 @@ def dob(price):
     return pos
 
 
-# In[53]:
+# In[151]:
 
 get_ipython().magic('timeit dob(price)')
 
 
-# In[55]:
+# 最もシンプル
+
+# In[152]:
 
 get_ipython().magic('timeit [price[i] if price[i+1]<price[i] else 0 for i in price.index[:-1]]')
 
 
-# In[58]:
+# 内包表記を用いても時間はあまり変わらない
+
+# In[153]:
 
 def dob2(price):
     pos = np.zeros(len(price))  # priceと同じ長さの配列を作成
@@ -79,39 +85,47 @@ def dob2(price):
     return pos
 
 
-# In[88]:
+# In[154]:
 
-price[np.array(bullbear)<0]
-
-
-# In[60]:
-
-dob2(price)
+price[np.array(bullbear)<0]  # bullbearが負の値になったところだけのpriceを収集
 
 
-# In[41]:
+# In[155]:
 
-pd.DataFrame([se.shift(1), se, se.sub(se.shift(1), fill_value=0), bullbear]).T
-
-
-# In[27]:
-
-se.shift(1).sub(se, fill_value=0)
+def lowprice(price):
+    """bullbearが負になったところだけのpriceを収集したpd.Seriesを返す"""
+    return price[np.array(p2b(price))<0]
 
 
-# In[26]:
+# In[156]:
 
-[se[i] if se.shift(1).sub(se, fill_value=0)>0 else 0 for i in se]
+get_ipython().magic('timeit lowprice(price)')
 
 
-# In[12]:
+# pd.Serieesから直接引き出すので高速。10倍速を実現した
 
-pd.DataFrame([se.shift(1), se]).T
+# ## 可視化
+
+# In[157]:
+
+price.head()
+
+
+# In[162]:
+
+low = lowprice(price)
+ax = pd.DataFrame([price, low, low.cumsum()]).T.plot(grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
+
+
+# In[159]:
+
+low = lowprice(price)
+pd.DataFrame([price, pd.Series(np.zeros_like(low)+min(price), index=low.index), low.cumsum()]).T.plot    (grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
 
 
 # ## 特定期間で買い
 
-# In[9]:
+# In[ ]:
 
 freq = 5 
 
