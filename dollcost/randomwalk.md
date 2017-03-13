@@ -354,6 +354,575 @@ df.plot(grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
 ![png](randomwalk_files/randomwalk_24_1.png)
 
 
+## 一定金額を買い
+ドルコスト平均法の(2)
+
+
+```python
+def randomwalk(periods, start=pd.datetime.today().date(), name=None):
+    """periods日分だけランダムウォークを返す"""
+    ts = pd.date_range(start=start, periods=periods, freq='B')
+    bullbear = pd.Series(np.random.randint(-1, 2, periods), index=ts, name=name)
+    price = bullbear.cumsum()
+    return price
+price=randomwalk(100) + 100  # 100は初期値
+price.plot()
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x1d5bedd88d0>
+
+
+
+
+![png](randomwalk_files/randomwalk_26_1.png)
+
+
+ランダムウォークによる価格変動を再定義。
+関数化してみた。
+
+* 縦軸が単位[円]だとする
+* 例えば10000円ずつ買っていくとする
+* 口数はint型
+
+
+```python
+unit_cost = 10000
+ticket = unit_cost / price[0]
+ticket, int(ticket)
+```
+
+
+
+
+    (99.009900990099013, 99)
+
+
+
+0インデックス目
+
+
+```python
+tickets = unit_cost / price
+pd.DataFrame([price, tickets, tickets.astype(int)],
+             index=['price', 'ticket(float)', 'ticket(int)']).T
+```
+
+
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>price</th>
+      <th>ticket(float)</th>
+      <th>ticket(int)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2017-03-13</th>
+      <td>101.0</td>
+      <td>99.009901</td>
+      <td>99.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-14</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-15</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-16</th>
+      <td>104.0</td>
+      <td>96.153846</td>
+      <td>96.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-17</th>
+      <td>105.0</td>
+      <td>95.238095</td>
+      <td>95.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-20</th>
+      <td>105.0</td>
+      <td>95.238095</td>
+      <td>95.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-21</th>
+      <td>105.0</td>
+      <td>95.238095</td>
+      <td>95.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-22</th>
+      <td>105.0</td>
+      <td>95.238095</td>
+      <td>95.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-23</th>
+      <td>104.0</td>
+      <td>96.153846</td>
+      <td>96.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-24</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-27</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-28</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-29</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-30</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-31</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-03</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-04</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-05</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-06</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-07</th>
+      <td>101.0</td>
+      <td>99.009901</td>
+      <td>99.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-10</th>
+      <td>101.0</td>
+      <td>99.009901</td>
+      <td>99.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-11</th>
+      <td>101.0</td>
+      <td>99.009901</td>
+      <td>99.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-12</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-13</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-14</th>
+      <td>104.0</td>
+      <td>96.153846</td>
+      <td>96.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-17</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-18</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-19</th>
+      <td>104.0</td>
+      <td>96.153846</td>
+      <td>96.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-20</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-04-21</th>
+      <td>104.0</td>
+      <td>96.153846</td>
+      <td>96.0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2017-06-19</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-06-20</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-06-21</th>
+      <td>101.0</td>
+      <td>99.009901</td>
+      <td>99.0</td>
+    </tr>
+    <tr>
+      <th>2017-06-22</th>
+      <td>101.0</td>
+      <td>99.009901</td>
+      <td>99.0</td>
+    </tr>
+    <tr>
+      <th>2017-06-23</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-06-26</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-06-27</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-06-28</th>
+      <td>101.0</td>
+      <td>99.009901</td>
+      <td>99.0</td>
+    </tr>
+    <tr>
+      <th>2017-06-29</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-06-30</th>
+      <td>101.0</td>
+      <td>99.009901</td>
+      <td>99.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-03</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-04</th>
+      <td>102.0</td>
+      <td>98.039216</td>
+      <td>98.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-05</th>
+      <td>103.0</td>
+      <td>97.087379</td>
+      <td>97.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-06</th>
+      <td>104.0</td>
+      <td>96.153846</td>
+      <td>96.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-07</th>
+      <td>105.0</td>
+      <td>95.238095</td>
+      <td>95.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-10</th>
+      <td>106.0</td>
+      <td>94.339623</td>
+      <td>94.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-11</th>
+      <td>107.0</td>
+      <td>93.457944</td>
+      <td>93.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-12</th>
+      <td>107.0</td>
+      <td>93.457944</td>
+      <td>93.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-13</th>
+      <td>108.0</td>
+      <td>92.592593</td>
+      <td>92.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-14</th>
+      <td>109.0</td>
+      <td>91.743119</td>
+      <td>91.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-17</th>
+      <td>109.0</td>
+      <td>91.743119</td>
+      <td>91.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-18</th>
+      <td>109.0</td>
+      <td>91.743119</td>
+      <td>91.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-19</th>
+      <td>108.0</td>
+      <td>92.592593</td>
+      <td>92.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-20</th>
+      <td>109.0</td>
+      <td>91.743119</td>
+      <td>91.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-21</th>
+      <td>108.0</td>
+      <td>92.592593</td>
+      <td>92.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-24</th>
+      <td>109.0</td>
+      <td>91.743119</td>
+      <td>91.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-25</th>
+      <td>108.0</td>
+      <td>92.592593</td>
+      <td>92.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-26</th>
+      <td>109.0</td>
+      <td>91.743119</td>
+      <td>91.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-27</th>
+      <td>110.0</td>
+      <td>90.909091</td>
+      <td>90.0</td>
+    </tr>
+    <tr>
+      <th>2017-07-28</th>
+      <td>109.0</td>
+      <td>91.743119</td>
+      <td>91.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>100 rows × 3 columns</p>
+</div>
+
+
+
+全期間に適用。
+
+切り捨てすると時は`astype(int)`メソッドを使う。
+
+
+```python
+def dollcost(price, unit_cost):
+    """
+    引数: 
+        price: 価格変動値
+        unit_cost: 購入するときの一定金額
+    lp: 前日より価格が低い時に買いを行った時の時間と価格のSeries返す
+    戻り値:
+        tickets: 購入したチケット数
+    """
+    lp = lowprice(price)
+    tickets = unit_cost / lp
+    return tickets.astype(int) * price
+```
+
+
+```python
+df
+```
+
+
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>price</th>
+      <th>cost</th>
+      <th>asset</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2017-03-13</th>
+      <td>101.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2017-03-14</th>
+      <td>102.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2017-03-15</th>
+      <td>102.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2017-03-16</th>
+      <td>103.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2017-03-17</th>
+      <td>102.0</td>
+      <td>9996.0</td>
+      <td>9996.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-20</th>
+      <td>102.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2017-03-21</th>
+      <td>102.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2017-03-22</th>
+      <td>101.0</td>
+      <td>9999.0</td>
+      <td>19995.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-23</th>
+      <td>102.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2017-03-24</th>
+      <td>102.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+price = randomwalk(10)+100
+cost = dollcost(price, 10000)
+df = pd.DataFrame([price, cost, cost.cumsum()], index=['price', 'cost', 'asset']).T
+df.plot(style='.', subplots=True, figsize=(4,9))
+```
+
+
+
+
+    array([<matplotlib.axes._subplots.AxesSubplot object at 0x000001D5C29B6898>,
+           <matplotlib.axes._subplots.AxesSubplot object at 0x000001D5C2C0E0B8>,
+           <matplotlib.axes._subplots.AxesSubplot object at 0x000001D5C2C231D0>], dtype=object)
+
+
+
+
+![png](randomwalk_files/randomwalk_35_1.png)
+
+
 ## 特定期間で買い
 毎週毎週購入かけているとお金が大量に必要になってしまう。
 
@@ -362,66 +931,6 @@ df.plot(grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
 ある週に1回でも購入したら、その週は条件が来ても購入を控えようと思う。
 
 つまり来週になるまで「購入」の行動を無視するわけだね。
-
-
-```python
-pd.date_range(start=pd.datetime.today().date(), periods=100, freq='B')
-```
-
-
-
-
-    DatetimeIndex(['2017-03-13', '2017-03-14', '2017-03-15', '2017-03-16',
-                   '2017-03-17', '2017-03-20', '2017-03-21', '2017-03-22',
-                   '2017-03-23', '2017-03-24', '2017-03-27', '2017-03-28',
-                   '2017-03-29', '2017-03-30', '2017-03-31', '2017-04-03',
-                   '2017-04-04', '2017-04-05', '2017-04-06', '2017-04-07',
-                   '2017-04-10', '2017-04-11', '2017-04-12', '2017-04-13',
-                   '2017-04-14', '2017-04-17', '2017-04-18', '2017-04-19',
-                   '2017-04-20', '2017-04-21', '2017-04-24', '2017-04-25',
-                   '2017-04-26', '2017-04-27', '2017-04-28', '2017-05-01',
-                   '2017-05-02', '2017-05-03', '2017-05-04', '2017-05-05',
-                   '2017-05-08', '2017-05-09', '2017-05-10', '2017-05-11',
-                   '2017-05-12', '2017-05-15', '2017-05-16', '2017-05-17',
-                   '2017-05-18', '2017-05-19', '2017-05-22', '2017-05-23',
-                   '2017-05-24', '2017-05-25', '2017-05-26', '2017-05-29',
-                   '2017-05-30', '2017-05-31', '2017-06-01', '2017-06-02',
-                   '2017-06-05', '2017-06-06', '2017-06-07', '2017-06-08',
-                   '2017-06-09', '2017-06-12', '2017-06-13', '2017-06-14',
-                   '2017-06-15', '2017-06-16', '2017-06-19', '2017-06-20',
-                   '2017-06-21', '2017-06-22', '2017-06-23', '2017-06-26',
-                   '2017-06-27', '2017-06-28', '2017-06-29', '2017-06-30',
-                   '2017-07-03', '2017-07-04', '2017-07-05', '2017-07-06',
-                   '2017-07-07', '2017-07-10', '2017-07-11', '2017-07-12',
-                   '2017-07-13', '2017-07-14', '2017-07-17', '2017-07-18',
-                   '2017-07-19', '2017-07-20', '2017-07-21', '2017-07-24',
-                   '2017-07-25', '2017-07-26', '2017-07-27', '2017-07-28'],
-                  dtype='datetime64[ns]', freq='B')
-
-
-
-
-```python
-def randomwalk(periods, start=pd.datetime.today().date()):
-    """periods日分だけランダムウォークを返す"""
-    ts = pd.date_range(start=start, periods=periods, freq='B')
-    bullbear = pd.Series(np.random.randint(-1, 2, periods), index=ts, name='DateTime')
-    price = bullbear.cumsum()
-    return price
-price=randomwalk(100)
-price.plot()
-```
-
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x1d5bee2b550>
-
-
-
-
-![png](randomwalk_files/randomwalk_27_1.png)
-
 
 
 ```python
@@ -508,7 +1017,8 @@ def lowprice(price):
 ```python
 ts = pd.date_range('20170312', periods=100)
 df = pd.DataFrame(np.random.rand(len(ts)), index=ts)
-df.asfreq('W', how='start')
+ps = df.asfreq('W', how='start')
+ts.ali
 ```
 
 
@@ -592,22 +1102,15 @@ df.asfreq('W', how='start')
 
 ```python
 p = pd.Period('20170312', )
-p.asfreq('W',)
+p.asfreq('W','start')
 # pd.Period(pd.datetime.today().date(), freq='W')
 ```
 
 
-    ---------------------------------------------------------------------------
 
-    AttributeError                            Traceback (most recent call last)
 
-    <ipython-input-224-94a0d4482924> in <module>()
-          1 p = pd.Timestamp('20170312')
-    ----> 2 p.asfreq('W')
-          3 # pd.Period(pd.datetime.today().date(), freq='W')
-    
+    Period('2017-03-06/2017-03-12', 'W-SUN')
 
-    AttributeError: 'Timestamp' object has no attribute 'asfreq'
 
 
 

@@ -124,6 +124,77 @@ df = pd.DataFrame([price, pd.Series(np.zeros_like(low)+min(price), index=low.ind
 df.plot(grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
 
 
+# ## 一定金額を買い
+# ドルコスト平均法の(2)
+
+# In[256]:
+
+def randomwalk(periods, start=pd.datetime.today().date(), name=None):
+    """periods日分だけランダムウォークを返す"""
+    ts = pd.date_range(start=start, periods=periods, freq='B')
+    bullbear = pd.Series(np.random.randint(-1, 2, periods), index=ts, name=name)
+    price = bullbear.cumsum()
+    return price
+price=randomwalk(100) + 100  # 100は初期値
+price.plot()
+
+
+# ランダムウォークによる価格変動を再定義。
+# 関数化してみた。
+
+# * 縦軸が単位[円]だとする
+# * 例えば10000円ずつ買っていくとする
+# * 口数はint型
+
+# In[257]:
+
+unit_cost = 10000
+ticket = unit_cost / price[0]
+ticket, int(ticket)
+
+
+# 0インデックス目
+
+# In[263]:
+
+tickets = unit_cost / price
+pd.DataFrame([price, tickets, tickets.astype(int)],
+             index=['price', 'ticket(float)', 'ticket(int)']).T
+
+
+# 全期間に適用。
+# 
+# 切り捨てすると時は`astype(int)`メソッドを使う。
+
+# In[264]:
+
+def dollcost(price, unit_cost):
+    """
+    引数: 
+        price: 価格変動値
+        unit_cost: 購入するときの一定金額
+    lp: 前日より価格が低い時に買いを行った時の時間と価格のSeries返す
+    戻り値:
+        tickets: 購入したチケット数
+    """
+    lp = lowprice(price)
+    tickets = unit_cost / lp
+    return tickets.astype(int) * price
+
+
+# In[282]:
+
+df
+
+
+# In[281]:
+
+price = randomwalk(10)+100
+cost = dollcost(price, 10000)
+df = pd.DataFrame([price, cost, cost.cumsum()], index=['price', 'cost', 'asset']).T
+df.plot(style='.', subplots=True, figsize=(4,9))
+
+
 # ## 特定期間で買い
 # 毎週毎週購入かけているとお金が大量に必要になってしまう。
 # 
@@ -132,23 +203,6 @@ df.plot(grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
 # ある週に1回でも購入したら、その週は条件が来ても購入を控えようと思う。
 # 
 # つまり来週になるまで「購入」の行動を無視するわけだね。
-
-# In[210]:
-
-pd.date_range(start=pd.datetime.today().date(), periods=100, freq='B')
-
-
-# In[218]:
-
-def randomwalk(periods, start=pd.datetime.today().date()):
-    """periods日分だけランダムウォークを返す"""
-    ts = pd.date_range(start=start, periods=periods, freq='B')
-    bullbear = pd.Series(np.random.randint(-1, 2, periods), index=ts, name='DateTime')
-    price = bullbear.cumsum()
-    return price
-price=randomwalk(100)
-price.plot()
-
 
 # In[193]:
 
@@ -167,13 +221,14 @@ def lowprice(price):
 
 ts = pd.date_range('20170312', periods=100)
 df = pd.DataFrame(np.random.rand(len(ts)), index=ts)
-df.asfreq('W', how='start')
+ps = df.asfreq('W', how='start')
+ts.ali
 
 
-# In[224]:
+# In[241]:
 
 p = pd.Period('20170312', )
-p.asfreq('W',)
+p.asfreq('W','start')
 # pd.Period(pd.datetime.today().date(), freq='W')
 
 
