@@ -13279,6 +13279,107 @@ IOWFIAiCIIhQQcoLQRAEQRCh4v8DqhWih1kp/VYAAAAASUVORK5CYII=
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="&#23450;&#26399;&#30340;&#12395;&#36092;&#20837;">&#23450;&#26399;&#30340;&#12395;&#36092;&#20837;<a class="anchor-link" href="#&#23450;&#26399;&#30340;&#12395;&#36092;&#20837;">&#182;</a></h1><p>ドルコスト平均法の(2)</p>
+<p>毎週毎週購入かけているとお金が大量に必要になってしまう。
+そんなに大量のお給料をもらっていないのである程度制限する。
+ある週に1回でも購入したら、その週は条件が来ても購入を控えようと思う。</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>仮に、理想的に毎週の底値で購入できたとする</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[59]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">lowweek</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;W&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+<span class="n">lowweek</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[59]:</div>
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>2017-03-19    98
+2017-03-26    97
+2017-04-02    98
+2017-04-09    98
+2017-04-16    97
+2017-04-23    93
+2017-04-30    92
+2017-05-07    93
+2017-05-14    93
+2017-05-21    91
+Freq: W-SUN, dtype: int32</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="ticket,-cost,-asset&#12398;&#35336;&#31639;&#38306;&#25968;">ticket, cost, asset&#12398;&#35336;&#31639;&#38306;&#25968;<a class="anchor-link" href="#ticket,-cost,-asset&#12398;&#35336;&#31639;&#38306;&#25968;">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[87]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">profitcalc</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">unit_cost</span><span class="p">):</span> 
+    <span class="sd">&quot;&quot;&quot;購入した価格からプロフィットカーブを計算する</span>
+<span class="sd">        引数:</span>
+<span class="sd">            price: 購入価格と日付のSeries</span>
+<span class="sd">            unit_cost: 購入一定額</span>
+<span class="sd">        戻り値: price, tickets, cost, asset, profitを入れたdataframe&quot;&quot;&quot;</span>
+    <span class="n">tickets</span> <span class="o">=</span> <span class="n">dollcost</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">unit_cost</span><span class="p">)</span>  <span class="c1"># dollcost関数: 一定額ずつの購入</span>
+    <span class="n">cost</span> <span class="o">=</span> <span class="n">tickets</span> <span class="o">*</span> <span class="n">price</span>
+    <span class="n">asset</span> <span class="o">=</span> <span class="n">cost</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+    <span class="n">profit</span> <span class="o">=</span> <span class="n">tickets</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span> <span class="o">*</span> <span class="n">price</span> <span class="o">-</span> <span class="n">asset</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">price</span><span class="p">,</span> <span class="n">tickets</span><span class="p">,</span> <span class="n">cost</span><span class="p">,</span> <span class="n">asset</span><span class="p">,</span> <span class="n">profit</span><span class="p">],</span>
+            <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">,</span> <span class="s1">&#39;tickets&#39;</span><span class="p">,</span> <span class="s1">&#39;cost&#39;</span><span class="p">,</span> <span class="s1">&#39;asset&#39;</span><span class="p">,</span> <span class="s1">&#39;profit&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Final Asset: </span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">%</span> <span class="n">df</span><span class="o">.</span><span class="n">asset</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Final Profit: </span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">%</span> <span class="n">df</span><span class="o">.</span><span class="n">profit</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">df</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="&#19968;&#23450;&#37329;&#38989;&#12434;&#36023;&#12356;">&#19968;&#23450;&#37329;&#38989;&#12434;&#36023;&#12356;<a class="anchor-link" href="#&#19968;&#23450;&#37329;&#38989;&#12434;&#36023;&#12356;">&#182;</a></h1><p>ドルコスト平均法の(1)</p>
 
 </div>
@@ -14441,107 +14542,6 @@ hBQKZchDDSGFQhnyUENIoVCGPNQQUiiUIc//B+fQPx9p96fIAAAAAElFTkSuQmCC
 
 </div>
 
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="&#23450;&#26399;&#30340;&#12395;&#36092;&#20837;">&#23450;&#26399;&#30340;&#12395;&#36092;&#20837;<a class="anchor-link" href="#&#23450;&#26399;&#30340;&#12395;&#36092;&#20837;">&#182;</a></h1><p>ドルコスト平均法の(2)</p>
-<p>毎週毎週購入かけているとお金が大量に必要になってしまう。
-そんなに大量のお給料をもらっていないのである程度制限する。
-ある週に1回でも購入したら、その週は条件が来ても購入を控えようと思う。</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>仮に、理想的に毎週の底値で購入できたとする</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[59]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">lowweek</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;W&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-<span class="n">lowweek</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[59]:</div>
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>2017-03-19    98
-2017-03-26    97
-2017-04-02    98
-2017-04-09    98
-2017-04-16    97
-2017-04-23    93
-2017-04-30    92
-2017-05-07    93
-2017-05-14    93
-2017-05-21    91
-Freq: W-SUN, dtype: int32</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="ticket,-cost,-asset&#12398;&#35336;&#31639;&#38306;&#25968;">ticket, cost, asset&#12398;&#35336;&#31639;&#38306;&#25968;<a class="anchor-link" href="#ticket,-cost,-asset&#12398;&#35336;&#31639;&#38306;&#25968;">&#182;</a></h2>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[87]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">profitcalc</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">unit_cost</span><span class="p">):</span> 
-    <span class="sd">&quot;&quot;&quot;購入した価格からプロフィットカーブを計算する</span>
-<span class="sd">        引数:</span>
-<span class="sd">            price: 購入価格と日付のSeries</span>
-<span class="sd">            unit_cost: 購入一定額</span>
-<span class="sd">        戻り値: price, tickets, cost, asset, profitを入れたdataframe&quot;&quot;&quot;</span>
-    <span class="n">tickets</span> <span class="o">=</span> <span class="n">dollcost</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">unit_cost</span><span class="p">)</span>  <span class="c1"># dollcost関数: 一定額ずつの購入</span>
-    <span class="n">cost</span> <span class="o">=</span> <span class="n">tickets</span> <span class="o">*</span> <span class="n">price</span>
-    <span class="n">asset</span> <span class="o">=</span> <span class="n">cost</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
-    <span class="n">profit</span> <span class="o">=</span> <span class="n">tickets</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span> <span class="o">*</span> <span class="n">price</span> <span class="o">-</span> <span class="n">asset</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">price</span><span class="p">,</span> <span class="n">tickets</span><span class="p">,</span> <span class="n">cost</span><span class="p">,</span> <span class="n">asset</span><span class="p">,</span> <span class="n">profit</span><span class="p">],</span>
-            <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">,</span> <span class="s1">&#39;tickets&#39;</span><span class="p">,</span> <span class="s1">&#39;cost&#39;</span><span class="p">,</span> <span class="s1">&#39;asset&#39;</span><span class="p">,</span> <span class="s1">&#39;profit&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Final Asset: </span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">%</span> <span class="n">df</span><span class="o">.</span><span class="n">asset</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Final Profit: </span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">%</span> <span class="n">df</span><span class="o">.</span><span class="n">profit</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">df</span>
-</pre></div>
-
-</div>
 </div>
 </div>
 

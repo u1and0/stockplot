@@ -90,6 +90,42 @@ price.plot()
 # 
 # 一日1円とか、このチャートがドル円だとすると2016年の上海ショック、ブレグジットショック、米大統領選が毎日続いているかのようなお祭りボラティリティですね。
 
+# # 定期的に購入
+# ドルコスト平均法の(2)
+# 
+# 毎週毎週購入かけているとお金が大量に必要になってしまう。
+# そんなに大量のお給料をもらっていないのである程度制限する。
+# ある週に1回でも購入したら、その週は条件が来ても購入を控えようと思う。
+
+# 仮に、理想的に毎週の底値で購入できたとする
+
+# In[59]:
+
+lowweek = price.resample('W').min()
+lowweek[:10]
+
+
+# ## ticket, cost, assetの計算関数
+
+# In[87]:
+
+def profitcalc(price, unit_cost): 
+    """購入した価格からプロフィットカーブを計算する
+        引数:
+            price: 購入価格と日付のSeries
+            unit_cost: 購入一定額
+        戻り値: price, tickets, cost, asset, profitを入れたdataframe"""
+    tickets = dollcost(price, unit_cost)  # dollcost関数: 一定額ずつの購入
+    cost = tickets * price
+    asset = cost.cumsum()
+    profit = tickets.cumsum() * price - asset
+    df = pd.DataFrame([price, tickets, cost, asset, profit],
+            index=['price', 'tickets', 'cost', 'asset', 'profit']).T
+    print('Final Asset: %d'% df.asset[-1])
+    print('Final Profit: %d'% df.profit[-1])
+    return df
+
+
 # # 一定金額を買い
 # ドルコスト平均法の(1)
 
@@ -155,42 +191,6 @@ df.plot(style='.', subplots=True, figsize=(4,9))
 # In[57]:
 
 price[-1] * tickets.sum() - cost.sum()  # 最終損益
-
-
-# # 定期的に購入
-# ドルコスト平均法の(2)
-# 
-# 毎週毎週購入かけているとお金が大量に必要になってしまう。
-# そんなに大量のお給料をもらっていないのである程度制限する。
-# ある週に1回でも購入したら、その週は条件が来ても購入を控えようと思う。
-
-# 仮に、理想的に毎週の底値で購入できたとする
-
-# In[59]:
-
-lowweek = price.resample('W').min()
-lowweek[:10]
-
-
-# ## ticket, cost, assetの計算関数
-
-# In[87]:
-
-def profitcalc(price, unit_cost): 
-    """購入した価格からプロフィットカーブを計算する
-        引数:
-            price: 購入価格と日付のSeries
-            unit_cost: 購入一定額
-        戻り値: price, tickets, cost, asset, profitを入れたdataframe"""
-    tickets = dollcost(price, unit_cost)  # dollcost関数: 一定額ずつの購入
-    cost = tickets * price
-    asset = cost.cumsum()
-    profit = tickets.cumsum() * price - asset
-    df = pd.DataFrame([price, tickets, cost, asset, profit],
-            index=['price', 'tickets', 'cost', 'asset', 'profit']).T
-    print('Final Asset: %d'% df.asset[-1])
-    print('Final Profit: %d'% df.profit[-1])
-    return df
 
 
 # In[64]:
