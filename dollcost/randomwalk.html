@@ -11778,13 +11778,105 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="&#12489;&#12523;&#12467;&#12473;&#12488;&#24179;&#22343;&#27861;">&#12489;&#12523;&#12467;&#12473;&#12488;&#24179;&#22343;&#27861;<a class="anchor-link" href="#&#12489;&#12523;&#12467;&#12473;&#12488;&#24179;&#22343;&#27861;">&#182;</a></h1><ol>
-<li>下がったら買い</li>
-<li>一定数ではなく、一定額を買う<blockquote><p>値段が下がればいっぱい買える。
-値段が上がれば控えめに買っておく</p>
-</blockquote>
+<h1 id="&#12399;&#12376;&#12417;&#12395;">&#12399;&#12376;&#12417;&#12395;<a class="anchor-link" href="#&#12399;&#12376;&#12417;&#12395;">&#182;</a></h1><p>ドルコスト平均法をpython, pandasを使ってシミュレートします。</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="./randomwalk_files/randomwalk_27_1.png" alt="pngfile">
+<img src="./randomwalk_files/randomwalk_33_2.png" alt="pngfile"></p>
+<p>あとで使う画像です。</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="&#12374;&#12387;&#12367;&#12426;&#29992;&#35486;&#35500;&#26126;">&#12374;&#12387;&#12367;&#12426;&#29992;&#35486;&#35500;&#26126;<a class="anchor-link" href="#&#12374;&#12387;&#12367;&#12426;&#29992;&#35486;&#35500;&#26126;">&#182;</a></h1><p>リンク先はwikipediaです。</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="&#12489;&#12523;&#12467;&#12473;&#12488;&#24179;&#22343;&#27861;"><a href="https://ja.wikipedia.org/wiki/%E3%83%89%E3%83%AB%E3%83%BB%E3%82%B3%E3%82%B9%E3%83%88%E5%B9%B3%E5%9D%87%E6%B3%95">&#12489;&#12523;&#12467;&#12473;&#12488;&#24179;&#22343;&#27861;</a><a class="anchor-link" href="#&#12489;&#12523;&#12467;&#12473;&#12488;&#24179;&#22343;&#27861;">&#182;</a></h2><ul>
+<li>投資手法の一つで、高値掴みを避けるように投資額を時間的に分割して均等額ずつ定期的に投資します。</li>
+<li>重要なのが投資額を等分する際、<strong>金額分割</strong>を行うこと<ul>
+<li>単純な数量分割に比べ平均値の点で有利になると言われています。</li>
+<li>○金額分割: 定額数の株や、変量数の売通貨で定額の買通貨を購入すること<ul>
+<li>1000,000円投資を10回に分けて100,000円分ずつの株を購入すること</li>
+<li>1000ドル投資を10回に分けて、100ドル分ずつのドルを購入すること</li>
+</ul>
+</li>
+<li>×数量分割: 定量数の株や、定額の売通貨で買通貨を購入すること<ul>
+<li>1000株購入を10回に分けて100株ずつ購入すること</li>
+<li>100,000円投資を10回に分けて10,000円分ずつのドルを購入すること</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="&#12489;&#12523;&#12467;&#12473;&#12488;&#24179;&#22343;&#27861;&#12398;&#12523;&#12540;&#12523;">&#12489;&#12523;&#12467;&#12473;&#12488;&#24179;&#22343;&#27861;&#12398;&#12523;&#12540;&#12523;<a class="anchor-link" href="#&#12489;&#12523;&#12467;&#12473;&#12488;&#24179;&#22343;&#27861;&#12398;&#12523;&#12540;&#12523;">&#182;</a></h3><ol>
+<li>定期的に購入します。<ul>
+<li>僕の使っている手法として、週の最安値(だと思っているところ)で指値をいれます。</li>
+</ul>
+</li>
+<li>一定数ではなく、一定額を買うようにします。<ul>
+<li>値段が下がればいっぱい買えます。</li>
+<li>値段が上がれば控えめに買っておきます。</li>
+</ul>
 </li>
 </ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="&#12521;&#12531;&#12480;&#12512;&#12454;&#12457;&#12540;&#12463;"><a href="https://ja.wikipedia.org/wiki/%E3%83%A9%E3%83%B3%E3%83%80%E3%83%A0%E3%83%BB%E3%82%A6%E3%82%A9%E3%83%BC%E3%82%AF%E7%90%86%E8%AB%96">&#12521;&#12531;&#12480;&#12512;&#12454;&#12457;&#12540;&#12463;</a><a class="anchor-link" href="#&#12521;&#12531;&#12480;&#12512;&#12454;&#12457;&#12540;&#12463;">&#182;</a></h2><ul>
+<li>株価や為替の価格は誰かが買うと上がり、売ると下がります。<ul>
+<li>つまり上がるか下がるかの2択</li>
+</ul>
+</li>
+<li>長期的に見ても短期的(ある程度の限度はあるが)に見ても似たような形が出現する、
+自己相似形の形状をしています。
+<a href="https://ja.wikipedia.org/wiki/%E3%83%95%E3%83%A9%E3%82%AF%E3%82%BF%E3%83%AB#.E3.83.95.E3.83.A9.E3.82.AF.E3.82.BF.E3.83.AB.E3.81.AE.E4.BE.8B">フラクタル</a></li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>ここでは株価や為替の既存のチャートを使用せず、
+値動きがランダムであることを強調するためにランダムに発生させた仮のチャートを作成し、
+その動きに対してドルコスト平均法を適用して、ドルコスト平均法の有効性を判定する目論見です。</p>
 
 </div>
 </div>
