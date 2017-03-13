@@ -7,7 +7,7 @@
 
 # ## ランダムウォークのシリーズを作成
 
-# In[145]:
+# In[198]:
 
 n = 1000
 bullbear = pd.Series(np.random.randint(-1, 2, n))
@@ -19,7 +19,7 @@ price.plot()
 # ## 前日より値が低かったら買い、高かったら見過ごし
 # ドルコスト平均法の(1)
 
-# In[146]:
+# In[199]:
 
 position = np.zeros(len(se))  # seと同じ長さの配列を作成
 for i in price.index[:-1]:
@@ -117,13 +117,52 @@ low = lowprice(price)
 ax = pd.DataFrame([price, low, low.cumsum()]).T.plot(grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
 
 
-# In[159]:
+# In[165]:
 
 low = lowprice(price)
-pd.DataFrame([price, pd.Series(np.zeros_like(low)+min(price), index=low.index), low.cumsum()]).T.plot    (grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
+df = pd.DataFrame([price, pd.Series(np.zeros_like(low)+min(price), index=low.index), low.cumsum()]).T
+df.plot(grid=True, style=['-', '^', '.'], secondary_y=[False, False, True])
 
 
 # ## 特定期間で買い
+# 毎週毎週購入かけているとお金が大量に必要になってしまう。
+# 
+# そんなに大量のお給料をもらっていないのである程度制限する。
+# 
+# ある週に1回でも購入したら、その週は条件が来ても購入を控えようと思う。
+# 
+# つまり来週になるまで「購入」の行動を無視するわけだね。
+
+# In[ ]:
+
+
+
+
+# In[200]:
+
+def randomwalk(periods, start=pd.datetime.today().date()):
+    ts = pd.date_range(start=start, periods=periods)
+    bullbear = pd.Series(np.random.randint(-1, 2, n), index=ts, name='DateTime')
+    price = bullbear.cumsum()
+    return price
+price=randomwalk(1000)
+price.plot()
+
+
+# In[193]:
+
+p2b(price)
+
+
+# In[ ]:
+
+
+
+
+# In[ ]:
+
+
+
 
 # In[ ]:
 
