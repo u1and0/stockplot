@@ -20,7 +20,7 @@ class Profitcalc:
         self.cost = self.tickets * self.lowprice  # 購入ごとにかかった費用
         self.total_cost = self.cost.cumsum().resample('D').ffill()  # 全費用の合計(ただし手数料やスリッページ、スワップは除く)
         self.value = self.tickets.cumsum().resample('D').ffill(
-        ) * self.price  # 全ポジションの現在価値: 口数の累積和を週から日ごとに直して価格にかける
+        ) * self.price.ffill()  # 全ポジションの現在価値: 口数の累積和を週から日ごとに直して価格にかける
         self.profit = self.value - self.total_cost  # 利益: 現在価値と費用の差
 
     def randomwalk(self, start=pd.datetime.today().date(), name=None):
@@ -46,11 +46,18 @@ class Profitcalc:
         tickets = self.unit_cost / lowprice
         return tickets.astype(int)
 
-    def profitcalc(self):
-        return pd.DataFrame([self.lowprice, self.tickets, self.cost,
+    def out(self):
+        return pd.DataFrame([self.price, self.lowprice, self.tickets, self.cost,
                              self.total_cost, self.value, self.profit],
-                            index=['lowprice', 'tickets', 'cost',
+                            index=['price', 'lowprice', 'tickets', 'cost',
                                    'total_cost', 'value', 'profit']).T
+
+    def print(self):
+        total_cost = self.out().total_cost[-1]
+        print('Final Total Cost: %f'% total_cost)
+        profit = self.out().profit[-1]
+        print('Final Profit: %f'% profit)
+
 
 # class MyClass2(Profitcalc):
 #     def __init__(self):
@@ -78,4 +85,5 @@ if __name__ == "__main__":
     print(x.price)
     print(x.lowweek())
     print(x.tickets)
-    print(x.profitcalc())
+    print(x.out())
+    x.print()
