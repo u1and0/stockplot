@@ -26,10 +26,10 @@
 * 投資手法の一つで、高値掴みを避けるように投資額を時間的に分割して均等額ずつ定期的に投資します。
 * 重要なのが投資額を等分する際、**金額分割**を行うこと
     * 単純な数量分割に比べ平均値の点で有利になると言われています。
-    * ○金額分割: 定額数の株や、変量数の売通貨で定額の買通貨を購入すること
+    * ○金額分割: 定額数の株や、定額の売通貨で買通貨を購入すること
         * 1000,000円投資を10回に分けて100,000円分ずつの株を購入すること
         * 100,000円投資を10回に分けて10,000円分ずつのドルを購入すること
-    * ×数量分割: 定量数の株や、定額の売通貨で買通貨を購入すること
+    * ×数量分割: 定量数の株や、変量数の売通貨で定額の買通貨を購入すること
         * 1000株投資を10回に分けて100株ずつ購入すること
         * 1000ドル投資を10回に分けて、100ドル分ずつのドルを購入すること
 
@@ -54,25 +54,27 @@
 
 ```python
 n = 1000
+np.random.seed(1)  # 練習のため常に同じrandom stateリセット
 bullbear = pd.Series(np.random.randint(-1, 2, n))  # -1,0,1のどれかを生成するpd.Series
 price = bullbear.cumsum()  # 累積和
 
+# 出力
 print(pd.DataFrame({'bullbear': bullbear, 'price': price}).head())
 price.plot()
 ```
 
        bullbear  price
-    0         1      1
-    1         1      2
-    2        -1      1
-    3        -1      0
-    4         0      0
+    0         0      0
+    1        -1     -1
+    2        -1     -2
+    3         0     -2
+    4         0     -2
     
 
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x22412696048>
+    <matplotlib.axes._subplots.AxesSubplot at 0x281f6f36b70>
 
 
 
@@ -91,14 +93,16 @@ def randomwalk(periods, start=pd.datetime.today().date(), name=None):
                          index=ts, name=name)  # -1,0,1のどれかを吐き出すSeries
     price = bullbear.cumsum()  # 累積和
     return price
-price=randomwalk(periods=1000) + 100  # 100は初期値
+
+np.random.seed(1)  # 練習のため常に同じrandom stateリセット
+price=randomwalk(periods=1000) + 115  # 115は初期値
 price.plot()
 ```
 
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x1f997ab2630>
+    <matplotlib.axes._subplots.AxesSubplot at 0x281f6f4bef0>
 
 
 
@@ -114,9 +118,11 @@ price.plot()
 
 を模擬したチャートができました。
 
-初期値を100円、期間を1000日とすることで、100円から始まる約3年分の仮想ドル円チャートです。
+初期値を115円(2017/3半ば現在これくらいの値)、期間を1000日とすることで、115円から始まる約3年分の仮想ドル円チャートです。
 
 一日1円とか、このチャートがドル円だとすると2016年の上海ショック、ブレグジットショック、米大統領選が毎日続いているかのようなお祭りボラティリティですね。
+
+これにもっともらしい経済用語ちりばめた説明文つけると、なんちゃって経済アナリスト気分。
 
 # 定期的に購入
 ドルコスト平均法の(1)
@@ -138,21 +144,21 @@ lowweek(price).head(10)
 
 
 
-    2017-03-19    98
-    2017-03-26    97
-    2017-04-02    93
-    2017-04-09    91
-    2017-04-16    90
-    2017-04-23    89
-    2017-04-30    90
-    2017-05-07    91
-    2017-05-14    93
-    2017-05-21    93
+    2017-03-19    113
+    2017-03-26    110
+    2017-04-02    109
+    2017-04-09    110
+    2017-04-16    110
+    2017-04-23    111
+    2017-04-30    111
+    2017-05-07    112
+    2017-05-14    109
+    2017-05-21    109
     Freq: W-SUN, dtype: int32
 
 
 
-例えば一行目は、2017年3月19日(日曜)が週末の日付である週に98円で購入できた、という意味です。
+例えば一行目は、2017年3月19日(日曜)が週末の日付である週に113円で購入できた、という意味です。
 
 # 一定金額の購入
 ドルコスト平均法の(1)
@@ -169,21 +175,17 @@ lowweek(price).head(10)
 unit_cost = 10000
 # min_cost = 1000
 ticket = unit_cost / price[0]
-ticket, int(ticket)
+price[0], ticket, int(ticket)
 ```
 
 
 
 
-    (101.01010101010101, 101)
+    (115, 86.956521739130437, 86)
 
 
 
-インデックス0の期間
-
-次に全期間に適用します。
-
-切り捨てすると時は`astype(int)`メソッドを使います。
+インデックス0の期間のチケット数の計算
 
 
 ```python
@@ -207,40 +209,44 @@ pd.DataFrame([price, tickets, tickets.astype(int)],
   </thead>
   <tbody>
     <tr>
-      <th>2017-03-13</th>
-      <td>99.0</td>
-      <td>101.010101</td>
-      <td>101.0</td>
-    </tr>
-    <tr>
       <th>2017-03-14</th>
-      <td>98.0</td>
-      <td>102.040816</td>
-      <td>102.0</td>
+      <td>115.0</td>
+      <td>86.956522</td>
+      <td>86.0</td>
     </tr>
     <tr>
       <th>2017-03-15</th>
-      <td>98.0</td>
-      <td>102.040816</td>
-      <td>102.0</td>
+      <td>114.0</td>
+      <td>87.719298</td>
+      <td>87.0</td>
     </tr>
     <tr>
       <th>2017-03-16</th>
-      <td>99.0</td>
-      <td>101.010101</td>
-      <td>101.0</td>
+      <td>113.0</td>
+      <td>88.495575</td>
+      <td>88.0</td>
     </tr>
     <tr>
       <th>2017-03-17</th>
-      <td>99.0</td>
-      <td>101.010101</td>
-      <td>101.0</td>
+      <td>113.0</td>
+      <td>88.495575</td>
+      <td>88.0</td>
+    </tr>
+    <tr>
+      <th>2017-03-20</th>
+      <td>113.0</td>
+      <td>88.495575</td>
+      <td>88.0</td>
     </tr>
   </tbody>
 </table>
 </div>
 
 
+
+全期間に適用します。
+
+切り捨てすると時は`astype(int)`メソッドを使います。
 
 
 ```python
@@ -258,57 +264,104 @@ def dollcost(lowprice, unit_cost):
 
 # ドルコスト平均法シミュレーション
 
+## 利益の計算
+
 
 ```python
 lowprice = lowweek(price)  # 週の終値
 tickets = dollcost(lowprice, unit_cost=10000)  # dollcost関数: 一定額ずつの購入
 cost = tickets * lowprice  # 購入ごとにかかった費用
-asset = cost.cumsum().resample('D').ffill()  # 費用の合計
-value = tickets.cumsum().resample('D').ffill() * price  # 現在価値: 口数の累積和を週から日ごとに直して価格にかける
-profit = value - asset  # 現在価値から費用の合計を引いたのが利益(profit)
+total_cost = cost.cumsum().resample('D').ffill()  # 全費用の合計(ただし手数料やスリッページ、スワップは除く)
+value = tickets.cumsum().resample('D').ffill() * price  # 全ポジションの現在価値: 口数の累積和を週から日ごとに直して価格にかける
+profit = value - total_cost  # 利益: 現在価値と費用の差
 
-df = pd.DataFrame([lowprice, tickets, cost, asset, value, profit],
-                  index=['lowprice', 'tickets', 'cost', 'asset','value', 'profit']).T
+df = pd.DataFrame([lowprice, tickets, cost, total_cost, value, profit],
+                  index=['lowprice', 'tickets', 'cost', 'total_cost','value', 'profit']).T
 print(df.head(18))
 df.plot(style='.', subplots=True, figsize=(4,9))
 ```
 
-                lowprice  tickets    cost    asset    value  profit
-    2017-03-13       NaN      NaN     NaN      NaN      NaN     NaN
-    2017-03-14       NaN      NaN     NaN      NaN      NaN     NaN
-    2017-03-15       NaN      NaN     NaN      NaN      NaN     NaN
-    2017-03-16       NaN      NaN     NaN      NaN      NaN     NaN
-    2017-03-17       NaN      NaN     NaN      NaN      NaN     NaN
-    2017-03-19      98.0    102.0  9996.0   9996.0      NaN     NaN
-    2017-03-20       NaN      NaN     NaN   9996.0  10200.0   204.0
-    2017-03-21       NaN      NaN     NaN   9996.0  10098.0   102.0
-    2017-03-22       NaN      NaN     NaN   9996.0   9996.0     0.0
-    2017-03-23       NaN      NaN     NaN   9996.0   9996.0     0.0
-    2017-03-24       NaN      NaN     NaN   9996.0   9894.0  -102.0
-    2017-03-25       NaN      NaN     NaN   9996.0      NaN     NaN
-    2017-03-26      97.0    103.0  9991.0  19987.0      NaN     NaN
-    2017-03-27       NaN      NaN     NaN  19987.0  19680.0  -307.0
-    2017-03-28       NaN      NaN     NaN  19987.0  19475.0  -512.0
-    2017-03-29       NaN      NaN     NaN  19987.0  19475.0  -512.0
-    2017-03-30       NaN      NaN     NaN  19987.0  19270.0  -717.0
-    2017-03-31       NaN      NaN     NaN  19987.0  19065.0  -922.0
+                lowprice  tickets    cost  total_cost    value  profit
+    2017-03-14       NaN      NaN     NaN         NaN      NaN     NaN
+    2017-03-15       NaN      NaN     NaN         NaN      NaN     NaN
+    2017-03-16       NaN      NaN     NaN         NaN      NaN     NaN
+    2017-03-17       NaN      NaN     NaN         NaN      NaN     NaN
+    2017-03-19     113.0     88.0  9944.0      9944.0      NaN     NaN
+    2017-03-20       NaN      NaN     NaN      9944.0   9944.0     0.0
+    2017-03-21       NaN      NaN     NaN      9944.0   9856.0   -88.0
+    2017-03-22       NaN      NaN     NaN      9944.0   9768.0  -176.0
+    2017-03-23       NaN      NaN     NaN      9944.0   9768.0  -176.0
+    2017-03-24       NaN      NaN     NaN      9944.0   9680.0  -264.0
+    2017-03-25       NaN      NaN     NaN      9944.0      NaN     NaN
+    2017-03-26     110.0     90.0  9900.0     19844.0      NaN     NaN
+    2017-03-27       NaN      NaN     NaN     19844.0  19580.0  -264.0
+    2017-03-28       NaN      NaN     NaN     19844.0  19402.0  -442.0
+    2017-03-29       NaN      NaN     NaN     19844.0  19580.0  -264.0
+    2017-03-30       NaN      NaN     NaN     19844.0  19580.0  -264.0
+    2017-03-31       NaN      NaN     NaN     19844.0  19758.0   -86.0
+    2017-04-01       NaN      NaN     NaN     19844.0      NaN     NaN
     
 
 
 
 
-    array([<matplotlib.axes._subplots.AxesSubplot object at 0x000001F99B31A828>,
-           <matplotlib.axes._subplots.AxesSubplot object at 0x000001F99B368400>,
-           <matplotlib.axes._subplots.AxesSubplot object at 0x000001F99B3AE400>,
-           <matplotlib.axes._subplots.AxesSubplot object at 0x000001F99B400A58>,
-           <matplotlib.axes._subplots.AxesSubplot object at 0x000001F99B443A58>,
-           <matplotlib.axes._subplots.AxesSubplot object at 0x000001F99B49A940>], dtype=object)
+    array([<matplotlib.axes._subplots.AxesSubplot object at 0x00000281FB83B080>,
+           <matplotlib.axes._subplots.AxesSubplot object at 0x00000281FB88B6A0>,
+           <matplotlib.axes._subplots.AxesSubplot object at 0x00000281FC913BE0>,
+           <matplotlib.axes._subplots.AxesSubplot object at 0x00000281FC92E940>,
+           <matplotlib.axes._subplots.AxesSubplot object at 0x00000281FC9AB780>,
+           <matplotlib.axes._subplots.AxesSubplot object at 0x00000281FC9C4710>], dtype=object)
 
 
 
 
-![png](post_qiita_files/post_qiita_25_2.png)
+![png](post_qiita_files/post_qiita_26_2.png)
 
+
+### 変数の意味
+
+* lowprice: 週の安値
+* tickets:  その週に購入した建玉
+    * dollcost関数:  第一引数のSeriesを第二引数で割ってintで返す
+* cost: 建玉を持つために投資した金額
+* total_cost: 投資額の合計(週から日にupsamplingする)
+* value: 全ポジションの現在価値
+* profit: 利益(現在価値と費用の差)
+
+### グラフの意味
+
+* lowprice: 週の安値にダウンサンプリングされているので、price曲線に似た形で分布がまばら
+* tickets:  定数で割っているのでlowpriceと逆相関
+* cost: lowpriceを定数で割るとticketsが出てくる(dollcost関数の仕事)が、ticketsに小数がありえないためにlowpriceとticketsをかけても定数に戻らない。最大値の10000円とそこから離れすぎた値になっていないことを確認できれば良い。
+* asset: 毎週定額投資をしているので綺麗な線形増加関数にならなければならない
+* value: assetとprice両方に相関した関数形。
+* profit: assetから浮いているvalueの値
+
+
+```python
+df.ix[:, ['lowprice','total_cost', 'value', 'profit']]\
+    .plot(style=['o', '-', '-', '-'], secondary_y=['lowprice'])
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x281fcf31208>
+
+
+
+
+![png](post_qiita_files/post_qiita_29_1.png)
+
+
+購入価格(lowprice)とトータルコスト(total_cost)、資産価値、利益を並べてみました。 
+モーサテとかでよく見かけそうなグラフ。
+
+total_cost(黄)から浮いているvalue(緑)の部分がprofit(青)、すなわち利益となります。
+
+ドルコスト平均法の良いところ
+* 相場の急変に強い(上がろうが下がろうがvalueがtotal_costに沿う)
+* 
 
 
 ```python
@@ -318,41 +371,7 @@ price[-1] * tickets.sum() - cost.sum()  # 最終損益
 
 
 
-    -8561.0
-
-
-
-
-```python
-df = profitcalc(lowweek, 10000)
-df.head(10)
-df.plot(subplots=True, style='.', figsize=[4,8])
-```
-
-
-
-
-    array([<matplotlib.axes._subplots.AxesSubplot object at 0x000001C0DDCED908>,
-           <matplotlib.axes._subplots.AxesSubplot object at 0x000001C0DF1C8F98>,
-           <matplotlib.axes._subplots.AxesSubplot object at 0x000001C0DF03C198>,
-           <matplotlib.axes._subplots.AxesSubplot object at 0x000001C0DF07AA58>,
-           <matplotlib.axes._subplots.AxesSubplot object at 0x000001C0DF0D04A8>], dtype=object)
-
-
-
-
-![png](post_qiita_files/post_qiita_27_1.png)
-
-
-
-```python
-df.profit[-1]  # 最終損益
-```
-
-
-
-
-    -4433
+    276780
 
 
 
@@ -377,6 +396,32 @@ def profitcalc(price, unit_cost):
     return df
 ```
 
+
+```python
+df = profitcalc(lowweek, 10000)
+df.head(10)
+df.plot(subplots=True, style='.', figsize=[4,8])
+```
+
+
+    ---------------------------------------------------------------------------
+
+    NameError                                 Traceback (most recent call last)
+
+    <ipython-input-31-359fc5e60db1> in <module>()
+    ----> 1 df = profitcalc(lowweek, 10000)
+          2 df.head(10)
+          3 df.plot(subplots=True, style='.', figsize=[4,8])
+    
+
+    NameError: name 'profitcalc' is not defined
+
+
+
+```python
+df.profit[-1]  # 最終損益
+```
+
 ## 別のランダムウォークで計算
 
 
@@ -386,18 +431,3 @@ df = profitcalc(pr.resample('W').min(), unit_cost=10000)
 # df.plot(subplots=True, style='.', figsize=[4,8])
 df.ix[:, ['price', 'profit']].plot(secondary_y=['profit'], style='.')
 ```
-
-    Final Asset: 1993341
-    Final Profit: -609801
-    
-
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x1c0e7022f28>
-
-
-
-
-![png](post_qiita_files/post_qiita_32_2.png)
-

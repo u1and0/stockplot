@@ -28,10 +28,10 @@
 # * 投資手法の一つで、高値掴みを避けるように投資額を時間的に分割して均等額ずつ定期的に投資します。
 # * 重要なのが投資額を等分する際、**金額分割**を行うこと
 #     * 単純な数量分割に比べ平均値の点で有利になると言われています。
-#     * ○金額分割: 定額数の株や、変量数の売通貨で定額の買通貨を購入すること
+#     * ○金額分割: 定額数の株や、定額の売通貨で買通貨を購入すること
 #         * 1000,000円投資を10回に分けて100,000円分ずつの株を購入すること
 #         * 100,000円投資を10回に分けて10,000円分ずつのドルを購入すること
-#     * ×数量分割: 定量数の株や、定額の売通貨で買通貨を購入すること
+#     * ×数量分割: 定量数の株や、変量数の売通貨で定額の買通貨を購入すること
 #         * 1000株投資を10回に分けて100株ずつ購入すること
 #         * 1000ドル投資を10回に分けて、100ドル分ずつのドルを購入すること
 
@@ -53,19 +53,21 @@
 
 # ### ランダムウォークのpandas Seriesを作成
 
-# In[7]:
+# In[23]:
 
 n = 1000
+np.random.seed(1)  # 練習のため常に同じrandom stateリセット
 bullbear = pd.Series(np.random.randint(-1, 2, n))  # -1,0,1のどれかを生成するpd.Series
 price = bullbear.cumsum()  # 累積和
 
+# 出力
 print(pd.DataFrame({'bullbear': bullbear, 'price': price}).head())
 price.plot()
 
 
 # ### ランダムウォークの関数化
 
-# In[9]:
+# In[24]:
 
 def randomwalk(periods, start=pd.datetime.today().date(), name=None):
     """periods日分だけランダムウォークを返す"""
@@ -74,7 +76,9 @@ def randomwalk(periods, start=pd.datetime.today().date(), name=None):
                          index=ts, name=name)  # -1,0,1のどれかを吐き出すSeries
     price = bullbear.cumsum()  # 累積和
     return price
-price=randomwalk(periods=1000) + 100  # 100は初期値
+
+np.random.seed(1)  # 練習のため常に同じrandom stateリセット
+price=randomwalk(periods=1000) + 115  # 115は初期値
 price.plot()
 
 
@@ -86,9 +90,11 @@ price.plot()
 # 
 # を模擬したチャートができました。
 # 
-# 初期値を100円、期間を1000日とすることで、100円から始まる約3年分の仮想ドル円チャートです。
+# 初期値を115円(2017/3半ば現在これくらいの値)、期間を1000日とすることで、115円から始まる約3年分の仮想ドル円チャートです。
 # 
 # 一日1円とか、このチャートがドル円だとすると2016年の上海ショック、ブレグジットショック、米大統領選が毎日続いているかのようなお祭りボラティリティですね。
+# 
+# これにもっともらしい経済用語ちりばめた説明文つけると、なんちゃって経済アナリスト気分。
 
 # # 定期的に購入
 # ドルコスト平均法の(1)
@@ -99,7 +105,7 @@ price.plot()
 # 
 # チャートの週の底値は`resample`メソッドで圧縮して、`min`メソッドで最小値を取得します。
 
-# In[29]:
+# In[25]:
 
 def lowweek(price):
     """毎週の最安値を返す"""
@@ -107,7 +113,7 @@ def lowweek(price):
 lowweek(price).head(10)
 
 
-# 例えば一行目は、2017年3月19日(日曜)が週末の日付である週に98円で購入できた、という意味です。
+# 例えば一行目は、2017年3月19日(日曜)が週末の日付である週に113円で購入できた、という意味です。
 
 # # 一定金額の購入
 # ドルコスト平均法の(1)
@@ -119,28 +125,28 @@ lowweek(price).head(10)
 # * ~~購入口数(ticket)の最小口数(min_cost)は1000円~~ 未実装
 # * unit_costをある時点での価格(price)で割って、小数を切り落とした値が購入口数となります
 
-# In[30]:
+# In[26]:
 
 unit_cost = 10000
 # min_cost = 1000
 ticket = unit_cost / price[0]
-ticket, int(ticket)
+price[0], ticket, int(ticket)
 
 
-# インデックス0の期間
+# インデックス0の期間のチケット数の計算
 
-# 次に全期間に適用します。
-# 
-# 切り捨てすると時は`astype(int)`メソッドを使います。
-
-# In[20]:
+# In[27]:
 
 tickets = unit_cost / price
 pd.DataFrame([price, tickets, tickets.astype(int)],
              index=['price', 'ticket(float)', 'ticket(int)']).T.head()
 
 
-# In[21]:
+# 全期間に適用します。
+# 
+# 切り捨てすると時は`astype(int)`メソッドを使います。
+
+# In[28]:
 
 def dollcost(lowprice, unit_cost):
     """一定額ずつの購入
@@ -156,41 +162,64 @@ def dollcost(lowprice, unit_cost):
 
 # # ドルコスト平均法シミュレーション
 
-# In[35]:
+# ## 利益の計算
+
+# In[55]:
 
 lowprice = lowweek(price)  # 週の終値
 tickets = dollcost(lowprice, unit_cost=10000)  # dollcost関数: 一定額ずつの購入
 cost = tickets * lowprice  # 購入ごとにかかった費用
-asset = cost.cumsum().resample('D').ffill()  # 費用の合計
-value = tickets.cumsum().resample('D').ffill() * price  # 現在価値: 口数の累積和を週から日ごとに直して価格にかける
-profit = value - asset  # 現在価値から費用の合計を引いたのが利益(profit)
+total_cost = cost.cumsum().resample('D').ffill()  # 全費用の合計(ただし手数料やスリッページ、スワップは除く)
+value = tickets.cumsum().resample('D').ffill() * price  # 全ポジションの現在価値: 口数の累積和を週から日ごとに直して価格にかける
+profit = value - total_cost  # 利益: 現在価値と費用の差
 
-df = pd.DataFrame([lowprice, tickets, cost, asset, value, profit],
-                  index=['lowprice', 'tickets', 'cost', 'asset','value', 'profit']).T
+df = pd.DataFrame([lowprice, tickets, cost, total_cost, value, profit],
+                  index=['lowprice', 'tickets', 'cost', 'total_cost','value', 'profit']).T
 print(df.head(18))
 df.plot(style='.', subplots=True, figsize=(4,9))
 
 
-# In[57]:
+# ### 変数の意味
+# 
+# * lowprice: 週の安値
+# * tickets:  その週に購入した建玉
+#     * dollcost関数:  第一引数のSeriesを第二引数で割ってintで返す
+# * cost: 建玉を持つために投資した金額
+# * total_cost: 投資額の合計(週から日にupsamplingする)
+# * value: 全ポジションの現在価値
+# * profit: 利益(現在価値と費用の差)
+
+# ### グラフの意味
+# 
+# * lowprice: 週の安値にダウンサンプリングされているので、price曲線に似た形で分布がまばら
+# * tickets:  定数で割っているのでlowpriceと逆相関
+# * cost: lowpriceを定数で割るとticketsが出てくる(dollcost関数の仕事)が、ticketsに小数がありえないためにlowpriceとticketsをかけても定数に戻らない。最大値の10000円とそこから離れすぎた値になっていないことを確認できれば良い。
+# * asset: 毎週定額投資をしているので綺麗な線形増加関数にならなければならない
+# * value: assetとprice両方に相関した関数形。
+# * profit: assetから浮いているvalueの値
+
+# In[59]:
+
+df.ix[:, ['lowprice','total_cost', 'value', 'profit']]    .plot(style=['o', '-', '-', '-'], secondary_y=['lowprice'])
+
+
+# 購入価格(lowprice)とトータルコスト(total_cost)、資産価値、利益を並べてみました。 
+# モーサテとかでよく見かけそうなグラフ。
+# 
+# total_cost(黄)から浮いているvalue(緑)の部分がprofit(青)、すなわち利益となります。
+# 
+# ドルコスト平均法の良いところ
+# * 相場の急変に強い(上がろうが下がろうがvalueがtotal_costに沿う)
+# * 
+
+# In[30]:
 
 price[-1] * tickets.sum() - cost.sum()  # 最終損益
 
 
-# In[64]:
-
-df = profitcalc(lowweek, 10000)
-df.head(10)
-df.plot(subplots=True, style='.', figsize=[4,8])
-
-
-# In[66]:
-
-df.profit[-1]  # 最終損益
-
-
 # ## ticket, cost, assetの計算関数
 
-# In[87]:
+# In[ ]:
 
 def profitcalc(price, unit_cost): 
     """購入した価格からプロフィットカーブを計算する
@@ -209,9 +238,21 @@ def profitcalc(price, unit_cost):
     return df
 
 
+# In[31]:
+
+df = profitcalc(lowweek, 10000)
+df.head(10)
+df.plot(subplots=True, style='.', figsize=[4,8])
+
+
+# In[ ]:
+
+df.profit[-1]  # 最終損益
+
+
 # ## 別のランダムウォークで計算
 
-# In[99]:
+# In[ ]:
 
 pr = randomwalk(1000) + 100
 df = profitcalc(pr.resample('W').min(), unit_cost=10000)
