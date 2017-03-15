@@ -1,3 +1,13 @@
+# バージョン情報
+ v1.0
+ 
+* ランダムウォーク
+* キャンドルチャート
+* SMA
+* matplotlib.finance
+* plotly
+
+
 
 # matplotlib.financeでローソク足
 
