@@ -14,15 +14,15 @@ c.randomwalk(10, tick=0.01, freq='S')
 
 
     2017-03-14 00:00:00   -0.01
-    2017-03-14 00:00:01   -0.02
+    2017-03-14 00:00:01   -0.01
     2017-03-14 00:00:02   -0.01
-    2017-03-14 00:00:03    0.00
-    2017-03-14 00:00:04   -0.01
-    2017-03-14 00:00:05   -0.02
-    2017-03-14 00:00:06   -0.01
-    2017-03-14 00:00:07   -0.02
-    2017-03-14 00:00:08   -0.02
-    2017-03-14 00:00:09   -0.03
+    2017-03-14 00:00:03   -0.01
+    2017-03-14 00:00:04    0.00
+    2017-03-14 00:00:05   -0.01
+    2017-03-14 00:00:06    0.00
+    2017-03-14 00:00:07    0.00
+    2017-03-14 00:00:08    0.01
+    2017-03-14 00:00:09    0.01
     Freq: S, dtype: float64
 
 
@@ -104,11 +104,24 @@ c.candlechart(chart)
 ```
 
 
+    ---------------------------------------------------------------------------
 
+    NameError                                 Traceback (most recent call last)
 
-    (<matplotlib.figure.Figure at 0x234816dc128>,
-     <matplotlib.axes._subplots.AxesSubplot at 0x2348001f828>)
+    <ipython-input-173-7b48034d283e> in <module>()
+    ----> 1 c.candlechart(chart)
+          2 # plt.xlim([pd.Timestamp('20170314'), pd.Timestamp('20170414')])
+    
 
+    C:\Users\U1and0\Dropbox\Program\python\fxpy\common\candlechart.py in candlechart(ohlc, width)
+         33 
+         34     # ax.xaxis.set_major_formatter(ticker.FuncFormatter(mydate))
+    ---> 35     ax.format_xdata = mdates.DateFormatter('%Y-%m-%d')
+         36 
+         37     fig.autofmt_xdate()
+    
+
+    NameError: name 'mdates' is not defined
 
 
 

@@ -1,12 +1,12 @@
 
 # coding: utf-8
 
-# In[164]:
+# In[174]:
 
 import candlechart as c
 
 
-# In[50]:
+# In[172]:
 
 # 10秒間のtickチャート
 c.randomwalk(10, tick=0.01, freq='S')
@@ -26,7 +26,7 @@ chart = tick.resample('B').ohlc()
 chart.head()
 
 
-# In[103]:
+# In[173]:
 
 c.candlechart(chart)
 # plt.xlim([pd.Timestamp('20170314'), pd.Timestamp('20170414')])
