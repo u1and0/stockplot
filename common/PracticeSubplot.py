@@ -3,12 +3,45 @@
 
 # # matplotlib.financeでローソク足
 
-# In[1]:
+# ## データの作成
+# ランダムウォークで架空の為替チャートを作成します。
+# 
+# ランダム生成です。
+# 
+# 私の今年のドル円相場の予想ではありませんので、このチャートに乗っ取った投資は自己責任。
 
+# In[110]:
+
+import numpy as np
+import pandas as pd
+
+def randomwalk(periods, start=pd.datetime.today().date(), index=None, name=None, tick=1, freq='B'):
+    """periods日分だけランダムウォークを返す"""
+    if not index:
+        index = pd.date_range(start=start, periods=periods, freq=freq)  # 今日の日付からperiod日分の平日
+    bullbear = pd.Series(tick * np.random.randint(-1, 2, periods),
+                         index=index, name=name)  # unit * (-1,0,1のどれか)を吐き出すSeries
+    price = bullbear.cumsum()  # 累積和
+    return price
+
+
+# In[111]:
+
+df = randomwalk(60*24*30, freq='T', tick=0.01).resample('B').ohlc() + 115  # 初期値は115円
+df.head()
+
+
+# ## 参考1
+# 参考: [stack over flow - how to plot ohlc candlestick with datetime in matplotlib?](http://stackoverflow.com/questions/36334665/how-to-plot-ohlc-candlestick-with-datetime-in-matplotlib)
+
+# In[112]:
+
+import numpy as np
+import matplotlib.pyplot as plt
 import matplotlib.finance as mpf
-
-
-# In[ ]:
+from matplotlib import ticker
+import matplotlib.dates as mdates
+import pandas as pd
 
 def candlechart(ohlc, width=0.8):
     """入力されたデータフレームに対してローソク足チャートを返す
@@ -21,7 +54,7 @@ def candlechart(ohlc, width=0.8):
         戻り値: ax: subplot"""
     fig, ax = plt.subplots()
     # ローソク足
-    fin.candlestick2_ohlc(ax, opens=ohlc.open.values, closes=ohlc.close.values,
+    mpf.candlestick2_ohlc(ax, opens=ohlc.open.values, closes=ohlc.close.values,
                           lows=ohlc.low.values, highs=ohlc.high.values,
                           width=width, colorup='r', colordown='b')
 
@@ -43,21 +76,21 @@ def candlechart(ohlc, width=0.8):
 
     return fig, ax
 
-
-# In[6]:
-
-from randomwalk import *
+candlechart(df)
 
 
-# In[27]:
+# ## 参考2
+# 参考: [Qiita - Pythonでローソク足チャートの表示（matplotlib編）
+# ](http://qiita.com/toyolab/items/1b5d11b5d376bd542022)
 
-df = randomwalk(60*24*30, freq='T', tick=0.01).resample('B').ohlc() + 115
-df.head()
+# In[113]:
 
-
-# In[18]:
-
-# 参考: http://qiita.com/toyolab/items/1b5d11b5d376bd542022
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.finance as mpf
+from matplotlib import ticker
+import matplotlib.dates as mdates
+import pandas as pd
 
 fig = plt.figure()
 ax = plt.subplot()
@@ -73,9 +106,10 @@ ax.set_xlim(-1, len(df)) #x軸の範囲
 fig.autofmt_xdate() #x軸のオートフォーマット
 
 
-# In[7]:
+# ## SMA(Simple Moving Average)の追加
 
-# 参考: http://qiita.com/toyolab/items/1b5d11b5d376bd542022
+# In[114]:
+
 import matplotlib.pyplot as plt
 import matplotlib.finance as mpf
 from randomwalk import *
@@ -104,13 +138,10 @@ fig.autofmt_xdate()  # x軸のオートフォーマット
 plt.show()
 
 
-# In[17]:
+# In[115]:
 
-# 参考: http://qiita.com/toyolab/items/1b5d11b5d376bd542022
 import matplotlib.pyplot as plt
 import matplotlib.finance as mpf
-from randomwalk import *
-
 
 def sma(ohlc, period):
     sma = ohlc.close.rolling(period).mean()
@@ -149,13 +180,23 @@ plt.show()
 # 参考: [Qiita - [Python] Plotlyでぐりぐり動かせるグラフを作る
 # ](http://qiita.com/inoory/items/12028af62018bf367722)
 
-# In[49]:
+# 初めてplotlyを使うので、やりかた
+# 
+# `conda install plotly`
+# 
+# でインストールして以下のようにインポート。
+# 
+# アカウントを作る必要あるやらないやら情報がいろいろありますが、規制緩和されて、今では無料で結構やりたい放題みたいです。
+
+# In[116]:
 
 import plotly as py
 py.offline.init_notebook_mode(connected=False) 
 
 
-# In[47]:
+# 使用するデータ
+
+# In[117]:
 
 fo = [[2000,1190547,1.36],
     [2001,1170662,1.33],
@@ -177,7 +218,7 @@ raw = pd.DataFrame(fo, columns=['year', 'births', 'birth rate'])
 raw
 
 
-# In[50]:
+# In[118]:
 
 data = [
     py.graph_objs.Scatter(y=raw["births"], name="births"),
@@ -192,7 +233,7 @@ fig = py.graph_objs.Figure(data=data, layout=layout)
 py.offline.iplot(fig, show_link=False)
 
 
-# In[48]:
+# In[119]:
 
 data = [
     py.graph_objs.Bar(x=raw["year"], y=raw["births"], name="Births"),
@@ -210,16 +251,39 @@ py.offline.iplot(fig)
 #py.offline.plot(fig)
 
 
-# ## 為替チャート
+# 操作方法
+# 
+# * マウスオーバーとかで数値の表示
+# * ドラッグで拡大
+# * ダブルクリックで元のビューに戻る
 
-# In[55]:
+# ## 為替チャート
+# 参考: [Qiita - Pythonでローソク足チャートの表示（Plotly編）](http://qiita.com/toyolab/items/db8a1e539d4f995079d5)
+
+# In[120]:
 
 from plotly.offline import init_notebook_mode, iplot
 from plotly.tools import FigureFactory as FF
 init_notebook_mode(connected=True) # Jupyter notebook用設定
 
 
-# In[56]:
+# ### 通常のプロット
+# candleチャートのAPIは用意されているので、open, high, low, closeのデータが用意されていれば簡単に作成できる。
+# 
+# ただし、平日のみの表示ができない。
+
+# In[121]:
+
+fig = FF.create_candlestick(df.open, df.high, df.low, df.close, dates=df.index)
+py.offline.iplot(fig)
+
+
+# ### 平日のみのプロット
+# 参考先の方が平日のみのindexに直していた。
+# 
+# 拡大縮小自由自在なplotlyを使わない手はないですね、っていうのがまとめです。
+
+# In[122]:
 
 fig = FF.create_candlestick(df.open, df.high, df.low, df.close)
 
@@ -233,9 +297,4 @@ fig['layout'].update({
 })
 
 py.offline.iplot(fig)
-
-
-# In[ ]:
-
-
 

@@ -1,17 +1,103 @@
 
 # matplotlib.financeでローソク足
 
+## データの作成
+ランダムウォークで架空の為替チャートを作成します。
+
+ランダム生成です。
+
+私の今年のドル円相場の予想ではありませんので、このチャートに乗っ取った投資は自己責任。
+
 
 ```python
-import matplotlib.finance as mpf
+import numpy as np
+import pandas as pd
+
+def randomwalk(periods, start=pd.datetime.today().date(), index=None, name=None, tick=1, freq='B'):
+    """periods日分だけランダムウォークを返す"""
+    if not index:
+        index = pd.date_range(start=start, periods=periods, freq=freq)  # 今日の日付からperiod日分の平日
+    bullbear = pd.Series(tick * np.random.randint(-1, 2, periods),
+                         index=index, name=name)  # unit * (-1,0,1のどれか)を吐き出すSeries
+    price = bullbear.cumsum()  # 累積和
+    return price
+
 ```
 
-    C:\Anaconda3\lib\site-packages\matplotlib\cbook.py:136: MatplotlibDeprecationWarning: The finance module has been deprecated in mpl 2.0 and will be removed in mpl 2.2. Please use the module mpl_finance instead.
-      warnings.warn(message, mplDeprecation, stacklevel=1)
-    
+
+```python
+df = randomwalk(60*24*30, freq='T', tick=0.01).resample('B').ohlc() + 115  # 初期値は115円
+df.head()
+```
+
+
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>open</th>
+      <th>high</th>
+      <th>low</th>
+      <th>close</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2017-03-15</th>
+      <td>114.99</td>
+      <td>115.44</td>
+      <td>114.98</td>
+      <td>115.33</td>
+    </tr>
+    <tr>
+      <th>2017-03-16</th>
+      <td>115.33</td>
+      <td>115.43</td>
+      <td>114.97</td>
+      <td>115.00</td>
+    </tr>
+    <tr>
+      <th>2017-03-17</th>
+      <td>114.99</td>
+      <td>115.03</td>
+      <td>114.38</td>
+      <td>114.48</td>
+    </tr>
+    <tr>
+      <th>2017-03-20</th>
+      <td>114.48</td>
+      <td>114.67</td>
+      <td>114.31</td>
+      <td>114.56</td>
+    </tr>
+    <tr>
+      <th>2017-03-21</th>
+      <td>114.55</td>
+      <td>114.56</td>
+      <td>114.00</td>
+      <td>114.06</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+## 参考1
+参考: [stack over flow - how to plot ohlc candlestick with datetime in matplotlib?](http://stackoverflow.com/questions/36334665/how-to-plot-ohlc-candlestick-with-datetime-in-matplotlib)
 
 
 ```python
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.finance as mpf
+from matplotlib import ticker
+import matplotlib.dates as mdates
+import pandas as pd
+
 def candlechart(ohlc, width=0.8):
     """入力されたデータフレームに対してローソク足チャートを返す
         引数:
@@ -23,7 +109,7 @@ def candlechart(ohlc, width=0.8):
         戻り値: ax: subplot"""
     fig, ax = plt.subplots()
     # ローソク足
-    fin.candlestick2_ohlc(ax, opens=ohlc.open.values, closes=ohlc.close.values,
+    mpf.candlestick2_ohlc(ax, opens=ohlc.open.values, closes=ohlc.close.values,
                           lows=ohlc.low.values, highs=ohlc.high.values,
                           width=width, colorup='r', colordown='b')
 
@@ -45,78 +131,33 @@ def candlechart(ohlc, width=0.8):
 
     return fig, ax
 
-```
-
-
-```python
-from randomwalk import *
-```
-
-
-```python
-df = randomwalk(60*24*30, freq='T', tick=0.01).resample('B').ohlc() + 115
-df.head()
+candlechart(df)
 ```
 
 
 
 
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>open</th>
-      <th>high</th>
-      <th>low</th>
-      <th>close</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2017-03-14</th>
-      <td>115.01</td>
-      <td>115.72</td>
-      <td>115.01</td>
-      <td>115.52</td>
-    </tr>
-    <tr>
-      <th>2017-03-15</th>
-      <td>115.53</td>
-      <td>115.62</td>
-      <td>114.79</td>
-      <td>114.99</td>
-    </tr>
-    <tr>
-      <th>2017-03-16</th>
-      <td>115.00</td>
-      <td>115.69</td>
-      <td>114.97</td>
-      <td>115.48</td>
-    </tr>
-    <tr>
-      <th>2017-03-17</th>
-      <td>115.49</td>
-      <td>115.86</td>
-      <td>114.99</td>
-      <td>115.15</td>
-    </tr>
-    <tr>
-      <th>2017-03-20</th>
-      <td>115.16</td>
-      <td>115.22</td>
-      <td>114.74</td>
-      <td>114.75</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+    (<matplotlib.figure.Figure at 0x1dbad311c50>,
+     <matplotlib.axes._subplots.AxesSubplot at 0x1dbacc52f28>)
 
 
+
+
+![png](PracticeSubplot_files/PracticeSubplot_5_1.png)
+
+
+## 参考2
+参考: [Qiita - Pythonでローソク足チャートの表示（matplotlib編）
+](http://qiita.com/toyolab/items/1b5d11b5d376bd542022)
 
 
 ```python
-# 参考: http://qiita.com/toyolab/items/1b5d11b5d376bd542022
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.finance as mpf
+from matplotlib import ticker
+import matplotlib.dates as mdates
+import pandas as pd
 
 fig = plt.figure()
 ax = plt.subplot()
@@ -133,12 +174,13 @@ fig.autofmt_xdate() #x軸のオートフォーマット
 ```
 
 
-![png](PracticeSubplot_files/PracticeSubplot_5_0.png)
+![png](PracticeSubplot_files/PracticeSubplot_7_0.png)
 
+
+## SMA(Simple Moving Average)の追加
 
 
 ```python
-# 参考: http://qiita.com/toyolab/items/1b5d11b5d376bd542022
 import matplotlib.pyplot as plt
 import matplotlib.finance as mpf
 from randomwalk import *
@@ -169,16 +211,13 @@ plt.show()
 ```
 
 
-![png](PracticeSubplot_files/PracticeSubplot_6_0.png)
+![png](PracticeSubplot_files/PracticeSubplot_9_0.png)
 
 
 
 ```python
-# 参考: http://qiita.com/toyolab/items/1b5d11b5d376bd542022
 import matplotlib.pyplot as plt
 import matplotlib.finance as mpf
-from randomwalk import *
-
 
 def sma(ohlc, period):
     sma = ohlc.close.rolling(period).mean()
@@ -213,7 +252,7 @@ plt.show()
 ```
 
 
-![png](PracticeSubplot_files/PracticeSubplot_7_0.png)
+![png](PracticeSubplot_files/PracticeSubplot_10_0.png)
 
 
 # plotlyでローソク足
@@ -221,6 +260,14 @@ plt.show()
 ## plotlyの練習
 参考: [Qiita - [Python] Plotlyでぐりぐり動かせるグラフを作る
 ](http://qiita.com/inoory/items/12028af62018bf367722)
+
+初めてplotlyを使うので、やりかた
+
+`conda install plotly`
+
+でインストールして以下のようにインポート。
+
+アカウントを作る必要あるやらないやら情報がいろいろありますが、規制緩和されて、今では無料で結構やりたい放題みたいです。
 
 
 ```python
@@ -290,6 +337,8 @@ t.exit().remove(),t.text(a.text).attr({"class":"slicetext",transform:"","data-bb
 e.exports=function(t,e,r,o){function a(t,e){g.push(t._hovertitle+": "+i.tickText(t,e,"hover").text)}var s=n(t,e,r,o);if(s&&s[0].index!==!1){var l=s[0];if(void 0===l.index){var u=1-l.y0/t.ya._length,c=t.xa._length,h=c*u/2,f=c-h;return l.x0=Math.max(Math.min(l.x0,f),h),l.x1=Math.max(Math.min(l.x1,f),h),s}var d=l.cd[l.index];l.a=d.a,l.b=d.b,l.c=d.c,l.xLabelVal=void 0,l.yLabelVal=void 0;var p=l.trace,v=p._ternary,m=p.hoverinfo.split("+"),g=[];return-1!==m.indexOf("all")&&(m=["a","b","c"]),-1!==m.indexOf("a")&&a(v.aaxis,d.a),-1!==m.indexOf("b")&&a(v.baxis,d.b),-1!==m.indexOf("c")&&a(v.caxis,d.c),l.extraText=g.join("<br>"),s}}},{"../../plots/cartesian/axes":592,"../scatter/hover":759}],798:[function(t,e,r){"use strict";var n={};n.attributes=t("./attributes"),n.supplyDefaults=t("./defaults"),n.colorbar=t("../scatter/colorbar"),n.calc=t("./calc"),n.plot=t("./plot"),n.style=t("./style"),n.hoverPoints=t("./hover"),n.selectPoints=t("./select"),n.moduleType="trace",n.name="scatterternary",n.basePlotModule=t("../../plots/ternary"),n.categories=["ternary","symbols","markerColorscale","showLegend"],n.meta={},e.exports=n},{"../../plots/ternary":655,"../scatter/colorbar":753,"./attributes":794,"./calc":795,"./defaults":796,"./hover":797,"./plot":799,"./select":800,"./style":801}],799:[function(t,e,r){"use strict";var n=t("../scatter/plot");e.exports=function(t,e){var r=t.plotContainer;r.select(".scatterlayer").selectAll("*").remove();for(var i={x:function(){return t.xaxis},y:function(){return t.yaxis},plot:r},o=new Array(e.length),a=t.graphDiv.calcdata,s=0;s<a.length;s++){var l=e.indexOf(a[s][0].trace);-1!==l&&(o[l]=a[s],e[l]._ternary=t)}n(t.graphDiv,i,o)}},{"../scatter/plot":766}],800:[function(t,e,r){"use strict";var n=t("../scatter/select");e.exports=function(t,e){var r=n(t,e);if(r){var i,o,a,s=t.cd;for(a=0;a<r.length;a++)i=r[a],o=s[i.pointNumber],i.a=o.a,i.b=o.b,i.c=o.c,delete i.x,delete i.y;return r}}},{"../scatter/select":767}],801:[function(t,e,r){"use strict";var n=t("../scatter/style");e.exports=function(t){for(var e=t._fullLayout._modules,r=0;r<e.length;r++)if("scatter"===e[r].name)return;n(t)}},{"../scatter/style":768}],802:[function(t,e,r){"use strict";function n(t){return{valType:"boolean",dflt:!1}}function i(t){return{show:{valType:"boolean",dflt:!1},project:{x:n("x"),y:n("y"),z:n("z")},color:{valType:"color",dflt:o.defaultLine},usecolormap:{valType:"boolean",dflt:!1},width:{valType:"number",min:1,max:16,dflt:2},highlight:{valType:"boolean",dflt:!0},highlightcolor:{valType:"color",dflt:o.defaultLine},highlightwidth:{valType:"number",min:1,max:16,dflt:2}}}var o=t("../../components/color"),a=t("../../components/colorscale/attributes"),s=t("../../lib/extend").extendFlat;e.exports={z:{valType:"data_array"},x:{valType:"data_array"},y:{valType:"data_array"},text:{valType:"data_array"},surfacecolor:{valType:"data_array"},cauto:a.zauto,cmin:a.zmin,cmax:a.zmax,colorscale:a.colorscale,autocolorscale:s({},a.autocolorscale,{dflt:!1}),reversescale:a.reversescale,showscale:a.showscale,contours:{x:i("x"),y:i("y"),z:i("z")},hidesurface:{valType:"boolean",dflt:!1},lightposition:{x:{valType:"number",min:-1e5,max:1e5,dflt:10},y:{valType:"number",min:-1e5,max:1e5,dflt:1e4},z:{valType:"number",min:-1e5,max:1e5,dflt:0}},lighting:{ambient:{valType:"number",min:0,max:1,dflt:.8},diffuse:{valType:"number",min:0,max:1,dflt:.8},specular:{valType:"number",min:0,max:2,dflt:.05},roughness:{valType:"number",min:0,max:1,dflt:.5},fresnel:{valType:"number",min:0,max:5,dflt:.2}},opacity:{valType:"number",min:0,max:1,dflt:1},_nestedModules:{colorbar:"Colorbar"},_deprecated:{zauto:s({},a.zauto,{}),zmin:s({},a.zmin,{}),zmax:s({},a.zmax,{})}}},{"../../components/color":483,"../../components/colorscale/attributes":489,"../../lib/extend":563}],803:[function(t,e,r){"use strict";var n=t("../../components/colorscale/calc");e.exports=function(t,e){e.surfacecolor?n(e,e.surfacecolor,"","c"):n(e,e.z,"","c")}},{"../../components/colorscale/calc":490}],804:[function(t,e,r){"use strict";var n=t("d3"),i=t("fast-isnumeric"),o=t("../../lib"),a=t("../../plots/plots"),s=t("../../components/colorscale/get_scale"),l=t("../../components/colorbar/draw");e.exports=function(t,e){var r=e[0].trace,u="cb"+r.uid,c=s(r.colorscale),h=r.cmin,f=r.cmax,d=r.surfacecolor||r.z;if(i(h)||(h=o.aggNums(Math.min,null,d)),i(f)||(f=o.aggNums(Math.max,null,d)),t._fullLayout._infolayer.selectAll("."+u).remove(),!r.showscale)return void a.autoMargin(t,u);var p=e[0].t.cb=l(t,u);p.fillcolor(n.scale.linear().domain(c.map(function(t){return h+t[0]*(f-h)})).range(c.map(function(t){return t[1]}))).filllevels({start:h,end:f,size:(f-h)/254}).options(r.colorbar)()}},{"../../components/colorbar/draw":486,"../../components/colorscale/get_scale":495,"../../lib":568,"../../plots/plots":648,d3:119,"fast-isnumeric":123}],805:[function(t,e,r){"use strict";function n(t,e,r){this.scene=t,this.uid=r,this.surface=e,this.data=null,this.showContour=[!1,!1,!1],this.dataScale=1}function i(t,e){return void 0===e&&(e=1),t.map(function(t){var r=t[0],n=d(t[1]),i=n.toRgb();return{index:r,rgb:[i.r,i.g,i.b,e]}})}function o(t){var e=t.shape,r=[e[0]+2,e[1]+2],n=u(new Float32Array(r[0]*r[1]),r);return f.assign(n.lo(1,1).hi(e[0],e[1]),t),f.assign(n.lo(1).hi(e[0],1),t.hi(e[0],1)),f.assign(n.lo(1,r[1]-1).hi(e[0],1),t.lo(0,e[1]-1).hi(e[0],1)),f.assign(n.lo(0,1).hi(1,e[1]),t.hi(1)),f.assign(n.lo(r[0]-1,1).hi(1,e[1]),t.lo(e[0]-1)),n.set(0,0,t.get(0,0)),n.set(0,r[1]-1,t.get(0,e[1]-1)),n.set(r[0]-1,0,t.get(e[0]-1,0)),n.set(r[0]-1,r[1]-1,t.get(e[0]-1,e[1]-1)),n}function a(t){var e=Math.max(t[0].shape[0],t[0].shape[1]);if(v>e){for(var r=v/e,n=[0|Math.floor(t[0].shape[0]*r+1),0|Math.floor(t[0].shape[1]*r+1)],i=n[0]*n[1],a=0;a<t.length;++a){var s=o(t[a]),l=u(new Float32Array(i),n);c(l,s,[r,0,0,0,r,0,0,0,1]),t[a]=l}return r}return 1}function s(t,e){var r=t.glplot.gl,i=l({gl:r}),o=new n(t,i,e.uid);return o.update(e),t.glplot.add(i),o}var l=t("gl-surface3d"),u=t("ndarray"),c=t("ndarray-homography"),h=t("ndarray-fill"),f=t("ndarray-ops"),d=t("tinycolor2"),p=t("../../lib/str2rgbarray"),v=128,m=n.prototype;m.handlePick=function(t){if(t.object===this.surface){var e=[Math.min(0|Math.round(t.data.index[0]/this.dataScale-1),this.data.z[0].length-1),Math.min(0|Math.round(t.data.index[1]/this.dataScale-1),this.data.z.length-1)],r=[0,0,0];Array.isArray(this.data.x[0])?r[0]=this.data.x[e[1]][e[0]]:r[0]=this.data.x[e[0]],Array.isArray(this.data.y[0])?r[1]=this.data.y[e[1]][e[0]]:r[1]=this.data.y[e[1]],r[2]=this.data.z[e[1]][e[0]],t.traceCoordinate=r;var n=this.scene.fullSceneLayout;t.dataCoordinate=[n.xaxis.d2l(r[0])*this.scene.dataScale[0],n.yaxis.d2l(r[1])*this.scene.dataScale[1],n.zaxis.d2l(r[2])*this.scene.dataScale[2]];var i=this.data.text;return i&&i[e[1]]&&void 0!==i[e[1]][e[0]]?t.textLabel=i[e[1]][e[0]]:t.textLabel="",t.data.dataCoordinate=t.dataCoordinate.slice(),this.surface.highlight(t.data),this.scene.glplot.spikes.position=t.dataCoordinate,!0}},m.setContourLevels=function(){for(var t=[[],[],[]],e=!1,r=0;3>r;++r)this.showContour[r]&&(e=!0,t[r]=this.scene.contourLevels[r]);e&&this.surface.update({levels:t})},m.update=function(t){var e,r=this.scene,n=r.fullSceneLayout,o=this.surface,s=t.opacity,l=i(t.colorscale,s),c=t.z,f=t.x,d=t.y,v=n.xaxis,m=n.yaxis,g=n.zaxis,y=r.dataScale,b=c[0].length,x=c.length,_=[u(new Float32Array(b*x),[b,x]),u(new Float32Array(b*x),[b,x]),u(new Float32Array(b*x),[b,x])],w=_[0],M=_[1],k=r.contourLevels;this.data=t,h(_[2],function(t,e){return g.d2l(c[e][t])*y[2]}),Array.isArray(f[0])?h(w,function(t,e){return v.d2l(f[e][t])*y[0]}):h(w,function(t){return v.d2l(f[t])*y[0]}),Array.isArray(d[0])?h(M,function(t,e){return m.d2l(d[e][t])*y[1]}):h(M,function(t,e){return m.d2l(d[e])*y[1]});var A={colormap:l,levels:[[],[],[]],showContour:[!0,!0,!0],showSurface:!t.hidesurface,contourProject:[[!1,!1,!1],[!1,!1,!1],[!1,!1,!1]],contourWidth:[1,1,1],contourColor:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],contourTint:[1,1,1],dynamicColor:[[1,1,1,1],[1,1,1,1],[1,1,1,1]],dynamicWidth:[1,1,1],dynamicTint:[1,1,1],opacity:1};if(A.intensityBounds=[t.cmin,t.cmax],t.surfacecolor){var T=u(new Float32Array(b*x),[b,x]);h(T,function(e,r){return t.surfacecolor[r][e]}),_.push(T)}else A.intensityBounds[0]*=y[2],A.intensityBounds[1]*=y[2];this.dataScale=a(_),t.surfacecolor&&(A.intensity=_.pop()),"opacity"in t&&t.opacity<1&&(A.opacity=.25*t.opacity);var E=[!0,!0,!0],S=["x","y","z"];for(e=0;3>e;++e){var L=t.contours[S[e]];E[e]=L.highlight,A.showContour[e]=L.show||L.highlight,A.showContour[e]&&(A.contourProject[e]=[L.project.x,L.project.y,L.project.z],L.show?(this.showContour[e]=!0,A.levels[e]=k[e],o.highlightColor[e]=A.contourColor[e]=p(L.color),L.usecolormap?o.highlightTint[e]=A.contourTint[e]=0:o.highlightTint[e]=A.contourTint[e]=1,A.contourWidth[e]=L.width):this.showContour[e]=!1,L.highlight&&(A.dynamicColor[e]=p(L.highlightcolor),A.dynamicWidth[e]=L.highlightwidth))}A.coords=_,o.update(A),o.visible=t.visible,o.enableDynamic=E,o.snapToData=!0,"lighting"in t&&(o.ambientLight=t.lighting.ambient,o.diffuseLight=t.lighting.diffuse,o.specularLight=t.lighting.specular,o.roughness=t.lighting.roughness,o.fresnel=t.lighting.fresnel),"lightposition"in t&&(o.lightPosition=[t.lightposition.x,t.lightposition.y,t.lightposition.z]),s&&1>s&&(o.supportsTransparency=!0)},m.dispose=function(){this.scene.glplot.remove(this.surface),this.surface.dispose()},e.exports=s},{"../../lib/str2rgbarray":580,"gl-surface3d":227,ndarray:433,"ndarray-fill":426,"ndarray-homography":431,"ndarray-ops":432,tinycolor2:454}],806:[function(t,e,r){"use strict";function n(t,e,r){e in t&&!(r in t)&&(t[r]=t[e])}var i=t("../../lib"),o=t("../../components/colorscale/defaults"),a=t("./attributes");e.exports=function(t,e,r,s){function l(r,n){return i.coerce(t,e,a,r,n)}var u,c,h=l("z");if(!h)return void(e.visible=!1);var f=h[0].length,d=h.length;if(l("x"),l("y"),!Array.isArray(e.x))for(e.x=[],u=0;f>u;++u)e.x[u]=u;if(l("text"),!Array.isArray(e.y))for(e.y=[],u=0;d>u;++u)e.y[u]=u;["lighting.ambient","lighting.diffuse","lighting.specular","lighting.roughness","lighting.fresnel","lightposition.x","lightposition.y","lightposition.z","hidesurface","opacity"].forEach(function(t){l(t)});var p=l("surfacecolor");l("colorscale");var v=["x","y","z"];for(u=0;3>u;++u){var m="contours."+v[u],g=l(m+".show"),y=l(m+".highlight");if(g||y)for(c=0;3>c;++c)l(m+".project."+v[c]);g&&(l(m+".color"),l(m+".width"),l(m+".usecolormap")),y&&(l(m+".highlightcolor"),l(m+".highlightwidth"))}p||(n(t,"zmin","cmin"),n(t,"zmax","cmax"),n(t,"zauto","cauto")),o(t,e,s,l,{prefix:"",cLetter:"c"})}},{"../../components/colorscale/defaults":493,"../../lib":568,"./attributes":802}],807:[function(t,e,r){"use strict";var n={};n.attributes=t("./attributes"),n.supplyDefaults=t("./defaults"),n.colorbar=t("./colorbar"),n.calc=t("./calc"),n.plot=t("./convert"),n.moduleType="trace",n.name="surface",n.basePlotModule=t("../../plots/gl3d"),n.categories=["gl3d","noOpacity"],n.meta={},e.exports=n},{"../../plots/gl3d":628,"./attributes":802,"./calc":803,"./colorbar":804,"./convert":805,"./defaults":806}]},{},[12])(12)});
 });require(['plotly'], function(Plotly) {window.Plotly = Plotly;});}</script>
 
+
+使用するデータ
 
 
 ```python
@@ -445,7 +494,7 @@ py.offline.iplot(fig, show_link=False)
 ```
 
 
-<div id="cd4b5da4-d04e-4821-9c05-a71a31f8e933" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("cd4b5da4-d04e-4821-9c05-a71a31f8e933", [{"type": "scatter", "y": [1190547, 1170662, 1153855, 1123610, 1110721, 1062530, 1092674, 1089818, 1091156, 1070035, 1071304, 1050806, 1037101, 1029816, 1003532, 1005656], "name": "births"}], {"legend": {"x": 0.8, "y": 0.1}, "title": "title", "xaxis": {"title": ""}, "yaxis": {"title": ""}}, {"linkText": "Export to plot.ly", "showLink": false})});</script>
+<div id="f07352d5-6f32-4eda-86aa-8788c1f55c6f" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("f07352d5-6f32-4eda-86aa-8788c1f55c6f", [{"type": "scatter", "y": [1190547, 1170662, 1153855, 1123610, 1110721, 1062530, 1092674, 1089818, 1091156, 1070035, 1071304, 1050806, 1037101, 1029816, 1003532, 1005656], "name": "births"}], {"legend": {"x": 0.8, "y": 0.1}, "title": "title", "xaxis": {"title": ""}, "yaxis": {"title": ""}}, {"linkText": "Export to plot.ly", "showLink": false})});</script>
 
 
 
@@ -467,10 +516,17 @@ py.offline.iplot(fig)
 ```
 
 
-<div id="2f1410ff-0b97-47ea-9747-8a16fbb0d3f4" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("2f1410ff-0b97-47ea-9747-8a16fbb0d3f4", [{"type": "bar", "x": [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015], "y": [1190547, 1170662, 1153855, 1123610, 1110721, 1062530, 1092674, 1089818, 1091156, 1070035, 1071304, 1050806, 1037101, 1029816, 1003532, 1005656], "name": "Births"}, {"type": "scatter", "name": "Birth Rate", "y": [1.36, 1.33, 1.32, 1.29, 1.29, 1.26, 1.32, 1.34, 1.37, 1.37, 1.39, 1.39, 1.41, 1.43, 1.42, 1.46], "x": [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015], "yaxis": "y2"}], {"yaxis": {"title": "Births"}, "legend": {"x": 0.8, "y": 0.1}, "title": "Births and Birth Rate in Japan", "xaxis": {"title": "Year"}, "yaxis2": {"side": "right", "overlaying": "y", "title": "Birth Rate"}}, {"linkText": "Export to plot.ly", "showLink": true})});</script>
+<div id="9af6582e-972d-4ba0-acc9-8c46f66ca23d" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("9af6582e-972d-4ba0-acc9-8c46f66ca23d", [{"type": "bar", "x": [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015], "y": [1190547, 1170662, 1153855, 1123610, 1110721, 1062530, 1092674, 1089818, 1091156, 1070035, 1071304, 1050806, 1037101, 1029816, 1003532, 1005656], "name": "Births"}, {"type": "scatter", "name": "Birth Rate", "y": [1.36, 1.33, 1.32, 1.29, 1.29, 1.26, 1.32, 1.34, 1.37, 1.37, 1.39, 1.39, 1.41, 1.43, 1.42, 1.46], "x": [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015], "yaxis": "y2"}], {"yaxis": {"title": "Births"}, "legend": {"x": 0.8, "y": 0.1}, "title": "Births and Birth Rate in Japan", "xaxis": {"title": "Year"}, "yaxis2": {"side": "right", "overlaying": "y", "title": "Birth Rate"}}, {"linkText": "Export to plot.ly", "showLink": true})});</script>
 
+
+操作方法
+
+* マウスオーバーとかで数値の表示
+* ドラッグで拡大
+* ダブルクリックで元のビューに戻る
 
 ## 為替チャート
+参考: [Qiita - Pythonでローソク足チャートの表示（Plotly編）](http://qiita.com/toyolab/items/db8a1e539d4f995079d5)
 
 
 ```python
@@ -482,6 +538,26 @@ init_notebook_mode(connected=True) # Jupyter notebook用設定
 
 <script>requirejs.config({paths: { 'plotly': ['https://cdn.plot.ly/plotly-latest.min']},});if(!window.Plotly) {{require(['plotly'],function(plotly) {window.Plotly=plotly;});}}</script>
 
+
+### 通常のプロット
+candleチャートのAPIは用意されているので、open, high, low, closeのデータが用意されていれば簡単に作成できる。
+
+ただし、平日のみの表示ができない。
+
+
+```python
+fig = FF.create_candlestick(df.open, df.high, df.low, df.close, dates=df.index)
+py.offline.iplot(fig)
+```
+
+
+<div id="36adf08d-3aef-4a2b-9a7c-ac728b0066a0" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("36adf08d-3aef-4a2b-9a7c-ac728b0066a0", [{"type": "box", "x": ["2017-03-14", "2017-03-14", "2017-03-14", "2017-03-14", "2017-03-14", "2017-03-14", "2017-03-23", "2017-03-23", "2017-03-23", "2017-03-23", "2017-03-23", "2017-03-23", "2017-03-28", "2017-03-28", "2017-03-28", "2017-03-28", "2017-03-28", "2017-03-28", "2017-03-29", "2017-03-29", "2017-03-29", "2017-03-29", "2017-03-29", "2017-03-29", "2017-03-31", "2017-03-31", "2017-03-31", "2017-03-31", "2017-03-31", "2017-03-31", "2017-04-04", "2017-04-04", "2017-04-04", "2017-04-04", "2017-04-04", "2017-04-04", "2017-04-05", "2017-04-05", "2017-04-05", "2017-04-05", "2017-04-05", "2017-04-05", "2017-04-06", "2017-04-06", "2017-04-06", "2017-04-06", "2017-04-06", "2017-04-06", "2017-04-07", "2017-04-07", "2017-04-07", "2017-04-07", "2017-04-07", "2017-04-07", "2017-04-11", "2017-04-11", "2017-04-11", "2017-04-11", "2017-04-11", "2017-04-11", "2017-04-17", "2017-04-17", "2017-04-17", "2017-04-17", "2017-04-17", "2017-04-17", "2017-04-19", "2017-04-19", "2017-04-19", "2017-04-19", "2017-04-19", "2017-04-19", "2017-04-21", "2017-04-21", "2017-04-21", "2017-04-21", "2017-04-21", "2017-04-21", "2017-04-24", "2017-04-24", "2017-04-24", "2017-04-24", "2017-04-24", "2017-04-24", "2017-04-25", "2017-04-25", "2017-04-25", "2017-04-25", "2017-04-25", "2017-04-25", "2017-05-01", "2017-05-01", "2017-05-01", "2017-05-01", "2017-05-01", "2017-05-01", "2017-05-05", "2017-05-05", "2017-05-05", "2017-05-05", "2017-05-05", "2017-05-05", "2017-05-09", "2017-05-09", "2017-05-09", "2017-05-09", "2017-05-09", "2017-05-09", "2017-05-11", "2017-05-11", "2017-05-11", "2017-05-11", "2017-05-11", "2017-05-11"], "y": [114.97, 115.01, 115.2, 115.2, 115.2, 115.5, 113.5, 113.56, 113.78, 113.78, 113.78, 113.83, 112.32000000000001, 112.60000000000001, 112.84, 112.84, 112.84, 112.97, 112.8, 112.83, 113.03999999999999, 113.03999999999999, 113.03999999999999, 113.17999999999999, 112.63000000000001, 112.87, 113.45, 113.45, 113.45, 113.56, 112.82000000000001, 112.93, 113.02, 113.02, 113.02, 113.3, 112.88, 113.02, 113.35, 113.35, 113.35, 113.4, 113.35, 113.35, 113.69, 113.69, 113.69, 113.92999999999999, 113.35, 113.7, 113.83, 113.83, 113.83, 114.32, 113.63, 113.66, 114.05, 114.05, 114.05, 114.13, 112.98, 113.02, 113.52, 113.52, 113.52, 113.58, 113.28999999999999, 113.39, 113.91, 113.91, 113.91, 113.92999999999999, 113.83, 113.88, 113.91, 113.91, 113.91, 114.32, 113.69, 113.9, 113.95, 113.95, 113.95, 114.06, 113.87, 113.96, 114.2, 114.2, 114.2, 114.37, 113.34, 113.36, 113.56, 113.56, 113.56, 113.82, 112.47000000000001, 112.61000000000001, 112.67, 112.67, 112.67, 113.21, 112.16000000000001, 112.29000000000002, 112.36000000000001, 112.36000000000001, 112.36000000000001, 112.58000000000001, 111.62000000000003, 111.89000000000003, 111.93000000000002, 111.93000000000002, 111.93000000000002, 111.98000000000002], "line": {"color": "#3D9970"}, "showlegend": false, "name": "Increasing", "whiskerwidth": 0, "fillcolor": "#3D9970", "boxpoints": false}, {"type": "box", "x": ["2017-03-15", "2017-03-15", "2017-03-15", "2017-03-15", "2017-03-15", "2017-03-15", "2017-03-16", "2017-03-16", "2017-03-16", "2017-03-16", "2017-03-16", "2017-03-16", "2017-03-17", "2017-03-17", "2017-03-17", "2017-03-17", "2017-03-17", "2017-03-17", "2017-03-20", "2017-03-20", "2017-03-20", "2017-03-20", "2017-03-20", "2017-03-20", "2017-03-21", "2017-03-21", "2017-03-21", "2017-03-21", "2017-03-21", "2017-03-21", "2017-03-22", "2017-03-22", "2017-03-22", "2017-03-22", "2017-03-22", "2017-03-22", "2017-03-24", "2017-03-24", "2017-03-24", "2017-03-24", "2017-03-24", "2017-03-24", "2017-03-27", "2017-03-27", "2017-03-27", "2017-03-27", "2017-03-27", "2017-03-27", "2017-03-30", "2017-03-30", "2017-03-30", "2017-03-30", "2017-03-30", "2017-03-30", "2017-04-03", "2017-04-03", "2017-04-03", "2017-04-03", "2017-04-03", "2017-04-03", "2017-04-10", "2017-04-10", "2017-04-10", "2017-04-10", "2017-04-10", "2017-04-10", "2017-04-12", "2017-04-12", "2017-04-12", "2017-04-12", "2017-04-12", "2017-04-12", "2017-04-13", "2017-04-13", "2017-04-13", "2017-04-13", "2017-04-13", "2017-04-13", "2017-04-14", "2017-04-14", "2017-04-14", "2017-04-14", "2017-04-14", "2017-04-14", "2017-04-18", "2017-04-18", "2017-04-18", "2017-04-18", "2017-04-18", "2017-04-18", "2017-04-20", "2017-04-20", "2017-04-20", "2017-04-20", "2017-04-20", "2017-04-20", "2017-04-26", "2017-04-26", "2017-04-26", "2017-04-26", "2017-04-26", "2017-04-26", "2017-04-27", "2017-04-27", "2017-04-27", "2017-04-27", "2017-04-27", "2017-04-27", "2017-04-28", "2017-04-28", "2017-04-28", "2017-04-28", "2017-04-28", "2017-04-28", "2017-05-02", "2017-05-02", "2017-05-02", "2017-05-02", "2017-05-02", "2017-05-02", "2017-05-03", "2017-05-03", "2017-05-03", "2017-05-03", "2017-05-03", "2017-05-03", "2017-05-04", "2017-05-04", "2017-05-04", "2017-05-04", "2017-05-04", "2017-05-04", "2017-05-08", "2017-05-08", "2017-05-08", "2017-05-08", "2017-05-08", "2017-05-08", "2017-05-10", "2017-05-10", "2017-05-10", "2017-05-10", "2017-05-10", "2017-05-10", "2017-05-12", "2017-05-12", "2017-05-12", "2017-05-12", "2017-05-12", "2017-05-12"], "y": [114.66, 115.19, 114.79, 114.79, 114.79, 115.2, 114.59, 114.79, 114.64, 114.64, 114.64, 114.95, 114.37, 114.65, 114.56, 114.56, 114.56, 114.82, 114.05, 114.56, 114.17999999999999, 114.17999999999999, 114.17999999999999, 114.6, 113.88, 114.19, 113.92999999999999, 113.92999999999999, 113.92999999999999, 114.23, 113.49, 113.94, 113.57, 113.57, 113.57, 114.05, 113.07, 113.78, 113.08, 113.08, 113.08, 113.87, 112.52000000000001, 113.08, 112.59, 112.59, 112.59, 113.08, 112.8, 113.05, 112.87, 112.87, 112.87, 113.13, 112.89, 113.45, 112.94, 112.94, 112.94, 113.55, 113.49, 113.84, 113.66, 113.66, 113.66, 113.86, 113.72, 114.04, 114.03, 114.03, 114.03, 114.14, 113.64, 114.03, 113.82, 113.82, 113.82, 114.04, 112.82000000000001, 113.82, 113.01, 113.01, 113.01, 113.82, 113.37, 113.51, 113.4, 113.4, 113.4, 113.69, 113.53999999999999, 113.9, 113.88, 113.88, 113.88, 113.98, 113.99, 114.2, 114.03, 114.03, 114.03, 114.34, 113.61, 114.02, 113.69, 113.69, 113.69, 114.12, 112.94, 113.67999999999999, 113.35, 113.35, 113.35, 113.7, 112.8, 113.56, 113.16, 113.16, 113.16, 113.61, 112.96, 113.16, 112.98, 112.98, 112.98, 113.42999999999999, 112.60000000000001, 112.97, 112.60000000000001, 112.60000000000001, 112.60000000000001, 113.09, 112.28000000000002, 112.67, 112.29000000000002, 112.29000000000002, 112.29000000000002, 112.72, 111.86000000000003, 112.35000000000001, 111.89000000000003, 111.89000000000003, 111.89000000000003, 112.45000000000002, 111.30000000000004, 111.94000000000003, 111.35000000000004, 111.35000000000004, 111.35000000000004, 112.08000000000001], "line": {"color": "#FF4136"}, "showlegend": false, "name": "Decreasing", "whiskerwidth": 0, "fillcolor": "#FF4136", "boxpoints": false}], {}, {"linkText": "Export to plot.ly", "showLink": true})});</script>
+
+
+### 平日のみのプロット
+参考先の方が平日のみのindexに直していた。
+
+拡大縮小自由自在なplotlyを使わない手はないですね、っていうのがまとめです。
 
 
 ```python
@@ -500,10 +576,5 @@ py.offline.iplot(fig)
 ```
 
 
-<div id="c4014ff2-ea70-40b7-9df8-d1a14e0c0bfa" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("c4014ff2-ea70-40b7-9df8-d1a14e0c0bfa", [{"type": "box", "x": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 12, 12, 12, 12, 12, 12, 13, 13, 13, 13, 13, 13, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 19, 19, 19, 19, 19, 19, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 29, 29, 29, 29, 29, 29, 31, 31, 31, 31, 31, 31, 34, 34, 34, 34, 34, 34, 35, 35, 35, 35, 35, 35, 36, 36, 36, 36, 36, 36, 38, 38, 38, 38, 38, 38, 43, 43, 43, 43, 43, 43], "y": [114.89, 115.01, 115.2, 115.2, 115.2, 115.3, 115.2, 115.21, 115.67, 115.67, 115.67, 115.74, 113.48, 113.6, 113.86, 113.86, 113.86, 113.97, 113.78999999999999, 113.87, 114.54, 114.54, 114.54, 114.55, 114.44, 114.54, 115.3, 115.3, 115.3, 115.32, 115.22, 115.3, 115.6, 115.6, 115.6, 115.68, 115.6, 115.6, 116.15, 116.15, 116.15, 116.36, 115.51, 115.6, 116.03, 116.03, 116.03, 116.2, 115.9, 116.03, 116.15, 116.15, 116.15, 116.27, 115.65, 115.75, 115.91, 115.91, 115.91, 116.15, 115.31, 115.44, 116.03, 116.03, 116.03, 116.08, 115.69, 116.03, 116.39, 116.39, 116.39, 116.42, 115.92, 115.99, 116.23, 116.23, 116.23, 116.27, 115.9, 115.92, 116.62, 116.62, 116.62, 116.63, 116.37, 116.47, 116.75, 116.75, 116.75, 116.82000000000001, 116.73, 116.74, 116.94, 116.94, 116.94, 117.21, 116.67, 116.94, 116.96000000000001, 116.96000000000001, 116.96000000000001, 117.01, 116.54, 116.68, 116.82000000000001, 116.82000000000001, 116.82000000000001, 117.25999999999999, 115.74, 115.79, 116.15, 116.15, 116.15, 116.18], "line": {"color": "#3D9970"}, "showlegend": false, "name": "Increasing", "whiskerwidth": 0, "fillcolor": "#3D9970", "boxpoints": false}, {"type": "box", "x": [2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 18, 18, 18, 18, 18, 18, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 30, 30, 30, 30, 30, 30, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 37, 37, 37, 37, 37, 37, 39, 39, 39, 39, 39, 39, 40, 40, 40, 40, 40, 40, 41, 41, 41, 41, 41, 41, 42, 42, 42, 42, 42, 42], "y": [115.53, 115.66, 115.57, 115.57, 115.57, 115.81, 114.91, 115.56, 114.94, 114.94, 114.94, 115.67, 114.23, 114.94, 114.37, 114.37, 114.37, 115.01, 113.53, 114.37, 113.81, 113.81, 113.81, 114.39, 113.47, 113.81, 113.66, 113.66, 113.66, 113.86, 113.53, 113.65, 113.65, 113.65, 113.65, 113.76, 113.23, 113.66, 113.59, 113.59, 113.59, 113.92, 115.75, 116.15, 115.78, 115.78, 115.78, 116.18, 115.33, 115.79, 115.61, 115.61, 115.61, 115.92, 115.61, 116.16, 115.75, 115.75, 115.75, 116.17, 115.67, 115.9, 115.75, 115.75, 115.75, 116.03, 115.38, 115.74, 115.46, 115.46, 115.46, 115.94, 115.2, 115.45, 115.44, 115.44, 115.44, 115.57, 116.26, 116.4, 116.36, 116.36, 116.36, 116.59, 116.06, 116.36, 116.32000000000001, 116.32000000000001, 116.32000000000001, 116.44, 116.03, 116.33, 116.15, 116.15, 116.15, 116.48, 115.32, 116.15, 115.99, 115.99, 115.99, 116.28, 115.82000000000001, 116.24, 115.91, 115.91, 115.91, 116.35, 116.36, 116.62, 116.54, 116.54, 116.54, 116.66, 115.73, 116.53, 116.48, 116.48, 116.48, 116.68, 116.54, 116.97, 116.68, 116.68, 116.68, 117.0, 116.28, 116.81, 116.43, 116.43, 116.43, 116.82000000000001, 116.11, 116.44, 116.13, 116.13, 116.13, 116.5, 115.9, 116.13, 116.05, 116.05, 116.05, 116.29, 115.76, 116.04, 115.78, 115.78, 115.78, 116.46000000000001], "line": {"color": "#FF4136"}, "showlegend": false, "name": "Decreasing", "whiskerwidth": 0, "fillcolor": "#FF4136", "boxpoints": false}], {"xaxis": {"showgrid": true, "ticktext": ["2017-03-20", "2017-03-27", "2017-04-03", "2017-04-10", "2017-04-17", "2017-04-24", "2017-05-01", "2017-05-08"], "tickvals": [4, 9, 14, 19, 24, 29, 34, 39]}}, {"linkText": "Export to plot.ly", "showLink": true})});</script>
+<div id="06777541-883f-4e7f-aa63-d02b577cf5f0" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("06777541-883f-4e7f-aa63-d02b577cf5f0", [{"type": "box", "x": [0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 13, 13, 13, 13, 13, 13, 15, 15, 15, 15, 15, 15, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 20, 20, 20, 20, 20, 20, 24, 24, 24, 24, 24, 24, 26, 26, 26, 26, 26, 26, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 29, 29, 30, 30, 30, 30, 30, 30, 34, 34, 34, 34, 34, 34, 38, 38, 38, 38, 38, 38, 40, 40, 40, 40, 40, 40, 42, 42, 42, 42, 42, 42], "y": [114.97, 115.01, 115.2, 115.2, 115.2, 115.5, 113.5, 113.56, 113.78, 113.78, 113.78, 113.83, 112.32000000000001, 112.60000000000001, 112.84, 112.84, 112.84, 112.97, 112.8, 112.83, 113.03999999999999, 113.03999999999999, 113.03999999999999, 113.17999999999999, 112.63000000000001, 112.87, 113.45, 113.45, 113.45, 113.56, 112.82000000000001, 112.93, 113.02, 113.02, 113.02, 113.3, 112.88, 113.02, 113.35, 113.35, 113.35, 113.4, 113.35, 113.35, 113.69, 113.69, 113.69, 113.92999999999999, 113.35, 113.7, 113.83, 113.83, 113.83, 114.32, 113.63, 113.66, 114.05, 114.05, 114.05, 114.13, 112.98, 113.02, 113.52, 113.52, 113.52, 113.58, 113.28999999999999, 113.39, 113.91, 113.91, 113.91, 113.92999999999999, 113.83, 113.88, 113.91, 113.91, 113.91, 114.32, 113.69, 113.9, 113.95, 113.95, 113.95, 114.06, 113.87, 113.96, 114.2, 114.2, 114.2, 114.37, 113.34, 113.36, 113.56, 113.56, 113.56, 113.82, 112.47000000000001, 112.61000000000001, 112.67, 112.67, 112.67, 113.21, 112.16000000000001, 112.29000000000002, 112.36000000000001, 112.36000000000001, 112.36000000000001, 112.58000000000001, 111.62000000000003, 111.89000000000003, 111.93000000000002, 111.93000000000002, 111.93000000000002, 111.98000000000002], "line": {"color": "#3D9970"}, "showlegend": false, "name": "Increasing", "whiskerwidth": 0, "fillcolor": "#3D9970", "boxpoints": false}, {"type": "box", "x": [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 12, 12, 12, 12, 12, 12, 14, 14, 14, 14, 14, 14, 19, 19, 19, 19, 19, 19, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 25, 25, 25, 25, 25, 25, 27, 27, 27, 27, 27, 27, 31, 31, 31, 31, 31, 31, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 35, 35, 35, 35, 35, 35, 36, 36, 36, 36, 36, 36, 37, 37, 37, 37, 37, 37, 39, 39, 39, 39, 39, 39, 41, 41, 41, 41, 41, 41, 43, 43, 43, 43, 43, 43], "y": [114.66, 115.19, 114.79, 114.79, 114.79, 115.2, 114.59, 114.79, 114.64, 114.64, 114.64, 114.95, 114.37, 114.65, 114.56, 114.56, 114.56, 114.82, 114.05, 114.56, 114.17999999999999, 114.17999999999999, 114.17999999999999, 114.6, 113.88, 114.19, 113.92999999999999, 113.92999999999999, 113.92999999999999, 114.23, 113.49, 113.94, 113.57, 113.57, 113.57, 114.05, 113.07, 113.78, 113.08, 113.08, 113.08, 113.87, 112.52000000000001, 113.08, 112.59, 112.59, 112.59, 113.08, 112.8, 113.05, 112.87, 112.87, 112.87, 113.13, 112.89, 113.45, 112.94, 112.94, 112.94, 113.55, 113.49, 113.84, 113.66, 113.66, 113.66, 113.86, 113.72, 114.04, 114.03, 114.03, 114.03, 114.14, 113.64, 114.03, 113.82, 113.82, 113.82, 114.04, 112.82000000000001, 113.82, 113.01, 113.01, 113.01, 113.82, 113.37, 113.51, 113.4, 113.4, 113.4, 113.69, 113.53999999999999, 113.9, 113.88, 113.88, 113.88, 113.98, 113.99, 114.2, 114.03, 114.03, 114.03, 114.34, 113.61, 114.02, 113.69, 113.69, 113.69, 114.12, 112.94, 113.67999999999999, 113.35, 113.35, 113.35, 113.7, 112.8, 113.56, 113.16, 113.16, 113.16, 113.61, 112.96, 113.16, 112.98, 112.98, 112.98, 113.42999999999999, 112.60000000000001, 112.97, 112.60000000000001, 112.60000000000001, 112.60000000000001, 113.09, 112.28000000000002, 112.67, 112.29000000000002, 112.29000000000002, 112.29000000000002, 112.72, 111.86000000000003, 112.35000000000001, 111.89000000000003, 111.89000000000003, 111.89000000000003, 112.45000000000002, 111.30000000000004, 111.94000000000003, 111.35000000000004, 111.35000000000004, 111.35000000000004, 112.08000000000001], "line": {"color": "#FF4136"}, "showlegend": false, "name": "Decreasing", "whiskerwidth": 0, "fillcolor": "#FF4136", "boxpoints": false}], {"xaxis": {"showgrid": true, "ticktext": ["2017-03-20", "2017-03-27", "2017-04-03", "2017-04-10", "2017-04-17", "2017-04-24", "2017-05-01", "2017-05-08"], "tickvals": [4, 9, 14, 19, 24, 29, 34, 39]}}, {"linkText": "Export to plot.ly", "showLink": true})});</script>
 
-
-
-```python
-
-```
