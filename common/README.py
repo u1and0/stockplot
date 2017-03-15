@@ -10,7 +10,7 @@
 # 
 # 私の今年のドル円相場の予想ではありませんので、このチャートに乗っ取った投資は自己責任。
 
-# In[110]:
+# In[5]:
 
 import numpy as np
 import pandas as pd
@@ -25,7 +25,7 @@ def randomwalk(periods, start=pd.datetime.today().date(), index=None, name=None,
     return price
 
 
-# In[111]:
+# In[6]:
 
 df = randomwalk(60*24*30, freq='T', tick=0.01).resample('B').ohlc() + 115  # 初期値は115円
 df.head()
@@ -34,7 +34,7 @@ df.head()
 # ## 参考1
 # 参考: [stack over flow - how to plot ohlc candlestick with datetime in matplotlib?](http://stackoverflow.com/questions/36334665/how-to-plot-ohlc-candlestick-with-datetime-in-matplotlib)
 
-# In[112]:
+# In[7]:
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -68,7 +68,7 @@ def candlechart(ohlc, width=0.8):
         except IndexError:
             return ''
 
-    # ax.xaxis.set_major_formatter(ticker.FuncFormatter(mydate))
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(mydate))
     ax.format_xdata = mdates.DateFormatter('%Y-%m-%d')
 
     fig.autofmt_xdate()
@@ -83,7 +83,7 @@ candlechart(df)
 # 参考: [Qiita - Pythonでローソク足チャートの表示（matplotlib編）
 # ](http://qiita.com/toyolab/items/1b5d11b5d376bd542022)
 
-# In[113]:
+# In[8]:
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -108,7 +108,7 @@ fig.autofmt_xdate() #x軸のオートフォーマット
 
 # ## SMA(Simple Moving Average)の追加
 
-# In[114]:
+# In[9]:
 
 import matplotlib.pyplot as plt
 import matplotlib.finance as mpf
@@ -138,7 +138,7 @@ fig.autofmt_xdate()  # x軸のオートフォーマット
 plt.show()
 
 
-# In[115]:
+# In[10]:
 
 import matplotlib.pyplot as plt
 import matplotlib.finance as mpf
@@ -188,7 +188,7 @@ plt.show()
 # 
 # アカウントを作る必要あるやらないやら情報がいろいろありますが、規制緩和されて、今では無料で結構やりたい放題みたいです。
 
-# In[116]:
+# In[11]:
 
 import plotly as py
 py.offline.init_notebook_mode(connected=False) 
@@ -196,7 +196,7 @@ py.offline.init_notebook_mode(connected=False)
 
 # 使用するデータ
 
-# In[117]:
+# In[12]:
 
 fo = [[2000,1190547,1.36],
     [2001,1170662,1.33],
@@ -218,7 +218,7 @@ raw = pd.DataFrame(fo, columns=['year', 'births', 'birth rate'])
 raw
 
 
-# In[118]:
+# In[13]:
 
 data = [
     py.graph_objs.Scatter(y=raw["births"], name="births"),
@@ -233,7 +233,7 @@ fig = py.graph_objs.Figure(data=data, layout=layout)
 py.offline.iplot(fig, show_link=False)
 
 
-# In[119]:
+# In[14]:
 
 data = [
     py.graph_objs.Bar(x=raw["year"], y=raw["births"], name="Births"),
@@ -260,7 +260,7 @@ py.offline.iplot(fig)
 # ## 為替チャート
 # 参考: [Qiita - Pythonでローソク足チャートの表示（Plotly編）](http://qiita.com/toyolab/items/db8a1e539d4f995079d5)
 
-# In[120]:
+# In[15]:
 
 from plotly.offline import init_notebook_mode, iplot
 from plotly.tools import FigureFactory as FF
@@ -272,7 +272,7 @@ init_notebook_mode(connected=True) # Jupyter notebook用設定
 # 
 # ただし、平日のみの表示ができない。
 
-# In[121]:
+# In[16]:
 
 fig = FF.create_candlestick(df.open, df.high, df.low, df.close, dates=df.index)
 py.offline.iplot(fig)
@@ -283,7 +283,7 @@ py.offline.iplot(fig)
 # 
 # 拡大縮小自由自在なplotlyを使わない手はないですね、っていうのがまとめです。
 
-# In[122]:
+# In[17]:
 
 fig = FF.create_candlestick(df.open, df.high, df.low, df.close)
 
