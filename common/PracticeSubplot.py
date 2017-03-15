@@ -1,9 +1,8 @@
 
 # coding: utf-8
 
-# In[5]:
+# In[1]:
 
-import matplotlib.pyplot as plt
 import matplotlib.finance as mpf
 
 
@@ -48,13 +47,13 @@ def candlechart(ohlc, width=0.8):
 from randomwalk import *
 
 
-# In[7]:
+# In[27]:
 
 df = randomwalk(60*24*30, freq='T', tick=0.01).resample('B').ohlc() + 115
 df.head()
 
 
-# In[11]:
+# In[18]:
 
 # 参考: http://qiita.com/toyolab/items/1b5d11b5d376bd542022
 
@@ -65,19 +64,81 @@ ohlc = np.vstack((range(len(df)), df.values.T)).T #x軸データを整数に
 mpf.candlestick_ohlc(ax, ohlc, width=0.8, colorup='r', colordown='b')
 
 xtick0 = (5-df.index[0].weekday())%5 #最初の月曜日のインデックス
+
 plt.xticks(range(xtick0,len(df),5), [x.strftime('%Y-%m-%d') for x in df.index][xtick0::5])
 ax.grid(True) #グリッド表示
 ax.set_xlim(-1, len(df)) #x軸の範囲
 fig.autofmt_xdate() #x軸のオートフォーマット
 
-sma5 = df.close.rolling(5).mean()
-ax.plot(sma5)
+
+# In[7]:
+
+# 参考: http://qiita.com/toyolab/items/1b5d11b5d376bd542022
+import matplotlib.pyplot as plt
+import matplotlib.finance as mpf
+from randomwalk import *
 
 
-# In[54]:
+df = randomwalk(60 * 24 * 30, freq='T', tick=0.01).resample('B').ohlc() + 115
 
-ts = pd.date_range('20160901', '20161011')
-date2num(ts)
+fig = plt.figure()
+ax = plt.subplot()
+
+# candle
+ohlc = np.vstack((range(len(df)), df.values.T)).T  # x軸データを整数に
+mpf.candlestick_ohlc(ax, ohlc, width=0.8, colorup='r', colordown='b')
+
+# sma
+sma = df.close.rolling(5).mean()
+vstack = np.vstack((range(len(sma)), sma.values.T)).T  # x軸データを整数に
+ax.plot(vstack[:, 0], vstack[:, 1])
+
+# xticks
+xtick0 = (5 - df.index[0].weekday()) % 5  # 最初の月曜日のインデックス
+plt.xticks(range(xtick0, len(df), 5), [x.strftime('%Y-%m-%d') for x in df.index][xtick0::5])
+ax.grid(True)  # グリッド表示
+ax.set_xlim(-1, len(df))  # x軸の範囲
+fig.autofmt_xdate()  # x軸のオートフォーマット
+plt.show()
+
+
+# In[17]:
+
+# 参考: http://qiita.com/toyolab/items/1b5d11b5d376bd542022
+import matplotlib.pyplot as plt
+import matplotlib.finance as mpf
+from randomwalk import *
+
+
+def sma(ohlc, period):
+    sma = ohlc.close.rolling(period).mean()
+    vstack = np.vstack((range(len(sma)), sma.values.T)).T  # x軸データを整数に
+    return vstack
+
+
+df = randomwalk(60 * 24 * 60, freq='T', tick=0.01).resample('B').ohlc() + 115
+
+fig = plt.figure()
+ax = plt.subplot()
+
+# candle
+ohlc = np.vstack((range(len(df)), df.values.T)).T  # x軸データを整数に
+mpf.candlestick_ohlc(ax, ohlc, width=0.8, colorup='r', colordown='b')
+
+# sma
+sma5 = sma(df, 5)
+sma25 = sma(df, 25)
+ax.plot(sma5[:, 0], sma5[:, 1])
+ax.plot(sma25[:, 0], sma25[:, 1])
+
+
+# xticks
+xtick0 = (5 - df.index[0].weekday()) % 5  # 最初の月曜日のインデックス
+plt.xticks(range(xtick0, len(df), 5), [x.strftime('%Y-%m-%d') for x in df.index][xtick0::5])
+ax.grid(True)  # グリッド表示
+ax.set_xlim(-1, len(df))  # x軸の範囲
+fig.autofmt_xdate()  # x軸のオートフォーマット
+plt.show()
 
 
 # In[ ]:
