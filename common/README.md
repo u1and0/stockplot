@@ -1,13 +1,3 @@
-# バージョン情報
- v1.0
- 
-* ランダムウォーク
-* キャンドルチャート
-* SMA
-* matplotlib.finance
-* plotly
-
-
 
 # matplotlib.financeでローソク足
 
@@ -31,15 +21,48 @@ def randomwalk(periods, start=pd.datetime.today().date(), index=None, name=None,
                          index=index, name=name)  # unit * (-1,0,1のどれか)を吐き出すSeries
     price = bullbear.cumsum()  # 累積和
     return price
-
 ```
+
+
+```python
+np.random.seed(1)  # ランダムステートのリセット。常に同じランダムウォークが出来上がる
+rw = randomwalk(60*24*90, freq='T', tick=0.01)
+rw.head(5)
+```
+
+
+
+
+    2017-03-15 00:00:00    0.00
+    2017-03-15 00:01:00   -0.01
+    2017-03-15 00:02:00   -0.02
+    2017-03-15 00:03:00   -0.02
+    2017-03-15 00:04:00   -0.02
+    Freq: T, dtype: float64
+
+
+
+
+```python
+rw.plot()
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x202022fd9b0>
+
+
+
+
+![png](README_files/README_4_1.png)
+
 
 最小tick0.01円の1分足を30日分生成
 
 
 ```python
-np.random.seed(1)
-df = randomwalk(60*24*90, freq='T', tick=0.01).resample('B').ohlc() + 115  # 初期値は115円
+df = rw.resample('B').ohlc() + 115  # 初期値は115円
 df.head()
 ```
 
@@ -99,6 +122,26 @@ df.head()
 
 
 
+resampleメソッド使って平日のみの日足(オプション how='B')に直し、open, high, low, closeの4本値(ohcl)にまとめました。
+
+
+```python
+df.plot()
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x20204770a20>
+
+
+
+
+![png](README_files/README_8_1.png)
+
+
+4本値グラフは上のように見づらいので、ローソク足に直します。
+
 ## 参考1
 参考: [stack over flow - how to plot ohlc candlestick with datetime in matplotlib?](http://stackoverflow.com/questions/36334665/how-to-plot-ohlc-candlestick-with-datetime-in-matplotlib)
 
@@ -150,13 +193,13 @@ candlechart(df)
 
 
 
-    (<matplotlib.figure.Figure at 0x18e811b6438>,
-     <matplotlib.axes._subplots.AxesSubplot at 0x18e811bb5c0>)
+    (<matplotlib.figure.Figure at 0x20206b017b8>,
+     <matplotlib.axes._subplots.AxesSubplot at 0x202049efc18>)
 
 
 
 
-![png](README_files/README_6_1.png)
+![png](README_files/README_11_1.png)
 
 
 ## 参考2
@@ -187,7 +230,7 @@ fig.autofmt_xdate() #x軸のオートフォーマット
 ```
 
 
-![png](README_files/README_8_0.png)
+![png](README_files/README_13_0.png)
 
 
 ## SMA(Simple Moving Average)の追加
@@ -221,7 +264,7 @@ plt.show()
 ```
 
 
-![png](README_files/README_10_0.png)
+![png](README_files/README_15_0.png)
 
 
 
@@ -258,7 +301,7 @@ plt.show()
 ```
 
 
-![png](README_files/README_11_0.png)
+![png](README_files/README_16_0.png)
 
 
 # plotlyでローソク足

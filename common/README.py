@@ -10,7 +10,7 @@
 # 
 # 私の今年のドル円相場の予想ではありませんので、このチャートに乗っ取った投資判断は自己責任でお願いします。
 
-# In[28]:
+# In[1]:
 
 import numpy as np
 import pandas as pd
@@ -25,19 +25,39 @@ def randomwalk(periods, start=pd.datetime.today().date(), index=None, name=None,
     return price
 
 
+# In[11]:
+
+np.random.seed(1)  # ランダムステートのリセット。常に同じランダムウォークが出来上がる
+rw = randomwalk(60*24*90, freq='T', tick=0.01)
+rw.head(5)
+
+
+# In[12]:
+
+rw.plot()
+
+
 # 最小tick0.01円の1分足を30日分生成
 
-# In[29]:
+# In[13]:
 
-np.random.seed(1)
-df = randomwalk(60*24*90, freq='T', tick=0.01).resample('B').ohlc() + 115  # 初期値は115円
+df = rw.resample('B').ohlc() + 115  # 初期値は115円
 df.head()
 
+
+# resampleメソッド使って平日のみの日足(オプション how='B')に直し、open, high, low, closeの4本値(ohcl)にまとめました。
+
+# In[14]:
+
+df.plot()
+
+
+# 4本値グラフは上のように見づらいので、ローソク足に直します。
 
 # ## 参考1
 # 参考: [stack over flow - how to plot ohlc candlestick with datetime in matplotlib?](http://stackoverflow.com/questions/36334665/how-to-plot-ohlc-candlestick-with-datetime-in-matplotlib)
 
-# In[30]:
+# In[15]:
 
 import numpy as np
 import matplotlib.pyplot as plt
