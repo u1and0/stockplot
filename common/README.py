@@ -405,44 +405,6 @@ py.offline.iplot(fig, filename='candlestick_and_trace', validate=False)
 
 # 休日が描かれているけど、移動平均値には休日の値はNaNなので金曜日と月曜日を結ぶ直線がガタガタの原因
 
-# In[24]:
-
-import plotly.graph_objs as pyg
-from datetime import datetime
-
-def to_unix_time(*dt):
-    """datetimeをunix秒に変換
-    引数: datetime(複数指定可能)
-    戻り値: unix秒に直されたリスト"""
-    epoch =  datetime.utcfromtimestamp(0)
-    ep = [(i - epoch).total_seconds() * 1000 for i in dt]
-    return ep
-
-fig = FF.create_candlestick(df1.open, df1.high, df1.low, df1.close, dates=df1.index)
-add_line = [pyg.Scatter(x=df1.index, y=df1.close.rolling(75).mean(), name='SMA75', line=Line(color='r')),
-            pyg.Scatter(x=df1.index, y=df1.close.ewm(75).mean(), name='EMA75', line=Line(color='b')),
-            pyg.Scatter(x=df1.index, y=df1.close.rolling(75).mean(), name='SMA75', mode='markers'),
-            pyg.Scatter(x=df1.index, y=df1.close.ewm(75).mean(), name='EMA75', mode='markers')]
-
-
-xtick0 = (5-df.index[0].weekday())%5 #最初の月曜日のインデックス
-fig['layout'].update({
-    'xaxis':{
-        'showgrid': True,
-    }
-})
-
-
-fig['data'].extend(add_line)  # プロットするデータの追加
-fig['layout'].update(xaxis = {'showgrid': True,
-                            　'ticktext': [x.strftime('%Y-%m-%d') for x in df.index][xtick0::5],
-                              'tickvals': np.arange(xtick0,len(df),5)
-                              'type': 'date',
-                              'range':to_unix_time(datetime(2017,9,1), datetime(2018,1,1))})  # レイアウトの変更
-    
-py.offline.iplot(fig, filename='candlestick_and_trace', validate=False)
-
-
 # ちなみに参考の人がやっていたようにlayoutでxaxisを無理やり平日だけにするとSAM, EMAがプロットされなくなりました。
 # これは休日をなくすべくxaxisをstringとfloatに無理やり直す処理をしているから、SMAとEMAのindexとあわなくなったためでしょう。
 # SMA, EMAのindexもstring, float混合のindexにすれば平日のみxaxisにできなくもないでしょうが、今後時間足とかに任意に変更することを想定していますので、無理にdatetime型を崩したくありません。
