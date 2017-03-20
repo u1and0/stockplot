@@ -10,7 +10,7 @@
 # 
 # 私の今年のドル円相場の予想ではありませんので、このチャートに乗っ取った投資判断は自己責任でお願いします。
 
-# In[5]:
+# In[1]:
 
 import numpy as np
 import pandas as pd
@@ -25,21 +25,21 @@ def randomwalk(periods, start=pd.datetime.today().date(), index=None, name=None,
     return price
 
 
-# In[6]:
+# In[2]:
 
 np.random.seed(1)  # ランダムステートのリセット。常に同じランダムウォークが出来上がる
 rw = randomwalk(60*24*90, freq='T', tick=0.01)
 rw.head(5)
 
 
-# In[7]:
+# In[3]:
 
 rw.plot()
 
 
 # 最小tick0.01円の1分足を30日分生成
 
-# In[8]:
+# In[4]:
 
 df = rw.resample('B').ohlc() + 115  # 初期値は115円
 df.head()
@@ -47,7 +47,7 @@ df.head()
 
 # resampleメソッド使って平日のみの日足(オプション how='B')に直し、open, high, low, closeの4本値(ohcl)にまとめました。
 
-# In[9]:
+# In[5]:
 
 df.plot()
 
@@ -57,7 +57,7 @@ df.plot()
 # ## 参考1
 # 参考: [stack over flow - how to plot ohlc candlestick with datetime in matplotlib?](http://stackoverflow.com/questions/36334665/how-to-plot-ohlc-candlestick-with-datetime-in-matplotlib)
 
-# In[10]:
+# In[6]:
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -106,7 +106,7 @@ candlechart(df)
 # 参考: [Qiita - Pythonでローソク足チャートの表示（matplotlib編）
 # ](http://qiita.com/toyolab/items/1b5d11b5d376bd542022)
 
-# In[11]:
+# In[7]:
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -131,7 +131,7 @@ fig.autofmt_xdate() #x軸のオートフォーマット
 
 # ## SMA(Simple Moving Average)の追加
 
-# In[12]:
+# In[8]:
 
 import matplotlib.pyplot as plt
 import matplotlib.finance as mpf
@@ -158,7 +158,7 @@ fig.autofmt_xdate()  # x軸のオートフォーマット
 plt.show()
 
 
-# In[13]:
+# In[9]:
 
 import matplotlib.pyplot as plt
 import matplotlib.finance as mpf
@@ -204,7 +204,7 @@ plt.show()
 # 
 # アカウントを作る必要あるやらないやら情報がいろいろありますが、規制緩和されて、今では無料で結構やりたい放題みたいです。
 
-# In[14]:
+# In[10]:
 
 import plotly as py
 py.offline.init_notebook_mode(connected=False) 
@@ -212,7 +212,7 @@ py.offline.init_notebook_mode(connected=False)
 
 # 適当なサンプルデータを作ります。
 
-# In[15]:
+# In[11]:
 
 fo = [[2000,1190547,1.36],
     [2001,1170662,1.33],
@@ -234,7 +234,7 @@ raw = pd.DataFrame(fo, columns=['year', 'births', 'birth rate'])
 raw
 
 
-# In[16]:
+# In[12]:
 
 data = [
     py.graph_objs.Scatter(y=raw["births"], name="births"),
@@ -249,7 +249,7 @@ fig = py.graph_objs.Figure(data=data, layout=layout)
 py.offline.iplot(fig, show_link=False)
 
 
-# In[17]:
+# In[13]:
 
 data = [
     py.graph_objs.Bar(x=raw["year"], y=raw["births"], name="Births"),
@@ -276,7 +276,7 @@ py.offline.iplot(fig)
 # ## 為替チャート
 # 参考: [Qiita - Pythonでローソク足チャートの表示（Plotly編）](http://qiita.com/toyolab/items/db8a1e539d4f995079d5)
 
-# In[18]:
+# In[14]:
 
 from plotly.offline import init_notebook_mode, iplot
 from plotly.tools import FigureFactory as FF
@@ -289,7 +289,7 @@ init_notebook_mode(connected=True) # Jupyter notebook用設定
 # 
 # ただし、平日のみの表示ができない。
 
-# In[19]:
+# In[15]:
 
 fig = FF.create_candlestick(df.open, df.high, df.low, df.close, dates=df.index)
 py.offline.iplot(fig)
@@ -300,7 +300,7 @@ py.offline.iplot(fig)
 # 
 # 拡大縮小自由自在なplotlyを使わない手はないですね、っていうのがまとめです。
 
-# In[20]:
+# In[16]:
 
 fig = FF.create_candlestick(df.open, df.high, df.low, df.close)
 
@@ -318,7 +318,7 @@ py.offline.iplot(fig)
 
 # ## 指標の追加
 
-# In[21]:
+# In[17]:
 
 def sma(data, window, columns='close'):
     return data[columns].rolling(window).mean()
@@ -326,7 +326,7 @@ def sma(data, window, columns='close'):
 sma5 = sma(df, 5)
 
 
-# In[24]:
+# In[18]:
 
 fig = FF.create_candlestick(df.open, df.high, df.low, df.close, dates=df.index)
 
@@ -337,7 +337,7 @@ fig['data'].extend([add_line])
 py.offline.iplot(fig, filename='candlestick_and_trace', validate=False)
 
 
-# In[25]:
+# In[19]:
 
 from plotly.graph_objs import *
 fig = FF.create_candlestick(df.open, df.high, df.low, df.close, dates=df.index)
@@ -354,14 +354,14 @@ py.offline.iplot(fig, filename='candlestick_and_trace', validate=False)
 # ## SMA, EMA比較
 # 新たなチャートの作成
 
-# In[26]:
+# In[20]:
 
 np.random.seed(10)
 ra = randomwalk(60*24*360, freq='T', tick=0.01) + 115
 df1 = ra.resample('B').ohlc()
 
 
-# In[27]:
+# In[21]:
 
 import plotly.graph_objs as go
 fig = FF.create_candlestick(df1.open, df1.high, df1.low, df1.close, dates=df1.index)
@@ -376,7 +376,7 @@ py.offline.iplot(fig, filename='candlestick_and_trace', validate=False)
 
 # 何故か移動平均がガタガタしているので、拡大してみる
 
-# In[28]:
+# In[22]:
 
 import plotly.graph_objs as pyg
 from datetime import datetime
@@ -404,3 +404,49 @@ py.offline.iplot(fig, filename='candlestick_and_trace', validate=False)
 
 
 # 休日が描かれているけど、移動平均値には休日の値はNaNなので金曜日と月曜日を結ぶ直線がガタガタの原因
+
+# In[24]:
+
+import plotly.graph_objs as pyg
+from datetime import datetime
+
+def to_unix_time(*dt):
+    """datetimeをunix秒に変換
+    引数: datetime(複数指定可能)
+    戻り値: unix秒に直されたリスト"""
+    epoch =  datetime.utcfromtimestamp(0)
+    ep = [(i - epoch).total_seconds() * 1000 for i in dt]
+    return ep
+
+fig = FF.create_candlestick(df1.open, df1.high, df1.low, df1.close, dates=df1.index)
+add_line = [pyg.Scatter(x=df1.index, y=df1.close.rolling(75).mean(), name='SMA75', line=Line(color='r')),
+            pyg.Scatter(x=df1.index, y=df1.close.ewm(75).mean(), name='EMA75', line=Line(color='b')),
+            pyg.Scatter(x=df1.index, y=df1.close.rolling(75).mean(), name='SMA75', mode='markers'),
+            pyg.Scatter(x=df1.index, y=df1.close.ewm(75).mean(), name='EMA75', mode='markers')]
+
+
+xtick0 = (5-df.index[0].weekday())%5 #最初の月曜日のインデックス
+fig['layout'].update({
+    'xaxis':{
+        'showgrid': True,
+    }
+})
+
+
+fig['data'].extend(add_line)  # プロットするデータの追加
+fig['layout'].update(xaxis = {'showgrid': True,
+                            　'ticktext': [x.strftime('%Y-%m-%d') for x in df.index][xtick0::5],
+                              'tickvals': np.arange(xtick0,len(df),5)
+                              'type': 'date',
+                              'range':to_unix_time(datetime(2017,9,1), datetime(2018,1,1))})  # レイアウトの変更
+    
+py.offline.iplot(fig, filename='candlestick_and_trace', validate=False)
+
+
+# ちなみに参考の人がやっていたようにlayoutでxaxisを無理やり平日だけにするとSAM, EMAがプロットされなくなりました。
+# これは休日をなくすべくxaxisをstringとfloatに無理やり直す処理をしているから、SMAとEMAのindexとあわなくなったためでしょう。
+# SMA, EMAのindexもstring, float混合のindexにすれば平日のみxaxisにできなくもないでしょうが、今後時間足とかに任意に変更することを想定していますので、無理にdatetime型を崩したくありません。
+# 
+# そのため休日が入って少し見づらいですが、plotlyのAPIをそのまま受け入れていきます。
+# 平日だけのxaxisにする何かいい方法を知っている方がいたらコメントください。
+# まだまだplotlyのことわかっていないです。
