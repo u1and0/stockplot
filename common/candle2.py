@@ -21,7 +21,7 @@ def plotly_candle(df):
             'tickvals': np.arange(xtick0,len(df),5)
         }
     })
-    py.offline.iplot(fig)
+    py.offline.plot(fig)
 
 
 if __name__ == '__main__':
