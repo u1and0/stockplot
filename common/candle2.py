@@ -41,9 +41,10 @@ def plotly_candle(df):
     #             pyg.Scatter(x=df.index, y=df.close.ewm(75).mean(), name='EMA75', mode='markers')]
 
     # fig['data'].extend(add_line)  # プロットするデータの追加
-    fig['layout'].update(xaxis = {'showgrid': True,})
+    fig['layout'].update(xaxis = {'showgrid': True,
                                   # 'type':    'date',
-                                  # 'range':to_unix_time(datetime(2017,9,1), datetime(2018,1,1))})  # レイアウトの変更
+                                  'range':to_unix_time(None)})  # レイアウトの変更
+                                  # 'range':to_unix_time(datetime(2017,4,1), datetime(2017,5,1))})  # レイアウトの変更
 
     pyo.plot(fig, filename='candlestick_and_trace', validate=False)
 
