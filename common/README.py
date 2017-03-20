@@ -326,7 +326,7 @@ def sma(data, window, columns='close'):
 sma5 = sma(df, 5)
 
 
-# In[22]:
+# In[24]:
 
 fig = FF.create_candlestick(df.open, df.high, df.low, df.close, dates=df.index)
 
@@ -337,7 +337,7 @@ fig['data'].extend([add_line])
 py.offline.iplot(fig, filename='candlestick_and_trace', validate=False)
 
 
-# In[23]:
+# In[25]:
 
 from plotly.graph_objs import *
 fig = FF.create_candlestick(df.open, df.high, df.low, df.close, dates=df.index)
@@ -354,14 +354,14 @@ py.offline.iplot(fig, filename='candlestick_and_trace', validate=False)
 # ## SMA, EMA比較
 # 新たなチャートの作成
 
-# In[3]:
+# In[26]:
 
 np.random.seed(10)
 ra = randomwalk(60*24*360, freq='T', tick=0.01) + 115
 df1 = ra.resample('B').ohlc()
 
 
-# In[4]:
+# In[27]:
 
 import plotly.graph_objs as go
 fig = FF.create_candlestick(df1.open, df1.high, df1.low, df1.close, dates=df1.index)
@@ -376,7 +376,7 @@ py.offline.iplot(fig, filename='candlestick_and_trace', validate=False)
 
 # 何故か移動平均がガタガタしているので、拡大してみる
 
-# In[71]:
+# In[28]:
 
 import plotly.graph_objs as pyg
 from datetime import datetime
