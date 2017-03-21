@@ -6,7 +6,7 @@ from randomwalk import *
 import plotly.offline as pyo
 from plotly.tools import FigureFactory as FF
 import plotly.graph_objs as pyg
-pyo.init_notebook_mode(connected=True) 
+pyo.init_notebook_mode(connected=True)
 # init_notebook_mode(connected=True) # Jupyter notebook用設定
 
 # def plotly_candle(df):
@@ -25,33 +25,32 @@ pyo.init_notebook_mode(connected=True)
 #     pyo.plot(fig)
 
 
-
 def to_unix_time(*dt):
     """datetimeをunix秒に変換
     引数: datetime(複数指定可能)
     戻り値: unix秒に直されたリスト"""
-    epoch =  datetime.utcfromtimestamp(0)
+    epoch = datetime.utcfromtimestamp(0)
     return [(i - epoch).total_seconds() * 1000 for i in dt]
+
 
 def plotly_candle(df):
     fig = FF.create_candlestick(df.open, df.high, df.low, df.close, dates=df.index)
-    # add_line = [pyg.Scatter(x=df.index, y=df.close.rolling(75).mean(), name='SMA75', line=Line(color='r')),
-    #             pyg.Scatter(x=df.index, y=df.close.ewm(75).mean(), name='EMA75', line=Line(color='b')),
-    #             pyg.Scatter(x=df.index, y=df.close.rolling(75).mean(), name='SMA75', mode='markers'),
-    #             pyg.Scatter(x=df.index, y=df.close.ewm(75).mean(), name='EMA75', mode='markers')]
+    add_line = [pyg.Scatter(x=df.index, y=df.close.rolling(25).mean(), name='SMA25', line=pyg.Line(color='r')),
+                pyg.Scatter(x=df.index, y=df.close.ewm(25).mean(), name='EMA25', line=pyg.Line(color='b'))]
 
-    # fig['data'].extend(add_line)  # プロットするデータの追加
-    fig['layout'].update(xaxis = {'showgrid': True,
-                                  # 'type':    'date',
-                                  'range':to_unix_time(None)})  # レイアウトの変更
-                                  # 'range':to_unix_time(datetime(2017,4,1), datetime(2017,5,1))})  # レイアウトの変更
+    fig['data'].extend(add_line)  # プロットするデータの追加
+    fig['layout'].update(xaxis={'showgrid': True})
+                                # 'type':    'date',
+                                # 'range': to_unix_time(None)})  # レイアウトの変更
+    # 'range':to_unix_time(datetime(2017,4,1), datetime(2017,5,1))})  # レイアウトの変更
 
-    pyo.plot(fig, filename='candlestick_and_trace', validate=False)
+    pyo.plot(fig, filename='candlestick_and_trace.html', validate=False)
 
 
 if __name__ == '__main__':
     np.random.seed(1)
-    df = randomwalk(60 * 24 * 90, freq='T', tick=0.01, start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115
+    df = randomwalk(60 * 24 * 90, freq='T', tick=0.01,
+                    start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115
     plotly_candle((df))
 
     """
