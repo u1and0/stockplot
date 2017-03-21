@@ -24,7 +24,7 @@ class base:
         dfに格納する
         column名はSMA{移動した足}
 
-        引数: 
+        引数:
             window: 移動足
             columns: 平均を適用する足{open, high, low, close}どれか
         戻り値: smaを格納したdf"""
@@ -32,6 +32,23 @@ class base:
         self.df[colname] = self.df[columns].rolling(window).mean()
         plotter = pyg.Scatter(x=self.df.index, y=self.df[colname],
                               name='SMA%d' % window, line=pyg.Line())
+        self.add_line.append(plotter)
+        return self.df
+
+    def ema(self, span, columns='close'):
+        """Exponential Moving Average
+        spanの足の分だけ移動平均
+        dfに格納する
+        column名はSMA{移動した足}
+
+        引数:
+            span: 移動足
+            columns: 平均を適用する足{open, high, low, close}どれか
+        戻り値: smaを格納したdf"""
+        colname = 'ema%d' % span
+        self.df[colname] = self.df[columns].ewm(span).mean()
+        plotter = pyg.Scatter(x=self.df.index, y=self.df[colname],
+                              name='EMA%d' % span, line=pyg.Line())
         self.add_line.append(plotter)
         return self.df
 
@@ -51,6 +68,7 @@ if __name__ == '__main__':
     x = base(df)  # ohlcをbaseに渡す
     x.sma(5)
     x.sma(25)
-    x.sma(35)
+    x.ema(5)
+    x.ema(25)
     print(x.df.head(5))
     x.plot()
