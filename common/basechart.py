@@ -4,7 +4,7 @@ from datetime import datetime
 from randomwalk import *
 from plotly.tools import FigureFactory as FF
 import plotly.offline as pyo
-import plotly.graph_objs as pyg
+import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
 
 
@@ -15,7 +15,8 @@ class base:
 
     def __init__(self, df):
         self.df = df
-        self.add_line = []  # self.indicator()
+        self.add_line = []  # indicatorプロットの入れ子
+        self.bollinger_boolen = False  # ボリンジャーバンドのSMA一回目はplotする
 
     # ----------DATA MAKE----------
     def sma(self, window, columns='close'):
@@ -28,10 +29,10 @@ class base:
             window: 移動足
             columns: 平均を適用する足{open, high, low, close}どれか
         戻り値: smaを格納したdf"""
-        colname = 'sma%d' % window
+        colname = 'SMA%d' % window
         self.df[colname] = self.df[columns].rolling(window).mean()
-        plotter = pyg.Scatter(x=self.df.index, y=self.df[colname],
-                              name='SMA%d' % window, line=pyg.Line())
+        plotter = go.Scatter(x=self.df.index, y=self.df[colname],
+                             name=colname)
         self.add_line.append(plotter)
         return self.df
 
@@ -45,18 +46,18 @@ class base:
             span: 移動足
             columns: 平均を適用する足{open, high, low, close}どれか
         戻り値: emaを格納したdf"""
-        colname = 'ema%d' % span
+        colname = 'EMA%d' % span
         self.df[colname] = self.df[columns].ewm(span).mean()
-        plotter = pyg.Scatter(x=self.df.index, y=self.df[colname],
-                              name='EMA%d' % span, line=pyg.Line())
+        plotter = go.Scatter(x=self.df.index, y=self.df[colname],
+                             name=colname)
         self.add_line.append(plotter)
         return self.df
 
-    def bollinger(self, window, columns='close', snum=2):
+    def bollinger(self, window, snum=2, columns='close'):
         """Bollinger Bands
         windowの足の分だけ移動平均
         dfに格納する
-        column名はEMA{移動した足}
+        column名はBOL{移動した足}
 
         引数:
             window: 移動足
@@ -85,22 +86,30 @@ class base:
         Out[52]: 33.867388443752198"""
 
         # name define
-        colname = 'sma%d'% window
-        m1, p1 = '-s1_%d' % window, '+s1_%d' % window
-        # m2, p2 = '-$\sigma$_2 %d' % window, '+$\sigma$_2 %d' % window,
-        # m3, p3 = '-$\sigma$_3 %d' % window, '+$\sigma$_3 %d' % window,
+        colname = 'SMA%d' % window
+        m1, p1 = '-SIG%d' % snum, '+SIG%d' % snum
 
         # moving corrected sample standard deviation
         sma = self.df[columns].rolling(window).mean()
-        s = self.df[columns].rolling(window).std()
+        s = self.df[columns].rolling(window).std() * snum
 
         # add self df
-        self.df[colname] = sma
+        if not self.bollinger_boolen:  # 一度このfunctionによってsmaをdfに加えてしてたら、次は加えない
+            self.df[colname] = sma
         self.df[m1] = sma - s
         self.df[p1] = sma + s
-        plotter = [pyg.Scatter(x=self.df.index, y=self.df[colname], name=colname, line=pyg.Line()),
-                   pyg.Scatter(x=self.df.index, y=self.df[p1], name=p1, line=pyg.Line()),
-                   pyg.Scatter(x=self.df.index, y=self.df[m1], name=m1, line=pyg.Line())]
+
+        # plot
+        plotter = [
+            go.Scatter(x=self.df.index, y=self.df[p1], name=p1,
+                       line=dict(color='rgba(0,0,255,255)')),
+            go.Scatter(x=self.df.index, y=self.df[m1], name=m1,
+                       line=dict(color='rgba(0,0,255,255)'))]
+        if not self.bollinger_boolen:  # 一度このfunctionによってsmaをplotしてたら、次はplotしない
+            plotter.append(go.Scatter(x=self.df.index, y=self.df[
+                           colname], name=colname,
+                line=dict(color='rgba(0,0,255,100)', dash='dash')))
+            self.bollinger_boolen = True
         self.add_line.extend(plotter)
         return self.df
 
@@ -119,9 +128,10 @@ if __name__ == '__main__':
                     start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115
     x = base(df)  # ohlcをbaseに渡す
     x.bollinger(20)
-    # x.sma(5)
-    # x.sma(25)
-    # x.ema(5)
-    # x.ema(25)
-    print(x.df.head(5))
+    x.bollinger(20, 1)
+    x.sma(5)
+    x.sma(25)
+    x.ema(5)
+    x.ema(25)
+    print(x.df.tail(5))
     x.plot()
