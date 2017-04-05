@@ -46,6 +46,23 @@ class Base:
         * Add column made by above to plotly data (named 'self.add_line')
 
         More information will be show if you type `base_chart.ss.StockDataFrame._get_sma?`
+
+        ``` python
+        # Set sampltdata
+        from randomwalk import randomwalk
+        df = randomwalk(10000, freq='T').resample('H').ohlc(); df
+
+        import basechart as B
+
+        # Candlechart add
+        x = B.Base(df)
+        x.plot()
+
+        # SMA 5 add
+        x.sma('close_5_sma')
+        x.plot()
+        ```
+
         """
         self.df.get(indicator)
         plotter = go.Scatter(x=self.df.index, y=self.df[indicator],
