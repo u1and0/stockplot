@@ -66,7 +66,7 @@ class Base:
         """
         self.df.get(indicator)
         plotter = go.Scatter(x=self.df.index, y=self.df[indicator],
-                             name=indicator if name is None else name)
+                             name=indicator.upper().replace('_', ' ') if name is None else name)
         self.add_line.append(plotter)
         return self.df
 
