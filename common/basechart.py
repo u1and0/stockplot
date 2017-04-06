@@ -36,7 +36,7 @@ class Base:
         self.add_line.append(plotter)
         return self.df
 
-    def sma(self, indicator, name=None):
+    def add(self, indicator, name=None):
         """example
         `Base.sma('close_5_sma')`
 
@@ -69,6 +69,30 @@ class Base:
                              name=indicator.upper().replace('_', ' ') if name is None else name)
         self.add_line.append(plotter)
         return self.df
+
+        def pop():
+            """表示を消すときは`Base.df`, `Base.add_line`両方から消さないといけない
+            To remove indicator, you must remove indicator from `Base.df` and `Base.add_line`.
+
+            * `Base.df` is a dataframe. datafraemeの削除の仕方に従うこと
+                * カラムの削除
+                    * `Base.df.pop(*'column_name'*)
+                    * `del Base.df[*'column_name'*]
+                    * `Base.df.drop(*'column_name'*. axis=1)`
+                    * `Base.df.
+            * `Base.add_line` is a list of graph line.pythonのリスト形式の削除の仕方に従うこと
+                * 要素の削除
+                    * `Base.add_line.pop(*'index'*)`:
+                         * `[x.add_line[i]['name'] for i in range(len(x.add_line)) ]`:
+                            リスト内辞書のnameだけ抜き出せる
+                         * x.add_iine.index('*name*')でなんとかならないかな
+                    * `del Base.add_line[*num1* : *num2*]`
+                    * list.removeは使えない。なぜなら、長い長いデータフレームのような辞書形式をリストに格納しているから、実用的には打ち込めない。
+                * 初期化
+                    * `Base.add_line.clear(): clear関数
+                    * `del Base.add_line[:]`: すべての要素をdel
+                    * `Base.add_line = []`: 空のリストの代入 """
+            pass
 
     # ---------PLOT----------
     def plot(self, filename='candlestick_and_trace.html'):
