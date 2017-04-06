@@ -11,7 +11,18 @@ pyo.init_notebook_mode(connected=True)
 class Base:
     """candlec chartとその指標を描くクラス
     入力: ohlcデータフレーム
-    出力: plrtolyファイル(htmlファイル)"""
+    出力: plrtolyファイル(htmlファイル)
+
+    ---
+    example
+    df: 4本値ohlcにまとめられたデータフレーム
+    `Base(df).add.sma(5, close): Simple Moving Average 5本足　をクローズ値で見る`
+
+    ---
+    または
+    StockDataFrameにadd, pop, plot関数付与してしまうか？
+
+    """
 
     def __init__(self, df):
         # self.df = df
@@ -36,7 +47,7 @@ class Base:
         self.add_line.append(plotter)
         return self.df
 
-    def add(self, indicator, name=None):
+    class add:
         """example
         `Base.sma('close_5_sma')`
 
@@ -64,35 +75,45 @@ class Base:
         ```
 
         """
-        self.df.get(indicator)
-        plotter = go.Scatter(x=self.df.index, y=self.df[indicator],
-                             name=indicator.upper().replace('_', ' ') if name is None else name)
-        self.add_line.append(plotter)
-        return self.df
 
-        def pop():
-            """表示を消すときは`Base.df`, `Base.add_line`両方から消さないといけない
-            To remove indicator, you must remove indicator from `Base.df` and `Base.add_line`.
+        def __init__(self):
+            self.df = Base.df
 
-            * `Base.df` is a dataframe. datafraemeの削除の仕方に従うこと
-                * カラムの削除
-                    * `Base.df.pop(*'column_name'*)
-                    * `del Base.df[*'column_name'*]
-                    * `Base.df.drop(*'column_name'*. axis=1)`
-                    * `Base.df.
-            * `Base.add_line` is a list of graph line.pythonのリスト形式の削除の仕方に従うこと
-                * 要素の削除
-                    * `Base.add_line.pop(*'index'*)`:
-                         * `[x.add_line[i]['name'] for i in range(len(x.add_line)) ]`:
-                            リスト内辞書のnameだけ抜き出せる
-                         * x.add_iine.index('*name*')でなんとかならないかな
-                    * `del Base.add_line[*num1* : *num2*]`
-                    * list.removeは使えない。なぜなら、長い長いデータフレームのような辞書形式をリストに格納しているから、実用的には打ち込めない。
-                * 初期化
-                    * `Base.add_line.clear(): clear関数
-                    * `del Base.add_line[:]`: すべての要素をdel
-                    * `Base.add_line = []`: 空のリストの代入 """
-            pass
+        def sma(self, window, ohlc='close', name=None):
+            indicator = '%s_sma_%s' % (ohlc, window)
+            self.df.get(indicator)
+            plotter = go.Scatter(x=self.df.index, y=self.df[indicator],
+                                 name=indicator.upper().replace('_', ' ') if name is None else name)
+            self.add_line.append(plotter)
+            return self.df
+
+    class pop:
+        """表示を消すときは`Base.df`, `Base.add_line`両方から消さないといけない
+        To remove indicator, you must remove indicator from `Base.df` and `Base.add_line`.
+
+        * `Base.df` is a dataframe. datafraemeの削除の仕方に従うこと
+            * カラムの削除
+                * `Base.df.pop(*'column_name'*)
+                * `del Base.df[*'column_name'*]
+                * `Base.df.drop(*'column_name'*. axis=1)`
+            * 初期化
+                * dfs = dfs.drop(dfs.columns[4:], 1): 4インデックス目以降を削除
+        * `Base.add_line` is a list of graph line.pythonのリスト形式の削除の仕方に従うこと
+            * 要素の削除
+                * `Base.add_line.pop(*'index'*)`:
+                     * `[x.add_line[i]['name'] for i in range(len(x.add_line)) ]`:
+                        リスト内辞書のnameだけ抜き出せる
+                     * x.add_iine.index('*name*')でなんとかならないかな
+                * `del Base.add_line[*num1* : *num2*]`
+                * list.removeは使えない。なぜなら、長い長いデータフレームのような辞書形式をリストに格納しているから、実用的には打ち込めない。
+            * 初期化
+                * `Base.add_line.clear(): clear関数
+                * `del Base.add_line[:]`: すべての要素をdel
+                * `Base.add_line = []`: 空のリストの代入 """
+        pass
+
+        def ppop(self):
+            print('hoge')
 
     # ---------PLOT----------
     def plot(self, filename='candlestick_and_trace.html'):
@@ -110,9 +131,9 @@ if __name__ == '__main__':
     x = Base(df)  # ohlcをbaseに渡す
     # x.bollinger(20)
     # x.bollinger(20, 1)
-    x.sma('close_5_sma')
-    x.sma('close_25_sma')
-    x.sma('close_25_ema')
+    x.add.sma(6)
+    # x.sma('close_25_sma')
+    # x.sma('close_25_ema')
     # x.ema(5)
     # x.ema(25)
     print(x.df.tail(5))
