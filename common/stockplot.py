@@ -2,57 +2,69 @@ import numpy as np
 import pandas as pd
 from randomwalk import *
 from plotly.tools import FigureFactory as FF
+from plotly import tools
 import plotly.offline as pyo
 import plotly.graph_objs as go
-import stockstats as ss
+from stockstats import *
 pyo.init_notebook_mode(connected=True)
 
-# class plot(object):
-#     """StockDataFrame plotter"""
-#     def __init__(self, df):
-#         # super(plot, self).__init__()
-#         self.df = df
-#     def
+
+# fig = tools.make_subplots(rows=2, cols=1, specs=[[{}], [{}]],
+#                           shared_xaxes=True, shared_yaxes=True,
+#                           vertical_spacing=0.001)
+class StockPlot:
+    """TODO
 
 
-__add_line__ = []
+    **USAGE**
+
+    ```
+    dfs = Stockplot.StockDataFrame(df)
+    dfs.add_indicator('hogehoge')
+    dfs.candle_plot()
+    dfs.remove_indicator('hogehoge')
+    ```
+
+    """
+
+    def __init__(self, df):
+        self.StockDataFrame = StockDataFrame(df)
+        self.fig = FF.create_candlestick(self.StockDataFrame.open, self.StockDataFrame.high,
+                                         self.StockDataFrame.low, self.StockDataFrame.close, dates=self.StockDataFrame.index)
+
+    # def ppplot(dfs, filename='candlestick_and_trace.html'):
+    #     # trace1 = FF.create_candlestick(dfs.open, dfs.high,
+    #     #                                dfs.low, dfs.close, dates=dfs.index)
+    #     trace1 = go.Scatter(x=[0, 1, 2], y=[10, 11, 12])
+    #     fig.append_trace(trace1, 1, 1)
+    #     pyo.plot(fig, filename=filename, validate=False)
+
+    def candle_plot(self, filename='candlestick_and_trace.html'):
+        """StockDataFrameをキャンドルチャート化する
+        引数: dfs: StockDataFrame
+        戻り値: plotly plot"""
+        self.fig['layout'].update(xaxis={'showgrid': True})
+        pyo.plot(self.fig, filename=filename, validate=False)
+
+    def add_indicator(self, indicator):
+        indi = self.StockDataFrame.get(indicator)
+        plotter = go.Scatter(x=indi.index, y=indi,
+                             name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
+        self.fig['data'].append(plotter)
+
+    def remove_indicator(self, indicator):
+        indicator = indicator.lower().replace(' ', '_')
+        for dicc in self.fig['data']:
+            if dicc['name'] == indicator:
+                self.fig['data'].remove(dicc)
+        return dicc
 
 
-def candle_plot(dfs, filename='candlestick_and_trace.html'):
-    """StockDataFrameをキャンドルチャート化する
-    引数: dfs: StockDataFrame
-    戻り値: plotly plot"""
-    fig = FF.create_candlestick(dfs.open, dfs.high,
-                                dfs.low, dfs.close, dates=dfs.index)
-    fig['data'].extend(__add_line__)
-    fig['layout'].update(xaxis={'showgrid': True})
-    pyo.plot(fig, filename=filename, validate=False)
+# StockPlot.StockDataFrame = StockDataFrame
 
-
-def sma(dfs, window, ohlc='close'):
-    name = '%s_%s_sma' % (ohlc, window)  # indicator name
-    sma = dfs.get(name)  # indicator
-    plotter = go.Scatter(x=sma.index, y=sma,
-                         name=name.upper().replace('_', ' '))  # グラフに追加する形式変換
-    __add_line__.append(plotter)  # グラフに追加
-    return sma
-
-
-def ema(dfs, window, ohlc='close'):
-    return dfs.get('%s_%s_ema' % (ohlc, window))
-
-
-def rsi(dfs, window):
-    return dfs.get('rsi_%s' % window)
-
-
-def add_indicator(dfs, indicator):
-    return dfs.get(indicator)
-
-
-ss.StockDataFrame.candle_plot = candle_plot
-ss.StockDataFrame.sma = sma
-ss.StockDataFrame.add_indicator = add_indicator
+# StockDataFrame.candle_plot = candle_plot
+# StockDataFrame.add_indicator = add_indicator
+# StockDataFrame.add_indicator = remove_indicator
 
 
 if __name__ == '__main__':
@@ -62,10 +74,15 @@ if __name__ == '__main__':
                     start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115  # 90日分の1分足を日足に直す
 
     # Convert DataFrame as StockDataFrame
-    dfs = ss.StockDataFrame(df)
+    dfs = StockPlot(df.copy())
 
     # Add indicator
-    dfs.sma(5, 'open')
+    dfs.add_indicator('close_25_sma')
+    dfs.add_indicator('close_25_ema')
+
+    # Remove indicator
+    print(dfs.remove_indicator('close_25_ema'))
+    print(dfs.fig['data'])
 
     # Plot Candle chart
     dfs.candle_plot()
