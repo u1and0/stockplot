@@ -13,18 +13,50 @@ pyo.init_notebook_mode(connected=True)
 #                           shared_xaxes=True, shared_yaxes=True,
 #                           vertical_spacing=0.001)
 class StockPlot:
-    """TODO
+    """StockDataFrameの可視化ツール
 
+    # なにがしたい
 
-    **USAGE**
+    * StockDataFrameにプロット能力を持たせたい。
+    * プロット能力はStockDataFrameクラスにメソッドを付与してあげる。
 
+    ```python
+    df = randomwalk(60 * 24 * 90, freq='T', tick=0.01,
+                    start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115  # 90日分の1分足を日足に直す
+    dfs = stockstats.StockDataFrame(df)
+    dfs.add_indicator('hoge'): インジケーターの追加
+    dfs.candle_plot(): キャンドルチャートとインジケータの表示
+    dfs.remove_indicator('hoge'): インジケーターの削除
     ```
-    dfs = Stockplot.StockDataFrame(df)
-    dfs.add_indicator('hogehoge')
-    dfs.candle_plot()
-    dfs.remove_indicator('hogehoge')
-    ```
 
+    # メソッド詳細
+    * dfs.add_indicator('hoge')
+        * dfs.get('hoge')を実行して、グラフに挿入するデータフレームを入手する
+            > `indi = dfs.get('hoge')`
+        * プロットするための形plotterに変換してやる
+            > `plotter = go.Scatter(x=..., y=...) <- indiを使う`
+        * plotterをStockPlotのattributeである`fig`に入れてやる
+            > `fig['data'].append(plotter)`
+
+    * dfs.candle_plot()
+        * `fig = FF.create_candlestick... `でキャンドルチャートを取得できる
+        * figに対してadd_indicator / remove_inidcatorで指標の追加 / 削除が行われる。
+
+    * dfs.plot()
+        * plt.show()に当たるのかな
+
+        ```python
+                self.fig['layout'].update(xaxis={'showgrid': True})  # figのレイアウト調整をして
+                pyo.plot(self.fig, filename=filename, validate=False)  # plotlyでhtmlとしてプロットする
+        ```
+
+        別にdataframe的な操作は必要ないから、
+        StockDataFrameのサブクラスになる必要はないので
+
+        強いていうなら、StockDataFrameにfigという属性持たせて、
+        plotlyとつなげたいから
+        def __init()__をStockDataFrameにあてがってあげればいいのか
+        StockDataFrame.__init__ = __init__
     """
 
     def __init__(self, df):
@@ -51,20 +83,17 @@ class StockPlot:
         plotter = go.Scatter(x=indi.index, y=indi,
                              name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
         self.fig['data'].append(plotter)
+        return indi
 
     def remove_indicator(self, indicator):
-        indicator = indicator.lower().replace(' ', '_')
+        indi = indicator.lower().replace(' ', '_')
+        INDI = indicator.upper().replace('_', ' ')
+        self.StockDataFrame.pop(indi)
         for dicc in self.fig['data']:
-            if dicc['name'] == indicator:
+            if dicc['name'] == INDI:
                 self.fig['data'].remove(dicc)
-        return dicc
+                return dicc
 
-
-# StockPlot.StockDataFrame = StockDataFrame
-
-# StockDataFrame.candle_plot = candle_plot
-# StockDataFrame.add_indicator = add_indicator
-# StockDataFrame.add_indicator = remove_indicator
 
 
 if __name__ == '__main__':
@@ -81,8 +110,7 @@ if __name__ == '__main__':
     dfs.add_indicator('close_25_ema')
 
     # Remove indicator
-    print(dfs.remove_indicator('close_25_ema'))
-    print(dfs.fig['data'])
+    dfs.remove_indicator('close_25_ema')
 
     # Plot Candle chart
     dfs.candle_plot()
