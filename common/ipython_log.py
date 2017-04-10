@@ -4,6 +4,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from plotly.tools import FigureFactory as FF
+from plotly import tools
+import plotly.offline as pyo
+import plotly.graph_objs as go
+pyo.init_notebook_mode(connected=True)
 
 # Make sample data
 from randomwalk import randomwalk

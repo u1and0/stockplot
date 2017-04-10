@@ -1,17 +1,16 @@
 import numpy as np
 import pandas as pd
+# ----------User Module----------
 from randomwalk import *
+from stockstats import StockDataFrame
+# ----------Plotly Module----------
 from plotly.tools import FigureFactory as FF
-from plotly import tools
 import plotly.offline as pyo
+import plotly.plotly as py
 import plotly.graph_objs as go
-from stockstats import *
 pyo.init_notebook_mode(connected=True)
 
 
-# fig = tools.make_subplots(rows=2, cols=1, specs=[[{}], [{}]],
-#                           shared_xaxes=True, shared_yaxes=True,
-#                           vertical_spacing=0.001)
 class StockPlot:
     """StockDataFrameの可視化ツール
 
@@ -59,24 +58,22 @@ class StockPlot:
         StockDataFrame.__init__ = __init__
     """
 
-    def __init__(self, df):
-        self.StockDataFrame = StockDataFrame(df)
-        self.fig = FF.create_candlestick(self.StockDataFrame.open, self.StockDataFrame.high,
-                                         self.StockDataFrame.low, self.StockDataFrame.close, dates=self.StockDataFrame.index)
+    def __init__(self, sdf):
+        self.StockDataFrame = sdf
+        self.fig = FF.create_candlestick(self.StockDataFrame.open,
+                                         self.StockDataFrame.high,
+                                         self.StockDataFrame.low,
+                                         self.StockDataFrame.close,
+                                         dates=self.StockDataFrame.index)
 
-    # def ppplot(dfs, filename='candlestick_and_trace.html'):
-    #     # trace1 = FF.create_candlestick(dfs.open, dfs.high,
-    #     #                                dfs.low, dfs.close, dates=dfs.index)
-    #     trace1 = go.Scatter(x=[0, 1, 2], y=[10, 11, 12])
-    #     fig.append_trace(trace1, 1, 1)
-    #     pyo.plot(fig, filename=filename, validate=False)
-
-    def candle_plot(self, filename='candlestick_and_trace.html'):
+    def candle_plot(self, filebasename='candlestick_and_trace'):
         """StockDataFrameをキャンドルチャート化する
         引数: dfs: StockDataFrame
         戻り値: plotly plot"""
         self.fig['layout'].update(xaxis={'showgrid': True})
-        pyo.plot(self.fig, filename=filename, validate=False)
+        pyo.plot(self.fig, filename=filebasename + '.html', validate=False)
+        # pyo.plot(self.fig, image='png', image_filename=filebasename, validate=False)
+        return self.fig
 
     def add_indicator(self, indicator):
         indi = self.StockDataFrame.get(indicator)
@@ -95,7 +92,6 @@ class StockPlot:
                 return dicc
 
 
-
 if __name__ == '__main__':
     # Make sample data
     np.random.seed(1)
@@ -103,14 +99,18 @@ if __name__ == '__main__':
                     start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115  # 90日分の1分足を日足に直す
 
     # Convert DataFrame as StockDataFrame
-    dfs = StockPlot(df.copy())
+    sdf = StockDataFrame(df)
 
-    # Add indicator
-    dfs.add_indicator('close_25_sma')
-    dfs.add_indicator('close_25_ema')
+    # Convert StockDataFrame as StockPlot
+    x = StockPlot(sdf)
 
-    # Remove indicator
-    dfs.remove_indicator('close_25_ema')
+    # # Add indicator
+    for i in range(10, 14):
+        x.add_indicator('close_{}_ema'.format(i))
 
-    # Plot Candle chart
-    dfs.candle_plot()
+    # # Remove indicator
+    for i in (10, 12):
+        x.remove_indicator('close_{}_ema'.format(i))
+
+    # # Plot Candle chart
+    x.candle_plot()
