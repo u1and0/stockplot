@@ -1,12 +1,11 @@
 import numpy as np
 import pandas as pd
 # ----------User Module----------
-from randomwalk import *
-from stockstats import StockDataFrame
+from randomwalk import randomwalk
+import stockstats as ss
 # ----------Plotly Module----------
 from plotly.tools import FigureFactory as FF
 import plotly.offline as pyo
-import plotly.plotly as py
 import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
 
@@ -56,6 +55,11 @@ class StockPlot:
         plotlyとつなげたいから
         def __init()__をStockDataFrameにあてがってあげればいいのか
         StockDataFrame.__init__ = __init__
+
+    # TODO
+    * koma_ashi
+    * subplot
+
     """
 
     def __init__(self, sdf):
@@ -71,9 +75,9 @@ class StockPlot:
         引数: dfs: StockDataFrame
         戻り値: plotly plot"""
         self.fig['layout'].update(xaxis={'showgrid': True})
-        pyo.plot(self.fig, filename=filebasename + '.html', validate=False)
+        ax = pyo.iplot(self.fig, filename=filebasename + '.html', validate=False)
         # pyo.plot(self.fig, image='png', image_filename=filebasename, validate=False)
-        return self.fig
+        return ax
 
     def add_indicator(self, indicator):
         indi = self.StockDataFrame.get(indicator)
@@ -99,18 +103,18 @@ if __name__ == '__main__':
                     start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115  # 90日分の1分足を日足に直す
 
     # Convert DataFrame as StockDataFrame
-    sdf = StockDataFrame(df)
+    sdf = ss.StockDataFrame(df)
 
     # Convert StockDataFrame as StockPlot
     x = StockPlot(sdf)
 
     # # Add indicator
     for i in range(10, 14):
-        x.add_indicator('close_{}_ema'.format(i))
+        x.add_indicator('close_{}_sma'.format(i))
 
     # # Remove indicator
     for i in (10, 12):
-        x.remove_indicator('close_{}_ema'.format(i))
+        x.remove_indicator('close_{}_sma'.format(i))
 
     # # Plot Candle chart
     x.candle_plot()

@@ -17,6 +17,6 @@ df = randomwalk(60 * 24 * 90, freq='T', tick=0.01, start=pd.datetime(2017, 3, 20
 
 # Convert df as StockDataFrame
 from stockstats import StockDataFrame
-dfs = StockDataFrame(df.copy())
+sdf = StockDataFrame(df.copy())
 
 from stockplot import *
