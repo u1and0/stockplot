@@ -7,13 +7,13 @@
 
 # ## サンプルデータの作成
 
-# In[1]:
+# In[17]:
 
 import sys, os
 sys.path.append('../../common/')
 
 
-# In[2]:
+# In[18]:
 
 np.random.seed(9)
 from randomwalk import randomwalk
@@ -26,7 +26,7 @@ df = randomwalk(60 * 24 * 90, freq='T', tick=0.01, start=pd.datetime(2017, 3, 20
 
 # ## pd.DataFrame型をStockDataFrame型に変換
 
-# In[3]:
+# In[19]:
 
 from stockstats import StockDataFrame
 sdf = StockDataFrame(df.copy())
@@ -36,28 +36,32 @@ sdf = StockDataFrame(df.copy())
 
 # ## stockplot.pyのインポート
 
-# In[4]:
+# In[20]:
 
 from stockplot import StockPlot
 
 
-# In[5]:
+# In[21]:
 
 # StockPlotクラスのインスタンス化
 x = StockPlot(sdf)
 
 
-# In[6]:
+# In[22]:
 
 # キャンドルチャートのプロット
 x.candle_plot()
 
 
+# キャンドルチャートが描かれました。
+
 # # 指標
 
 # ## 指標の追加
 
-# In[7]:
+# 指標の追加はリスト型と同様に`append`メソッドを使います。
+
+# In[23]:
 
 # 終値25日移動平均線追加
 x.append('close_25_sma')
@@ -67,7 +71,7 @@ x.append('close_25_sma')
 # 
 # 裏でplotly形式に直され、インスタンス変数self.figに追加されます。
 
-# In[8]:
+# In[24]:
 
 # キャンドルチャートと追加された指標のプロット
 x.candle_plot()
@@ -75,7 +79,7 @@ x.candle_plot()
 
 # 終値25日移動平均線が追加されました。
 
-# In[9]:
+# In[25]:
 
 # 終値25日指数移動平均線の追加とプロット
 x.append('close_25_ema')
@@ -86,7 +90,11 @@ x.candle_plot()
 
 # ## 指標の削除
 
-# In[11]:
+# 指標の削除はリストの削除と同様に'remove'メソッドを使います。
+# 
+# ここでは省略されていますが、`remove`戻り値は削除したStockDataFrameのカラムです。
+
+# In[26]:
 
 y = StockPlot(sdf)
 # 10,11,12,13足移動平均線
@@ -95,13 +103,17 @@ for i in range(10, 14):
 y.candle_plot()
 
 
-# In[12]:
+# 新たなインスタンスを作成し、10, 11, 12, 13足移動平均線を追加しました。
+
+# In[27]:
 
 # 10, 12足移動平均線の削除
 for i in (10, 12):
     y.remove('close_{}_sma'.format(i))
 y.candle_plot()
 
+
+# 10足、12足移動平均線だけを指定して削除しました。
 
 # # ファイルへのエクスポート
 
@@ -110,16 +122,16 @@ y.candle_plot()
 # 
 # ファイルとして吐き出したいときは以下のメソッドを使います。
 # 
-# * html形式: `plotly.offline.plot([figure_or_data], )`
-# * png, svg, jpeg, webp形式: `plotly.offline.image`
+# * html形式: `plotly.offline.plot(figure_or_data, filename=<拡張子htmlにしないとワーニング(勝手に拡張子つけられちゃう)>, )`
+# * png, svg, jpeg, webp形式: `plotly.offline.plot(figure_or_data, image=<png|svg|jpeg|webp>, imagefilename=<拡張子抜きのファイル名>)`
 
-# In[ ]:
+# In[28]:
 
 import plotly.offline as pyo
 pyo.plot(y._fig, filename='candle_y.html', validate=False)  # 新しいタブを開いてhtml表示します
 
 
-# In[ ]:
+# In[29]:
 
 pyo.plot(y._fig, image='png', image_filename='candle_y')
 # 新しいtmpタブを開いて
@@ -153,7 +165,7 @@ pyo.plot(y._fig, image='png', image_filename='candle_y')
 # 
 # `stockstats`は金融指標を簡単に取得できる改造pandas.DataFrameクラスです。
 
-# In[14]:
+# In[30]:
 
 # 使い方
 np.random.seed(2)
@@ -165,14 +177,14 @@ sdf
 
 # 見た目に変化はありませんが金融指標を`stockstats`の文法に従って`get`メソッド、またはディクショナリの取得をすると、金融指標のカラムが追加されます。
 
-# In[15]:
+# In[31]:
 
 sdf.get('close_5_sma'); sdf
 
 
 # close_5_sma: 終値の5足移動平均線が追加されました。
 
-# In[16]:
+# In[32]:
 
 sdf['close_5_sma']; sdf
 
@@ -181,6 +193,40 @@ sdf['close_5_sma']; sdf
 # getの方がありえない指標を打ち込んだときエラーが発生しません。
 # どちら良いかは用途次第でしょう。
 
+# 使用できる指標は以下の通り。
+
+# * change (in percent)
+# * delta
+# * permutation (zero based)
+# * log return
+# * max in range
+# * min in range
+# * middle = (close + high + low) / 3
+# * SMA: simple moving average
+# * EMA: exponential moving average
+# * MSTD: moving standard deviation
+# * MVAR: moving variance
+# * RSV: raw stochastic value
+# * RSI: relative strength index
+# * KDJ: Stochastic oscillator
+# * Bolling: including upper band and lower band.
+# * MACD: moving average convergence divergence. Including signal and histogram.
+# * CR:
+# * WR: Williams Overbought/Oversold index
+# * CCI: Commodity Channel Index
+# * TR: true range
+# * ATR: average true range
+# * line cross check, cross up or cross down.
+# * DMA: Different of Moving Average (10, 50)
+# * DMI: Directional Moving Index, including
+# * +DI: Positive Directional Indicator
+# * -DI: Negative Directional Indicator
+# * ADX: Average Directional Movement Index
+# * ADXR: Smoothed Moving Average of ADX
+# * TRIX: Triple Exponential Mo
+# ving Average
+# * VR: Volatility Volume Ratio
+
 # 詳しくは公式をご覧ください。
 # 
 # * [github - jealous/stockstats](https://github.com/jealous/stockstats)
@@ -188,7 +234,7 @@ sdf['close_5_sma']; sdf
 
 # ## stockplot
 
-# これが今、紹介した私が作ったやつです。
+# 私が作ったやつです。
 # stockstatsを楽にplotするためのクラスStockPlotを作成しました。
 
 # stockplot.pyのソースコード

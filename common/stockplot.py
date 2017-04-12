@@ -84,11 +84,11 @@ class StockPlot:
     def remove(self, indicator):
         indi = indicator.lower().replace(' ', '_')
         INDI = indicator.upper().replace('_', ' ')
-        self.StockDataFrame.pop(indi)
+        rem = self.StockDataFrame.pop(indi)
         for dicc in self._fig['data']:
             if dicc['name'] == INDI:
                 self._fig['data'].remove(dicc)
-                return dicc
+                return rem
 
 
 if __name__ == '__main__':
