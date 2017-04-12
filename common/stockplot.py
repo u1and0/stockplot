@@ -158,8 +158,18 @@ class StockPlot:
         from StockDataFrame & figure
 
         USAGE:
-            `sp.pop(-2)`
-            remove indicator last 2 before appended."""
+            * `sp.pop()`
+            > remove indicator last appended.
+            * `sp.pop(-2)`
+            > remove indicator last 2 before appended.
+
+        ISSUE:
+            There are some indicator generate multi columns in StockDataFrame.
+            The columns don't remove from StockDataFrame & figure by using pop method.
+
+        SOLLUTION:
+            Another attribute can be added for stock the columns key and index.
+        """
         rem = self.StockDataFrame.pop(self.StockDataFrame.columns[index])
         self._fig['data'].pop(index)
         return rem
