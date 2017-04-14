@@ -5,7 +5,7 @@ import pandas as pd
 import stockstats as ss
 # ----------User Module----------
 from randomwalk import randomwalk
-from stockplot import StockPlot
+import stockplot as sp
 # ----------Plotly Module----------
 import plotly.offline as pyo
 pyo.init_notebook_mode(connected=True)
@@ -18,18 +18,18 @@ df = randomwalk(60 * 24 * 90, freq='T', tick=0.01, start=pd.datetime(2017, 3, 20
 sdf = ss.StockDataFrame(df.copy())
 
 # Convert StockDataFrame as StockPlot
-sp = StockPlot(sdf.copy())
+fig = sp.StockPlot(sdf.copy())
 
 # # Add indicator
 # for i in range(10, 17):
-#     sp.append('close_{}_sma'.format(i))
+#     fig.append('close_{}_sma'.format(i))
 
 # # Remove indicator
 # for i in [13, 11]:
-#     sp.remove('close_{}_sma'.format(i))
+#     fig.remove('close_{}_sma'.format(i))
 
 # # Pop indicator
-# sp.pop()
+# fig.pop()
 
 # # Plot Candle chart
-# sp.candle_plot(how='html')
+# fig.candle_plot(how='html')

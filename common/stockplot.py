@@ -25,6 +25,14 @@ def change_freq(self, freq: str) -> pd.DataFrame:
 pd.DataFrame.change_freq = change_freq
 
 
+def to_unix_time(*dt: pd.datetime)->list:
+    """datetimeをunix秒に変換
+    引数: datetime(複数指定可能)
+    戻り値: unix秒に直されたリスト"""
+    epoch = pd.datetime.utcfromtimestamp(0)
+    return [(i - epoch).total_seconds() * 1000 for i in dt]
+
+
 class StockPlot:
     """StockDataFrameの可視化ツール
 
@@ -52,7 +60,7 @@ class StockPlot:
     * StockDataFrameにプロット能力を持たせたい。
     * StockPlotの属性
         * StockDataFrame: 金融指標を取得しやすい改造pandas.DataFrame
-        * _fig: plotlyのプロットデータ        
+        * _fig: plotlyのプロットデータ
 
     ```python
     df = randomwalk(60 * 24 * 90, freq='T', tick=0.01,
@@ -121,13 +129,36 @@ class StockPlot:
                                           dates=self.StockDataFrame.index)
 
     def candle_plot(self, filebasename='candlestick_and_trace', how='jupyter',
-                    showgrid=True, validate=False):
+                    showgrid=True, validate=False,
+                    start=None, end=None, periods=None, freq=None):
         """Draw candle chart
         StockDataFrame must have [open, high, low, close] columns!
 
         USAGE:
             `sp.candle_plot()`"""
-        self._fig['layout'].update(xaxis={'showgrid': showgrid})
+        # Set span
+        if freq:
+            pass  # change_freq()
+        if periods:
+            assert (start or end), 'You need arg \"start\" or \"end\" using periods'
+            assert freq, 'You need arg \"freq\" using periods'
+            dd = pd.date_range(start=start, end=end, periods=periods, freq=freq)
+            if end is None:
+                end = dd[-1]
+            elif start is None:
+                start = dd[0]
+        else:
+            if start is None:
+                start = self.StockDataFrame.index[0]
+            if end is None:
+                end = self.StockDataFrame.index[-1]
+
+        # import pdb; pdb.set_trace()
+
+        # Adjust layout
+        self._fig['layout'].update(xaxis={'showgrid': showgrid,
+                                          'range': to_unix_time(start, end)})
+        # Export file type
         if how == 'jupyter':
             ax = pyo.iplot(self._fig, filename=filebasename + '.html',
                            validate=validate)  # for Jupyter Notebook
