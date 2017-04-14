@@ -10,6 +10,21 @@ import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
 
 
+def change_freq(self, freq: str) -> pd.DataFrame:
+    """ohlcデータのタイムスパンを変える
+    引数:
+        self: open. high, low, closeをカラムに持ち、
+            indpdがdatetime型のpd.DataFrame
+        freq: 変更したい期間(str型)
+    戻り値: スパン変更後のデータフレーム
+    """
+    return self.ix[:, ['open', 'high', 'low', 'close']] .resample(freq)\
+        .agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'}).dropna()
+
+
+pd.DataFrame.change_freq = change_freq
+
+
 class StockPlot:
     """StockDataFrameの可視化ツール
 
