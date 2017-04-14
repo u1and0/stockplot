@@ -33,17 +33,16 @@ def to_unix_time(*dt: pd.datetime)->list:
     return [(i - epoch).total_seconds() * 1000 for i in dt]
 
 
-def set_span(sdf, start=None, end=None, periods=None, freq=None, tz=None,
-             normalize=False, closed=None, **kwargs):
+def set_span(sdf, start=None, end=None, periods=None, freq='D',
+             tz=None, normalize=False, closed=None, **kwargs):
     """spanの変更
     引数:
         sdf: indexがdatetimeのデータフレーム
-        freq: M | W | D | H | T | S <必ず必要>
-            * freq入れなくてもここはpassするが、
-            * date_rangeのところでNoneだとエラー出る。
-            * sdfがすでに指定したいfreqだったときには
-            * 無駄なコストなのでchange_freq通さない。
-        戻り値: datetime index
+        start, end: 最初と最後のdatetime, 'first'でsdfの最初、'last'でsdfの最後
+        periods: datetimeの個数
+        start, end, periods合わせて2つの引数が必要
+        freq: M | W | D | H | T | S **pd.date_rangeと異なり、必ず必要**
+    戻り値: datetime index
     """
 
     # Args check
@@ -51,7 +50,7 @@ def set_span(sdf, start=None, end=None, periods=None, freq=None, tz=None,
     if count_not_none != 2:  # Like a pd.date_range Error
         raise ValueError('Must specify two of start, end, or periods')
 
-    source = sdf.copy().change_freq(freq)  # if freq else sdf.copy()
+    source = sdf.change_freq(freq)  # if freq else sdf.copy()
     end = source.index[-1] if end == 'last' else end
     start = source.index[0] if start == 'first' else start
 
@@ -74,7 +73,7 @@ class StockPlot:
     # USAGE
 
     ## Convert DataFrame as StockDataFrame
-    ## `df` is a pandas.DataFrame which has [open, high, low, close] columns. 
+    ## `df` is a pandas.DataFrame which has [open, high, low, close] columns.
     sdf = ss.StockDataFrame(df)
 
     # Convert StockDataFrame as StockPlot
@@ -165,51 +164,23 @@ class StockPlot:
         self._fig = {'data': [], 'layout': []}
 
     def candle_plot(self, how='html', filebasename='candlestick_and_trace',
-                    start=None, end=None, periods=None, freq=None,
+                    start=None, end=None, periods=None, freq='D',
+                    tz=None, normalize=False, closed=None,
                     showgrid=True, validate=False, **kwargs):
         """Draw candle chart
         StockDataFrame must have [open, high, low, close] columns!
 
         USAGE:
-            `sp.candle_plot()`"""
-        # Set span
+            `sp.candle_plot()`
+        """
+        sdf = self.StockDataFrame.copy().change_freq(freq)
+        #     if freq else self.StockDataFrame.copy()  # freq change or not
+        # sdf = self.StockDataFrame.copy()
 
-        sdf = self.StockDataFrame.copy().change_freq(freq)\
-            if freq else self.StockDataFrame.copy()  # freq change or not
-
-        # start, end, periodの数は2でなければならない。pd.date_rangeと同じ
-        lst = [start, end, periods]
-        count_not_none = sum(x is not None for x in lst)
-        if count_not_none != 2:  # Like a pd.date_range Error
-            raise ValueError('Must specify two of start, end, or periods')
-        # start, end, periodsどれかが与えられていない場合
-        if not periods:
-            time_span = pd.date_range(start=start, end=end, freq=freq,
-                                      tz=None, normalize=False, closed=None, **kwargs)
-        if not end:
-            time_span = pd.date_range(start=start, periods=periods, freq=freq,
-                                      tz=None, normalize=False, closed=None, **kwargs)
-        if not start:
-            time_span = pd.date_range(end=end, periods=periods, freq=freq,
-                                      tz=None, normalize=False, closed=None, **kwargs)
-        if end == 'last':
-            time_span = pd.date_range(
-                end=sdf.index[-1], periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
-        if start == 'first':
-            time_span = pd.date_range(
-                start=sdf.index[0], periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
-
-        # # if periods:
-        # #     assert (start or end), 'You need arg \"start\" or \"end\" using periods'
-        #     if end is None:
-        #         end = time_span[-1]
-        #     elif start is None:
-        #         start = time_span[0]
-        # else:
-        #     if start is None:
-        #         start = sdf.index[0]
-        #     if end is None:
-        #         end = sdf.index[-1]
+        time_span = set_span(sdf, start=start, end=end, periods=periods, freq=freq,
+                             tz=tz, normalize=normalize, closed=closed, **kwargs)
+        start = time_span[0]
+        end = time_span[-1]
 
         # Adjust layout
         self._fig = FF.create_candlestick(sdf.open, sdf.high, sdf.low, sdf.close, dates=sdf.index)
