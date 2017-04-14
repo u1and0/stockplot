@@ -22,7 +22,7 @@ def change_freq(self, freq: str) -> pd.DataFrame:
         .agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'}).dropna()
 
 
-pd.DataFrame.change_freq = change_freq
+pd.DataFrame.change_freq = change_freq  # set as pd.DataFrame's method
 
 
 def to_unix_time(*dt: pd.datetime)->list:
@@ -31,6 +31,41 @@ def to_unix_time(*dt: pd.datetime)->list:
     戻り値: unix秒に直されたリスト"""
     epoch = pd.datetime.utcfromtimestamp(0)
     return [(i - epoch).total_seconds() * 1000 for i in dt]
+
+
+def set_span(sdf, start=None, end=None, periods=None, freq=None, tz=None,
+             normalize=False, closed=None, **kwargs):
+    """spanの変更
+    引数:
+        sdf: indexがdatetimeのデータフレーム
+        freq: M | W | D | H | T | S <必ず必要>
+            * freq入れなくてもここはpassするが、
+            * date_rangeのところでNoneだとエラー出る。
+            * sdfがすでに指定したいfreqだったときには
+            * 無駄なコストなのでchange_freq通さない。
+        戻り値: datetime index
+    """
+
+    # Args check
+    count_not_none = sum(x is not None for x in [start, end, periods])
+    if count_not_none != 2:  # Like a pd.date_range Error
+        raise ValueError('Must specify two of start, end, or periods')
+
+    source = sdf.copy().change_freq(freq)  # if freq else sdf.copy()
+    end = source.index[-1] if end == 'last' else end
+    start = source.index[0] if start == 'first' else start
+
+    # start, end, periodsどれかが与えられていない場合
+    if not periods:
+        time_span = pd.date_range(start=start, end=end, freq=freq, tz=None,
+                                  normalize=False, closed=None, **kwargs)
+    elif not end:
+        time_span = pd.date_range(start=start, periods=periods, freq=freq,
+                                  tz=None, normalize=False, closed=None, **kwargs)
+    elif not start:
+        time_span = pd.date_range(end=end, periods=periods, freq=freq,
+                                  tz=None, normalize=False, closed=None, **kwargs)
+    return time_span
 
 
 class StockPlot:
@@ -145,19 +180,24 @@ class StockPlot:
         # start, end, periodの数は2でなければならない。pd.date_rangeと同じ
         lst = [start, end, periods]
         count_not_none = sum(x is not None for x in lst)
-        if  count_not_none != 2:  # Like a pd.date_range Error
+        if count_not_none != 2:  # Like a pd.date_range Error
             raise ValueError('Must specify two of start, end, or periods')
         # start, end, periodsどれかが与えられていない場合
-        if not periods: 
-            time_span = pd.date_range(start=start, end=end, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
+        if not periods:
+            time_span = pd.date_range(start=start, end=end, freq=freq,
+                                      tz=None, normalize=False, closed=None, **kwargs)
         if not end:
-            time_span = pd.date_range(start=start, periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
+            time_span = pd.date_range(start=start, periods=periods, freq=freq,
+                                      tz=None, normalize=False, closed=None, **kwargs)
         if not start:
-            time_span = pd.date_range(end=end, periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
-        if end=='last':
-            time_span = pd.date_range(end=sdf.index[-1], periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
+            time_span = pd.date_range(end=end, periods=periods, freq=freq,
+                                      tz=None, normalize=False, closed=None, **kwargs)
+        if end == 'last':
+            time_span = pd.date_range(
+                end=sdf.index[-1], periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
         if start == 'first':
-            time_span = pd.date_range(start=sdf.index[0], periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
+            time_span = pd.date_range(
+                start=sdf.index[0], periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
 
         # # if periods:
         # #     assert (start or end), 'You need arg \"start\" or \"end\" using periods'
