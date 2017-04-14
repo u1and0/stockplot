@@ -111,63 +111,82 @@ class StockPlot:
             * `del Base.add_line[:]`: すべての要素をdel
             * `Base.add_line = []`: 空のリストの代入
 
+    # 指標の重複追加、追加削除の情報保存
+        append, removeして残った指標を記憶
+        追加したindicatorの情報をインスタンス変数に保持しておいて
+        freq変えたり、session保存するときに、自動で追加してくれる機能
+
     # TODO
-    * heikin_plot
-    * pop, del
-    * clear
-    * subplot
-    * 拡大縮小(足の数を決める)
-    * 時間足の変更メソッド(インスタンス化する前、外で決めたほうが汎用性あるのかな)
+        * heikin_plot
+        * pop, del
+        * clear
+        * subplot
+        * 拡大縮小(足の数を決める)
+        * 時間足の変更メソッド(インスタンス化する前、外で決めたほうが汎用性あるのかな)
     """
 
     def __init__(self, sdf: ss.StockDataFrame):
         self.StockDataFrame = sdf
-        self._fig = FF.create_candlestick(self.StockDataFrame.open,
-                                          self.StockDataFrame.high,
-                                          self.StockDataFrame.low,
-                                          self.StockDataFrame.close,
-                                          dates=self.StockDataFrame.index)
+        self._fig = {'data': [], 'layout': []}
 
-    def candle_plot(self, filebasename='candlestick_and_trace', how='jupyter',
-                    showgrid=True, validate=False,
-                    start=None, end=None, periods=None, freq=None):
+    def candle_plot(self, how='html', filebasename='candlestick_and_trace',
+                    start=None, end=None, periods=None, freq=None,
+                    showgrid=True, validate=False, **kwargs):
         """Draw candle chart
         StockDataFrame must have [open, high, low, close] columns!
 
         USAGE:
             `sp.candle_plot()`"""
         # Set span
-        if freq:
-            pass  # change_freq()
-        if periods:
-            assert (start or end), 'You need arg \"start\" or \"end\" using periods'
-            assert freq, 'You need arg \"freq\" using periods'
-            dd = pd.date_range(start=start, end=end, periods=periods, freq=freq)
-            if end is None:
-                end = dd[-1]
-            elif start is None:
-                start = dd[0]
-        else:
-            if start is None:
-                start = self.StockDataFrame.index[0]
-            if end is None:
-                end = self.StockDataFrame.index[-1]
 
-        # import pdb; pdb.set_trace()
+        sdf = self.StockDataFrame.copy().change_freq(freq)\
+            if freq else self.StockDataFrame.copy()  # freq change or not
+
+        # start, end, periodの数は2でなければならない。pd.date_rangeと同じ
+        lst = [start, end, periods]
+        count_not_none = sum(x is not None for x in lst)
+        if  count_not_none != 2:  # Like a pd.date_range Error
+            raise ValueError('Must specify two of start, end, or periods')
+        # start, end, periodsどれかが与えられていない場合
+        if not periods: 
+            time_span = pd.date_range(start=start, end=end, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
+        if not end:
+            time_span = pd.date_range(start=start, periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
+        if not start:
+            time_span = pd.date_range(end=end, periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
+        if end=='last':
+            time_span = pd.date_range(end=sdf.index[-1], periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
+        if start == 'first':
+            time_span = pd.date_range(start=sdf.index[0], periods=periods, freq=freq, tz=None, normalize=False, closed=None, **kwargs)
+
+        # # if periods:
+        # #     assert (start or end), 'You need arg \"start\" or \"end\" using periods'
+        #     if end is None:
+        #         end = time_span[-1]
+        #     elif start is None:
+        #         start = time_span[0]
+        # else:
+        #     if start is None:
+        #         start = sdf.index[0]
+        #     if end is None:
+        #         end = sdf.index[-1]
 
         # Adjust layout
+        self._fig = FF.create_candlestick(sdf.open, sdf.high, sdf.low, sdf.close, dates=sdf.index)
         self._fig['layout'].update(xaxis={'showgrid': showgrid,
                                           'range': to_unix_time(start, end)})
         # Export file type
-        if how == 'jupyter':
-            ax = pyo.iplot(self._fig, filename=filebasename + '.html',
-                           validate=validate)  # for Jupyter Notebook
-        elif how == 'html':
+        if how == 'html':
             ax = pyo.plot(self._fig, filename=filebasename + '.html',
                           validate=validate)  # for HTML
-        else:  # Using png | jpeg | webp | svg
+        elif how == 'jupyter':
+            ax = pyo.iplot(self._fig, filename=filebasename + '.html',
+                           validate=validate)  # for Jupyter Notebook
+        elif how in ('png', 'jpeg', 'webp', 'svg'):
             ax = pyo.plot(self._fig, image=how, image_filename=filebasename,
                           validate=False)  # for file exporting
+        else:
+            raise KeyError(how)
         return ax
 
     def append(self, indicator):
