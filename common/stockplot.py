@@ -41,7 +41,7 @@ def set_span(sdf, start=None, end=None, periods=None, freq='D',
         start, end: 最初と最後のdatetime, 'first'でsdfの最初、'last'でsdfの最後
         periods: datetimeの個数
         start, end, periods合わせて2つの引数が必要
-        freq: M | W | D | H | T | S **pd.date_rangeと異なり、必ず必要**
+        freq: M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
     戻り値: datetime index
     """
 
@@ -162,9 +162,10 @@ class StockPlot:
     def __init__(self, sdf: ss.StockDataFrame):
         self.StockDataFrame = sdf
         self._fig = {'data': [], 'layout': []}
+        self.sdf = sdf
 
     def candle_plot(self, how='html', filebasename='candlestick_and_trace',
-                    start=None, end=None, periods=None, freq='D',
+                    cut=300, fix=False, start=None, end=None, periods=None, freq='D',
                     tz=None, normalize=False, closed=None,
                     showgrid=True, validate=False, **kwargs):
         """Draw candle chart
@@ -172,20 +173,25 @@ class StockPlot:
 
         USAGE:
             `sp.candle_plot()`
+
+        fix: 時間軸右側の空白。fixの数の足分だけ空白
+        cut: 画面外で切る足の数。Falseですべて表示。
         """
-        sdf = self.StockDataFrame.copy().change_freq(freq)
-        #     if freq else self.StockDataFrame.copy()  # freq change or not
-        # sdf = self.StockDataFrame.copy()
+        self.sdf = self.StockDataFrame.copy().change_freq(freq)
+        sdf = self.sdf.tail(cut) if cut else self.sdf  # 画面外で足切り
 
         time_span = set_span(sdf, start=start, end=end, periods=periods, freq=freq,
                              tz=tz, normalize=normalize, closed=closed, **kwargs)
         start = time_span[0]
         end = time_span[-1]
+        endfix = pd.date_range(start=end, periods=fix, freq=freq)[-1] if fix else end
+        rangestart, rangeend = to_unix_time(start, endfix)
 
         # Adjust layout
         self._fig = FF.create_candlestick(sdf.open, sdf.high, sdf.low, sdf.close, dates=sdf.index)
         self._fig['layout'].update(xaxis={'showgrid': showgrid,
-                                          'range': to_unix_time(start, end)})
+                                          'range': [rangestart, rangeend]},
+                                   yaxis={"autorange": True})
         # Export file type
         if how == 'html':
             ax = pyo.plot(self._fig, filename=filebasename + '.html',
@@ -200,79 +206,80 @@ class StockPlot:
             raise KeyError(how)
         return ax
 
-    def append(self, indicator):
-        """Add indicator designated by index (default is last appended one)
-        from StockDataFrame & figure
+# ---------Doesn't work because of changing above----------
+#     def append(self, indicator):
+#         """Add indicator designated by index (default is last appended one)
+#         from StockDataFrame & figure
 
-        USAGE:
-            `sp.append('close_25_sma')`
-            add indicator of 'close 25 sma'
-        """
-        indi = self.StockDataFrame.get(indicator)
-        plotter = go.Scatter(x=indi.index, y=indi,
-                             name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
-        self._fig['data'].append(plotter)
-        return indi
+#         USAGE:
+#             `sp.append('close_25_sma')`
+#             add indicator of 'close 25 sma'
+#         """
+#         indi = self.StockDataFrame.get(indicator)
+#         plotter = go.Scatter(x=indi.index, y=indi,
+#                              name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
+#         self._fig['data'].append(plotter)
+#         return indi
 
-    def remove(self, indicator):
-        """Remove indicator designated by 'index name'
-        from StockDataFrame & figure
+#     def remove(self, indicator):
+#         """Remove indicator designated by 'index name'
+#         from StockDataFrame & figure
 
-        USAGE:
-            `sp.remove('close_25_sma')`
-            remove indicator named 'close_25_sma'. """
-        indi = indicator.lower().replace(' ', '_')
-        INDI = indicator.upper().replace('_', ' ')
-        rem = self.StockDataFrame.pop(indi)
-        for dicc in self._fig['data']:
-            if dicc['name'] == INDI:
-                self._fig['data'].remove(dicc)
-                return rem
+#         USAGE:
+#             `sp.remove('close_25_sma')`
+#             remove indicator named 'close_25_sma'. """
+#         indi = indicator.lower().replace(' ', '_')
+#         INDI = indicator.upper().replace('_', ' ')
+#         rem = self.StockDataFrame.pop(indi)
+#         for dicc in self._fig['data']:
+#             if dicc['name'] == INDI:
+#                 self._fig['data'].remove(dicc)
+#                 return rem
 
-    def pop(self, index=-1):
-        """Remove indicator designated by 'index' (default is last appended one)
-        from StockDataFrame & figure
+#     def pop(self, index=-1):
+#         """Remove indicator designated by 'index' (default is last appended one)
+#         from StockDataFrame & figure
 
-        USAGE:
-            * `sp.pop()`
-            > remove indicator last appended.
-            * `sp.pop(-2)`
-            > remove indicator last 2 before appended.
+#         USAGE:
+#             * `sp.pop()`
+#             > remove indicator last appended.
+#             * `sp.pop(-2)`
+#             > remove indicator last 2 before appended.
 
-        ISSUE:
-            There are some indicator generate multi columns in StockDataFrame.
-            The columns don't remove from StockDataFrame & figure by using pop method.
+#         ISSUE:
+#             There are some indicator generate multi columns in StockDataFrame.
+#             The columns don't remove from StockDataFrame & figure by using pop method.
 
-        SOLLUTION:
-            Another attribute can be added for stock the columns key and index.
-        """
-        rem = self.StockDataFrame.pop(self.StockDataFrame.columns[index])
-        self._fig['data'].pop(index)
-        return rem
+#         SOLLUTION:
+#             Another attribute can be added for stock the columns key and index.
+#         """
+#         rem = self.StockDataFrame.pop(self.StockDataFrame.columns[index])
+#         self._fig['data'].pop(index)
+#         return rem
 
 
-if __name__ == '__main__':
-    # Make sample data
-    np.random.seed(1)
-    df = randomwalk(60 * 24 * 90, freq='T', tick=0.01,
-                    start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115  # 90日分の1分足を日足に直す
+# if __name__ == '__main__':
+#     # Make sample data
+#     np.random.seed(1)
+#     df = randomwalk(60 * 24 * 90, freq='T', tick=0.01,
+#                     start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115  # 90日分の1分足を日足に直す
 
-    # Convert DataFrame as StockDataFrame
-    sdf = ss.StockDataFrame(df)
+#     # Convert DataFrame as StockDataFrame
+#     sdf = ss.StockDataFrame(df)
 
-    # Convert StockDataFrame as StockPlot
-    sp = StockPlot(sdf)
+#     # Convert StockDataFrame as StockPlot
+#     sp = StockPlot(sdf)
 
-    # Add indicator
-    for i in range(10, 17):
-        sp.append('close_{}_sma'.format(i))
+#     # Add indicator
+#     for i in range(10, 17):
+#         sp.append('close_{}_sma'.format(i))
 
-    # Remove indicator
-    for i in [13, 11]:
-        sp.remove('close_{}_sma'.format(i))
+#     # Remove indicator
+#     for i in [13, 11]:
+#         sp.remove('close_{}_sma'.format(i))
 
-    # Pop indicator
-    sp.pop()
+#     # Pop indicator
+#     sp.pop()
 
-    # # Plot Candle chart
-    sp.candle_plot(how='html')
+#     # # Plot Candle chart
+#     sp.candle_plot(how='html')
