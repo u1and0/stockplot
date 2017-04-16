@@ -152,9 +152,9 @@ class StockPlot:
         co = ['open', 'high', 'low', 'close']
         assert all(i in sdf.columns for i in co), 'arg\'s columns must have {}, but it has {}'\
             .format(co, sdf.columns)  # Arg Check
-        self._init_StockDataFrame = sdf  # スパン変更前のデータフレーム
-        self.StockDataFrame = self.ohlc_convert(freq)  # スパン変更後、インジケータ追加後のデータフレーム
-        self._plot_DataFrame = None  # プロットするデータ(ドラッグで行ける範囲)
+        self._init_stock_dataframe = sdf  # スパン変更前のデータフレーム
+        self.stock_dataframe = self.ohlc_convert(freq)  # スパン変更後、インジケータ追加後のデータフレーム
+        self.plot_dataframe = None  # プロットするデータ(ドラッグで行ける範囲)
         self._fig = None  # <-- plotly.graph_objs
         self._append_indicator = []  # 追加された指標
         self._freq = freq  # 足の時間幅
@@ -168,12 +168,12 @@ class StockPlot:
         戻り値: スパン変更後のデータフレーム
         """
         self._freq = freq
-        self.StockDataFrame = self._init_StockDataFrame.ix[:, ['open', 'high', 'low', 'close']]\
+        self.stock_dataframe = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]\
             .resample(freq).agg({'open': 'first',
                                  'high': 'max',
                                  'low': 'min',
                                  'close': 'last'}).dropna()
-        return self.StockDataFrame
+        return self.stock_dataframe
 
     def candle_plot(self, start_view=None, end_view=None, periods_view=None, fix=None,
                     start_data=None, end_data=None, periods_data=None, tz=None, normalize=False,
@@ -201,39 +201,40 @@ class StockPlot:
         戻り値: datetime index
 
         # NOTE
-        self._plot_DataFrameのスパンを変える
+        self.plot_dataframeのスパンを変える
 
-        """
         # 今後使用予定
         # Append indicators in graph
-        # append_graph(self.StockDataFrame)
-
-        # 画面外データの範囲指定
-        if not (end_data and periods_data):  # Default span_data args setting
-            end_data = self.StockDataFrame.index[-1]
+        # append_graph(self.stock_dataframe)
+        """
+        # ---------Designate OUT of the view data----------
+        if com._count_not_none(start_data,
+                               end_data, periods_data) == 0:  # Default args setting
+            end_data = self.stock_dataframe.index[-1]
             periods_data = 300
-        span_data = date_range_fix(self.StockDataFrame, start=start_data, end=end_data,
-                                   periods=periods_data, freq=self._freq, tz=tz,
+        span_data = date_range_fix(self.stock_dataframe.index, start=start_data,
+                                   end=end_data, periods=periods_data, freq=self._freq, tz=tz,
                                    normalize=normalize, closed=closed, **kwargs)
-        self._plot_DataFrame = self.StockDataFrame.loc[span_data[0]:span_data[-1]]
-        self._fig = FF.create_candlestick(self._plot_DataFrame.open,
-                                          self._plot_DataFrame.high,
-                                          self._plot_DataFrame.low,
-                                          self._plot_DataFrame.close,
-                                          dates=self._plot_DataFrame.index)
-
-        # 画面内データの範囲指定
-        if not (end_view and periods_view):  # Default args setting
-            end_view = self._plot_DataFrame.index[-1]
+        self.plot_dataframe = self.stock_dataframe.loc[span_data[0]:span_data[-1]]
+        self._fig = FF.create_candlestick(self.plot_dataframe.open,
+                                          self.plot_dataframe.high,
+                                          self.plot_dataframe.low,
+                                          self.plot_dataframe.close,
+                                          dates=self.plot_dataframe.index)
+        # ---------Designate IN of the view data----------
+        if com._count_not_none(start_view,
+                               end_view, periods_view) == 0:  # Default args setting
+            end_view = self.plot_dataframe.index[-1]
             periods_view = 50
-        span_view = date_range_fix(ts=self.StockDataFrame.index, start=start_view,
+        span_view = date_range_fix(ts=self.plot_dataframe.index, start=start_view,
                                    end=end_view, periods=periods_view, freq=self._freq, tz=tz,
                                    normalize=normalize, closed=closed, **kwargs)
-        start_fix = span_view[0]
-        end_fix = pd.date_range(start=span_view[-1], periods=fix,
-                                freq=self._freq)[-1] if fix else span_view[-1]  # fixの数だけ足ずらす
-
-        # Plot graph
+        # ---------Shift view as "fix"----------
+        start_fix = pd.date_range(start=span_view[0], periods=fix, freq=self._freq)[0]\
+            if fix else span_view[0]
+        end_fix = pd.date_range(start=span_view[-1], periods=fix, freq=self._freq)[-1]\
+            if fix else span_view[-1]
+        # ---------Plot graph----------
         self._fig['layout'].update(xaxis={'showgrid': showgrid,
                                           'range': to_unix_time(start_fix, end_fix)},
                                    yaxis={"autorange": True})
@@ -264,7 +265,7 @@ class StockPlot:
 #             `sp.append('close_25_sma')`
 #             add indicator of 'close 25 sma'
 #         """
-#         indi = self.StockDataFrame.get(indicator)
+#         indi = self.stock_dataframe.get(indicator)
 #         plotter = go.Scatter(x=indi.index, y=indi,
 #                              name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
 #         self._fig['data'].append(plotter)
@@ -279,7 +280,7 @@ class StockPlot:
 #             remove indicator named 'close_25_sma'. """
 #         indi = indicator.lower().replace(' ', '_')
 #         INDI = indicator.upper().replace('_', ' ')
-#         rem = self.StockDataFrame.pop(indi)
+#         rem = self.stock_dataframe.pop(indi)
 #         for dicc in self._fig['data']:
 #             if dicc['name'] == INDI:
 #                 self._fig['data'].remove(dicc)
@@ -302,7 +303,7 @@ class StockPlot:
 #         SOLLUTION:
 #             Another attribute can be added for stock the columns key and index.
 #         """
-#         rem = self.StockDataFrame.pop(self.StockDataFrame.columns[index])
+#         rem = self.stock_dataframe.pop(self.stock_dataframe.columns[index])
 #         self._fig['data'].pop(index)
 #         return rem
 
