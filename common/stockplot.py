@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from pandas.core import common as com
 # ----------User Module----------
 from randomwalk import randomwalk
 import stockstats as ss
@@ -10,81 +11,40 @@ import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
 
 
+def date_range_fix(ts, start=None, end=None, periods=None, freq='D', tz=None,
+                   normalize=False, closed=None, **kwargs):
+    """pd.daterangeとほぼ同じ
+    tsの最初のインデックスを表す"first"
+    tsの最後のインデックスを表す"end"を追加した
+
+    # TODO
+    * 'lase-1'とか'first+10'とかいう表現の解釈をやってみよう
+    """
+    if com._count_not_none(start, end, periods) != 2:  # Like a pd.date_range Error
+        raise ValueError('Must specify two of start, end, or periods')
+
+    start = ts[0] if start == 'first' else start
+    end = ts[-1] if end == 'last' else end
+
+    # start, end, periodsどれかが与えられていない場合
+    if not periods:
+        time_span = pd.date_range(start=start, end=end, freq=freq, tz=tz,
+                                  normalize=normalize, closed=closed, **kwargs)
+    elif not end:
+        time_span = pd.date_range(start=start, periods=periods, freq=freq,
+                                  tz=tz, normalize=normalize, closed=closed, **kwargs)
+    elif not start:
+        time_span = pd.date_range(end=end, periods=periods, freq=freq,
+                                  tz=tz, normalize=normalize, closed=closed, **kwargs)
+    return time_span
+
+
 def _append_graph(self, df):
     """
     for i in self._append_dataframe:
         self._fig.data.append(i)
     """
     pass
-
-
-def _cut_frame(ts, start, end, cut=300):
-    """
-    start, endから両端に向かって数えて
-    cutを超えたところまで数える
-    ts: DatetimeIndex
-
-    # TEST
-    start, end = pd.datetime(2017,6,14), pd.datetime(2017,7,15)
-    len(_cut_frame(df, start, end, cut=100))
-    """
-    assert len(ts) < cut, r'"cut" is too short or span between "start" & "end" is too wide'
-    drawts = ts[ts.get_loc(start):ts.get_loc(end) + 1]  # 描かれるスパン
-    cut -= len(drawts)  # 画面外の足の総数
-    cut //= 2  # 右側、左側に必要な足の数
-    tss = ts[:ts.get_loc(start)]  # startより前
-    # tss.reverse()  # 逆順並び替え
-    tse = ts[ts.get_loc(end) + 1:]  # endより後, 
-
-    date_start= tss[-cut] if len(tss) > cut else tss[0]
-    date_end= tse[cut] if len(tse) > cut else tse[-1]
-    cut_start, cut_end = ts.get_loc(date_start), ts.get_loc(date_end)
-    return ts[cut_start:cut_end]
-
-    # if len(tse) < cut or len(tss) < cut:
-    #     # less = min(len(tss), len(tse))  # 足りないほうの値
-    #     # full = cut + less
-    #     # Return longer list
-    #     if len(tse)<len(tss):
-    #         longer, shorter = tss. tse
-    #         shorter_index = cut - len(shorter)
-    #         longer_index = cut + shorter_index
-    #         cut_end=tse[shorter_index]
-    #         cut_start=tss[-longer_index]
-    #     else: # longer,shorter = tse, tss
-    #         longer, shorter = tse. tss
-    #         shorter_index = cut - len(shorter)
-    #         longer_index = cut + shorter_index
-    #         cut_end=tse[-shorter_index]
-    #         cut_start=tss[longer_index]
-
-    #     else
-    #     pass
-    # else:
-    #     cut_start = tss[-cut]
-    #     cut_end = tse[cut]
-
-    # remain = cut - max(len(tss), len(tse))
-
-    # cut_start = start
-    # cut_end = end
-    # for start, end in zip(reverse_index, df.loc[end:].index):
-    #     try:
-    #         cut_start = start
-    #         if len(df[cut_start:cut_end]) >= cut:  # cutの数を超えたら終了
-    #             break
-    #     except StopIteration as err:
-    #         print(err)
-    #         continue  # これじゃだめ
-    #     try:
-    #         cut_end = end
-    #         print(cut_start, cut_end)
-    #         if len(df[cut_start:cut_end]) >= cut:  # cutの数を超えたら終了
-    #             break
-    #     except StopIteration as err:
-    #         print(err)
-    #         continue  # これじゃだめ
-    # return df.loc[cut_start: cut_end]
 
 
 def to_unix_time(*dt: pd.datetime)->list:
@@ -188,16 +148,16 @@ class StockPlot:
         * 時間足の変更メソッド(インスタンス化する前、外で決めたほうが汎用性あるのかな)
     """
 
-    def __init__(self, sdf: ss.StockDataFrame):
+    def __init__(self, sdf: ss.StockDataFrame, freq: str='D'):
         co = ['open', 'high', 'low', 'close']
-        assert all(i in sdf.columns for i in co), 'arg\'s columns is {}, but it is {}'\
+        assert all(i in sdf.columns for i in co), 'arg\'s columns must have {}, but it has {}'\
             .format(co, sdf.columns)  # Arg Check
         self._init_StockDataFrame = sdf  # スパン変更前のデータフレーム
-        self.StockDataFrame = None  # スパン変更後、インジケータ追加後のデータフレーム
-        self._plot_dataframe = None  # プロットするデータ(ドラッグで行ける範囲)
-        self._fig = None  # -> plotly.graph_objs
+        self.StockDataFrame = self.ohlc_convert(freq)  # スパン変更後、インジケータ追加後のデータフレーム
+        self._plot_DataFrame = None  # プロットするデータ(ドラッグで行ける範囲)
+        self._fig = None  # <-- plotly.graph_objs
         self._append_indicator = []  # 追加された指標
-        self._freq = None
+        self._freq = freq  # 足の時間幅
 
     def ohlc_convert(self, freq: str)->ss.StockDataFrame:
         """ohlcデータのタイムスパンを変える
@@ -209,11 +169,15 @@ class StockPlot:
         """
         self._freq = freq
         self.StockDataFrame = self._init_StockDataFrame.ix[:, ['open', 'high', 'low', 'close']]\
-            .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'}).dropna()
+            .resample(freq).agg({'open': 'first',
+                                 'high': 'max',
+                                 'low': 'min',
+                                 'close': 'last'}).dropna()
         return self.StockDataFrame
 
-    def candle_plot(self, filebasename='candlestick_and_trace',
-                    cut=300, fix=False, showgrid=True, validate=False, **kwargs):
+    def candle_plot(self, start_view=None, end_view=None, periods_view=None, fix=None,
+                    start_data=None, end_data=None, periods_data=None, tz=None, normalize=False,
+                    closed=None,  showgrid=True, validate=False, **kwargs):
         """Draw candle chart
         StockDataFrame must have [open, high, low, close] columns!
 
@@ -223,25 +187,9 @@ class StockPlot:
         fix: 時間軸右側の空白。fixの数の足分だけ空白
         cut: 画面外で切る足の数。Falseですべて表示。
 
-        スパンの変更をされたself.StockDataFrameを_plot_dataframeに変える
-        """
-        # Append indicators in graph
-        append_graph(self.StockDataFrame)
 
-        # Converting _plot_dataframe from StockDataFrame
-        cut_start, cut_end = _cut_frame(_plot_datafraeme)
-        self._plot_dataframe = self.StockDataFrame.loc[cut_start:cut_end]
-
-        # Adjust layout
-        self._fig = FF.create_candlestick(self._plot_dataframe.open, self._plot_dataframe.high,
-                                          self._plot_dataframe.low, self._plot_dataframe.close, dates=self._plot_dataframe.index)
-
-        # グラフの表示範囲指定
-        """spanの変更
-        疲れた
-        ユーザーにStockDataFrameの範囲と
-        viewの範囲決めさせちゃダメかね
-        sp.candle_plot(view_end=pd.datetime.today(), view_periods=10,
+        ユーザーにdata(StockDataFrame)の範囲とview(_plot_data)の範囲決めさせる
+        sp.candle_plot(end_view=pd.datetime.today(), periods_view=10,
                                     end=pd.datetime.today(), periods=300)
 
         引数:
@@ -253,45 +201,52 @@ class StockPlot:
         戻り値: datetime index
 
         # NOTE
-        self._plot_dataframeのスパンを変える
+        self._plot_DataFrameのスパンを変える
+
         """
-        # Args check
-        count_not_none = sum(x is not None for x in [start, end, periods])
-        if count_not_none != 2:  # Like a pd.date_range Error
-            raise ValueError('Must specify two of start, end, or periods')
+        # 今後使用予定
+        # Append indicators in graph
+        # append_graph(self.StockDataFrame)
 
-        # source = self.StockDataFrame.copy().ohlc_convert(freq)  # if freq else sdf.copy()
-        start = self._plot_dataframe.index[0] if start == 'first' else start
-        end = self._plot_dataframe.index[-1] if end == 'last' else end
+        # 画面外データの範囲指定
+        if not (end_data and periods_data):  # Default span_data args setting
+            end_data = self.StockDataFrame.index[-1]
+            periods_data = 300
+        span_data = date_range_fix(self.StockDataFrame, start=start_data, end=end_data,
+                                   periods=periods_data, freq=self._freq, tz=tz,
+                                   normalize=normalize, closed=closed, **kwargs)
+        self._plot_DataFrame = self.StockDataFrame.loc[span_data[0]:span_data[-1]]
+        self._fig = FF.create_candlestick(self._plot_DataFrame.open,
+                                          self._plot_DataFrame.high,
+                                          self._plot_DataFrame.low,
+                                          self._plot_DataFrame.close,
+                                          dates=self._plot_DataFrame.index)
 
-        # start, end, periodsどれかが与えられていない場合
-        if not periods:
-            time_span = pd.date_range(start=start, end=end, freq=freq, tz=None,
-                                      normalize=False, closed=None, **kwargs)
-        elif not end:
-            time_span = pd.date_range(start=start, periods=periods, freq=freq,
-                                      tz=None, normalize=False, closed=None, **kwargs)
-        elif not start:
-            time_span = pd.date_range(end=end, periods=periods, freq=freq,
-                                      tz=None, normalize=False, closed=None, **kwargs)
-        start = time_span[0]
-        end = time_span[-1]
-        endfix = pd.date_range(start=end, periods=fix, freq=freq)[-1] if fix else end
-        rangestart, rangeend = to_unix_time(start, endfix)
+        # 画面内データの範囲指定
+        if not (end_view and periods_view):  # Default args setting
+            end_view = self._plot_DataFrame.index[-1]
+            periods_view = 50
+        span_view = date_range_fix(ts=self.StockDataFrame.index, start=start_view,
+                                   end=end_view, periods=periods_view, freq=self._freq, tz=tz,
+                                   normalize=normalize, closed=closed, **kwargs)
+        start_fix = span_view[0]
+        end_fix = pd.date_range(start=span_view[-1], periods=fix,
+                                freq=self._freq)[-1] if fix else span_view[-1]  # fixの数だけ足ずらす
 
         # Plot graph
-        self._fig['layout'].update(xaxis={'showgrid': showgrid, 'range': [rangestart, rangeend]},
+        self._fig['layout'].update(xaxis={'showgrid': showgrid,
+                                          'range': to_unix_time(start_fix, end_fix)},
                                    yaxis={"autorange": True})
         return self._fig
 
-    def show(self, how='html'):
-        # Export file type
+    def show(self, how='html', filebasename='candlestick_and_trace'):
+        """Export file type"""
         if how == 'html':
             ax = pyo.plot(self._fig, filename=filebasename + '.html',
-                          validate=validate)  # for HTML
+                          validate=False)  # for HTML
         elif how == 'jupyter':
             ax = pyo.iplot(self._fig, filename=filebasename + '.html',
-                           validate=validate)  # for Jupyter Notebook
+                           validate=False)  # for Jupyter Notebook
         elif how in ('png', 'jpeg', 'webp', 'svg'):
             ax = pyo.plot(self._fig, image=how, image_filename=filebasename,
                           validate=False)  # for file exporting
