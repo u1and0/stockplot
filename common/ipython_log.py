@@ -15,11 +15,8 @@ pyo.init_notebook_mode(connected=True)
 np.random.seed(1)
 df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 3, 20)).resample('T').ohlc() + 115  # 90日分の1分足を日足に直す
 
-# Convert DataFrame as StockDataFrame
-sdf = ss.StockDataFrame(df)
-
 # Convert StockDataFrame as StockPlot
-fig = sp.StockPlot(sdf)
+fig = sp.StockPlot(df)
 
 # # Add indicator
 # for i in range(10, 17):

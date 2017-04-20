@@ -1,13 +1,8 @@
-import numpy as np
 import pandas as pd
 from pandas.core import common as com
-# ----------User Module----------
-from randomwalk import randomwalk
 import stockstats as ss
-# ----------Plotly Module----------
 from plotly.tools import FigureFactory as FF
 import plotly.offline as pyo
-import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
 
 
@@ -89,7 +84,7 @@ class StockPlot:
                     start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115  # 90日分の1分足を日足に直す
     dfs = stockstats.StockDataFrame(df)
     dfs.add('hoge'): インジケーターの追加
-    dfs.candle_plot(): キャンドルチャートとインジケータの表示
+    dfs.plot(): キャンドルチャートとインジケータの表示
     dfs.remove('hoge'): インジケーターの削除
     ```
 
@@ -102,7 +97,7 @@ class StockPlot:
         * plotterをStockPlotのattributeである`fig`に入れてやる
             > `fig['data'].append(plotter)`
 
-    * dfs.candle_plot()
+    * dfs.plot()
         * `fig = FF.create_candlestick... `でキャンドルチャートを取得できる
         * figに対してadd / remove_inidcatorで指標の追加 / 削除が行われる。
         * self_figを返す
@@ -148,16 +143,15 @@ class StockPlot:
         * 時間足の変更メソッド(インスタンス化する前、外で決めたほうが汎用性あるのかな)
     """
 
-    def __init__(self, sdf: ss.StockDataFrame, freq: str='D'):
+    def __init__(self, df: pd.core.frame.DataFrame):
         co = ['open', 'high', 'low', 'close']
-        assert all(i in sdf.columns for i in co), 'arg\'s columns must have {}, but it has {}'\
-            .format(co, sdf.columns)  # Arg Check
-        self._init_stock_dataframe = sdf  # スパン変更前のデータフレーム
-        self.stock_dataframe = self.ohlc_convert(freq)  # スパン変更後、インジケータ追加後のデータフレーム
+        assert all(i in df.columns for i in co), 'arg\'s columns must have {}, but it has {}'\
+            .format(co, df.columns)  # Arg Check
+        self._init_stock_dataframe = ss.StockDataFrame(df)  # スパン変更前のデータフレーム
+        self.stock_dataframe = None  # スパン変更後、インジケータ追加後のデータフレーム
         self.plot_dataframe = None  # プロットするデータ(ドラッグで行ける範囲)
         self._fig = None  # <-- plotly.graph_objs
-        self._append_indicator = []  # 追加された指標
-        self._freq = freq  # 足の時間幅
+        self._freq = None  # 足の時間幅
 
     def ohlc_convert(self, freq: str)->ss.StockDataFrame:
         """ohlcデータのタイムスパンを変える
@@ -169,27 +163,25 @@ class StockPlot:
         """
         self._freq = freq
         self.stock_dataframe = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]\
-            .resample(freq).agg({'open': 'first',
-                                 'high': 'max',
-                                 'low': 'min',
-                                 'close': 'last'}).dropna()
+            .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})\
+            .dropna()
         return self.stock_dataframe
 
-    def candle_plot(self, start_view=None, end_view=None, periods_view=None, fix=None,
-                    start_data=None, end_data=None, periods_data=None, tz=None, normalize=False,
-                    closed=None,  showgrid=True, validate=False, **kwargs):
+    def plot(self, start_view=None, end_view=None, periods_view=None, fix=None,
+             start_plot=None, end_plot=None, periods_plot=None, tz=None, normalize=False,
+             closed=None,  showgrid=True, validate=False, **kwargs):
         """Draw candle chart
         StockDataFrame must have [open, high, low, close] columns!
 
         USAGE:
-            `sp.candle_plot()`
+            `sp.plot()`
 
         fix: 時間軸右側の空白。fixの数の足分だけ空白
         cut: 画面外で切る足の数。Falseですべて表示。
 
 
         ユーザーにdata(StockDataFrame)の範囲とview(_plot_data)の範囲決めさせる
-        sp.candle_plot(end_view=pd.datetime.today(), periods_view=10,
+        sp.plot(end_view=pd.datetime.today(), periods_view=10,
                                     end=pd.datetime.today(), periods=300)
 
         引数:
@@ -208,14 +200,14 @@ class StockPlot:
         # append_graph(self.stock_dataframe)
         """
         # ---------Designate OUT of the view data----------
-        if com._count_not_none(start_data,
-                               end_data, periods_data) == 0:  # Default args setting
-            end_data = self.stock_dataframe.index[-1]
-            periods_data = 300
-        span_data = date_range_fix(self.stock_dataframe.index, start=start_data,
-                                   end=end_data, periods=periods_data, freq=self._freq, tz=tz,
+        if com._count_not_none(start_plot,
+                               end_plot, periods_plot) == 0:  # Default args setting
+            end_plot = self.stock_dataframe.index[-1]
+            periods_plot = 300
+        span_plot = date_range_fix(self.stock_dataframe.index, start=start_plot,
+                                   end=end_plot, periods=periods_plot, freq=self._freq, tz=tz,
                                    normalize=normalize, closed=closed, **kwargs)
-        self.plot_dataframe = self.stock_dataframe.loc[span_data[0]:span_data[-1]]
+        self.plot_dataframe = self.stock_dataframe.loc[span_plot[0]:span_plot[-1]]
         self._fig = FF.create_candlestick(self.plot_dataframe.open,
                                           self.plot_dataframe.high,
                                           self.plot_dataframe.low,
@@ -234,9 +226,10 @@ class StockPlot:
             if fix else span_view[0]
         end_fix = pd.date_range(start=span_view[-1], periods=fix, freq=self._freq)[-1]\
             if fix else span_view[-1]
+        view = to_unix_time(start_fix, end_fix)
         # ---------Plot graph----------
         self._fig['layout'].update(xaxis={'showgrid': showgrid,
-                                          'range': to_unix_time(start_fix, end_fix)},
+                                          'range': view},
                                    yaxis={"autorange": True})
         return self._fig
 
@@ -332,4 +325,4 @@ class StockPlot:
 #     sp.pop()
 
 #     # # Plot Candle chart
-#     sp.candle_plot(how='html')
+#     sp.plot(how='html')
