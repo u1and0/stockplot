@@ -6,32 +6,20 @@ import plotly.offline as pyo
 pyo.init_notebook_mode(connected=True)
 
 
-def date_range_fix(ts, start=None, end=None, periods=None, freq='D', tz=None,
-                   normalize=False, closed=None, **kwargs):
-    """pd.daterangeとほぼ同じ
-    tsの最初のインデックスを表す"first"
-    tsの最後のインデックスを表す"end"を追加した
+def set_span(start=None, end=None, periods=None, freq='D'):
+    """ 引数のstart, end, periodsに対して
+    startとendの時間を返す。
 
-    # TODO
-    * 'lase-1'とか'first+10'とかいう表現の解釈をやってみよう
+    * start, end, periods合わせて2つの引数が指定されていなければエラー
+    * start, endが指定されていたらそのまま返す
+    * start, periodsが指定されていたら、endを計算する
+    * end, periodsが指定されていたら、startを計算する
     """
     if com._count_not_none(start, end, periods) != 2:  # Like a pd.date_range Error
         raise ValueError('Must specify two of start, end, or periods')
-
-    start = ts[0] if start == 'first' else start
-    end = ts[-1] if end == 'last' else end
-
-    # start, end, periodsどれかが与えられていない場合
-    if not periods:
-        time_span = pd.date_range(start=start, end=end, freq=freq, tz=tz,
-                                  normalize=normalize, closed=closed, **kwargs)
-    elif not end:
-        time_span = pd.date_range(start=start, periods=periods, freq=freq,
-                                  tz=tz, normalize=normalize, closed=closed, **kwargs)
-    elif not start:
-        time_span = pd.date_range(end=end, periods=periods, freq=freq,
-                                  tz=tz, normalize=normalize, closed=closed, **kwargs)
-    return time_span
+    start = start if start else (pd.Period(end, freq) - periods).start_time
+    end = end if end else (pd.Period(start, freq) + periods).start_time
+    return start, end
 
 
 def _append_graph(self, df):
@@ -42,12 +30,12 @@ def _append_graph(self, df):
     pass
 
 
-def to_unix_time(*dt: pd.datetime)->list:
+def to_unix_time(*dt: pd.datetime)->iter:
     """datetimeをunix秒に変換
     引数: datetime(複数指定可能)
     戻り値: unix秒に直されたリスト"""
     epoch = pd.datetime.utcfromtimestamp(0)
-    return [(i - epoch).total_seconds() * 1000 for i in dt]
+    return ((i - epoch).total_seconds() * 1000 for i in dt)
 
 
 class StockPlot:
@@ -144,92 +132,79 @@ class StockPlot:
     """
 
     def __init__(self, df: pd.core.frame.DataFrame):
+        # Arg Check
         co = ['open', 'high', 'low', 'close']
         assert all(i in df.columns for i in co), 'arg\'s columns must have {}, but it has {}'\
-            .format(co, df.columns)  # Arg Check
+            .format(co, df.columns)
+        if not type(df.index) == pd.tseries.index.DatetimeIndex:
+            raise TypeError(df.index)
         self._init_stock_dataframe = ss.StockDataFrame(df)  # スパン変更前のデータフレーム
         self.stock_dataframe = None  # スパン変更後、インジケータ追加後のデータフレーム
-        self.plot_dataframe = None  # プロットするデータ(ドラッグで行ける範囲)
+        self.freq = None  # 足の時間幅
         self._fig = None  # <-- plotly.graph_objs
-        self._freq = None  # 足の時間幅
 
     def ohlc_convert(self, freq: str)->ss.StockDataFrame:
-        """ohlcデータのタイムスパンを変える
-        引数:
-            self: open. high, low, closeをカラムに持ち、
-                indpdがdatetime型のpd.DataFrame
-            freq: 変更したい期間(str型)
-        戻り値: スパン変更後のデータフレーム
+        """Convert ohlc time span
+
+        USAGE: `fx.ohlc_convert('D')  # 日足に変換`
+
+        * Args:  変更したい期間(str型)
+        * Return: スパン変更後のデータフレーム
         """
-        self._freq = freq
+        self.freq = freq
         self.stock_dataframe = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]\
             .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})\
             .dropna()
         return self.stock_dataframe
 
-    def plot(self, start_view=None, end_view=None, periods_view=None, fix=None,
-             start_plot=None, end_plot=None, periods_plot=None, tz=None, normalize=False,
-             closed=None,  showgrid=True, validate=False, **kwargs):
-        """Draw candle chart
-        StockDataFrame must have [open, high, low, close] columns!
+    def plot(self, start_view=None, end_view=None, periods_view=None, shift=None,
+             start_plot=None, end_plot=None, periods_plot=None,
+             showgrid=True, validate=False, **kwargs):
+        """Retrun plotly candle chart graph
 
-        USAGE:
-            `sp.plot()`
+        USAGE: `fx.plot()`
 
-        fix: 時間軸右側の空白。fixの数の足分だけ空白
-        cut: 画面外で切る足の数。Falseですべて表示。
-
-
-        ユーザーにdata(StockDataFrame)の範囲とview(_plot_data)の範囲決めさせる
-        sp.plot(end_view=pd.datetime.today(), periods_view=10,
-                                    end=pd.datetime.today(), periods=300)
-
-        引数:
-            sdf: indexがdatetimeのデータフレーム
-            start, end: 最初と最後のdatetime, 'first'でsdfの最初、'last'でsdfの最後
-            periods: datetimeの個数
-            start, end, periods合わせて2つの引数が必要
-            freq: M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
-        戻り値: datetime index
-
-        # NOTE
-        self.plot_dataframeのスパンを変える
-
-        # 今後使用予定
-        # Append indicators in graph
-        # append_graph(self.stock_dataframe)
+        * Args:
+            * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
+            * periods: 足の本数
+            > **start, end, periods合わせて2つの引数が必要**
+            * freq: M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
+            * shift: shiftの本数の足だけ右側に空白
+        * Return: グラフデータとレイアウト(plotly.graph_objs.graph_objs.Figure)
         """
-        # ---------Designate OUT of the view data----------
+        # ---------Set "plot_dataframe"----------
+        # Default Args
         if com._count_not_none(start_plot,
-                               end_plot, periods_plot) == 0:  # Default args setting
-            end_plot = self.stock_dataframe.index[-1]
+                               end_plot, periods_plot) == 0:
+            end_plot = 'last'
             periods_plot = 300
-        span_plot = date_range_fix(self.stock_dataframe.index, start=start_plot,
-                                   end=end_plot, periods=periods_plot, freq=self._freq, tz=tz,
-                                   normalize=normalize, closed=closed, **kwargs)
-        self.plot_dataframe = self.stock_dataframe.loc[span_plot[0]:span_plot[-1]]
-        self._fig = FF.create_candlestick(self.plot_dataframe.open,
-                                          self.plot_dataframe.high,
-                                          self.plot_dataframe.low,
-                                          self.plot_dataframe.close,
-                                          dates=self.plot_dataframe.index)
-        # ---------Designate IN of the view data----------
+        # first/last
+        start_plot = self.stock_dataframe.index[0] if start_plot == 'first' else start_plot
+        end_plot = self.stock_dataframe.index[-1] if end_plot == 'last' else end_plot
+        # Set "plot_dataframe"
+        start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
+        plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+        self._fig = FF.create_candlestick(plot_dataframe.open,
+                                          plot_dataframe.high,
+                                          plot_dataframe.low,
+                                          plot_dataframe.close,
+                                          dates=plot_dataframe.index)
+        # ---------Set "view"----------
+        # Default Args
         if com._count_not_none(start_view,
-                               end_view, periods_view) == 0:  # Default args setting
-            end_view = self.plot_dataframe.index[-1]
+                               end_view, periods_view) == 0:
+            end_view = 'last'
             periods_view = 50
-        span_view = date_range_fix(ts=self.plot_dataframe.index, start=start_view,
-                                   end=end_view, periods=periods_view, freq=self._freq, tz=tz,
-                                   normalize=normalize, closed=closed, **kwargs)
-        # ---------Shift view as "fix"----------
-        start_fix = pd.date_range(start=span_view[0], periods=fix, freq=self._freq)[0]\
-            if fix else span_view[0]
-        end_fix = pd.date_range(start=span_view[-1], periods=fix, freq=self._freq)[-1]\
-            if fix else span_view[-1]
-        view = to_unix_time(start_fix, end_fix)
+        # first/last
+        start_view = plot_dataframe.index[0] if start_view == 'first' else start_view
+        end_view = plot_dataframe.index[-1] if end_view == 'last' else end_view
+        # Set "view"
+        start_view, end_view = set_span(start_view, end_view, periods_view, self.freq)
+        end_view = set_span(start=end_view, periods=shift,
+                            freq=self.freq)[-1] if shift else end_view
+        view = list(to_unix_time(start_view, end_view))
         # ---------Plot graph----------
-        self._fig['layout'].update(xaxis={'showgrid': showgrid,
-                                          'range': view},
+        self._fig['layout'].update(xaxis={'showgrid': showgrid, 'range': view},
                                    yaxis={"autorange": True})
         return self._fig
 
