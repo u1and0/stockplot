@@ -143,12 +143,12 @@ class StockPlot:
         self.freq = None  # 足の時間幅
         self._fig = None  # <-- plotly.graph_objs
 
-    def ohlc_convert(self, freq: str)->ss.StockDataFrame:
+    def ohlc_convert(self, freq: str):
         """Convert ohlc time span
 
         USAGE: `fx.ohlc_convert('D')  # 日足に変換`
 
-        * Args:  変更したい期間(str型)
+        * Args:  変更したい期間 M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
         * Return: スパン変更後のデータフレーム
         """
         self.freq = freq
@@ -168,7 +168,6 @@ class StockPlot:
             * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
             * periods: 足の本数
             > **start, end, periods合わせて2つの引数が必要**
-            * freq: M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
             * shift: shiftの本数の足だけ右側に空白
         * Return: グラフデータとレイアウト(plotly.graph_objs.graph_objs.Figure)
         """

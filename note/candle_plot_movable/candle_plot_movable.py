@@ -50,19 +50,17 @@ df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 
 
 
 # ランダムな為替チャートを作成します。
-# randomwalk関数で"2017/3/20からの1分足を90日分作成します。
+# randomwalk関数で**2017/3/20からの1分足を90日分**作成します。
 
 # ## インスタンス化
 
-# In[4]:
+# In[14]:
 
-# Convert StockDataFrame as StockPlot
+# Convert DataFrame as StockPlot
 fx = sp.StockPlot(df)
 
 
-# StockDataFrameクラスでインスタンス化を行います。
-# 
-# `fx = sp.StockPlot(df)`でStockPlotクラスでインスタンス化します。
+# StockPlotクラスでインスタンス化します。
 
 # # ローソク足の描画
 
@@ -74,6 +72,7 @@ fx = sp.StockPlot(df)
 fx.ohlc_convert('D').head()
 
 
+# 1分足として入力したデータを日足に変換したデータが返されました。
 # 変換されたデータは`stock_dataframe`というインスタンス変数に格納されます。
 
 # In[6]:
@@ -81,12 +80,10 @@ fx.ohlc_convert('D').head()
 fx.stock_dataframe.head(), fx.stock_dataframe.tail()
 
 
-# 2017/3/20-2017/6/17の日足が格納されました。
-
-# 1分足として入力したデータを日足に変換したデータが返されました。
-
+# 2017/3/20-2017/6/17の日足ができたことを確認しました。
+# 
 # 時間足の変換が済むと、プロットが可能です。
-# プロットするときは`plot`メソッドです。
+# プロットするときは`plot`メソッドを使います。
 
 # In[7]:
 
@@ -136,23 +133,57 @@ fx.show('jupyter')  # プロットの表示をJupyter Notebookで開く
 # 1時間足がプロットされました。
 # あえて時間をかけてマウスオーバーしているのですが、1時間ごとにプロットされていることがわかりましたでしょうか。
 # 
-# ここで再度データを確認してみますと、1時間ごとにfigのインスタンス変数`stock_dataframe`が1時間足に変わっていることがわかると思います。
+# ここで再度`stock_dataframe`を確認してみますと、1時間足に変わっていることがわかります。
 
 # In[10]:
 
 fx.stock_dataframe.head(), fx.stock_dataframe.tail()
 
 
-# # プロット範囲の指定
+# `'open', 'high', 'low', 'close'`のカラムを持ったデータフレームの変換を行う`ohlc_convert`メソッドは以下のように記述されます。
 
-# `plot`メソッドで描かれるデータ範囲(`plot_dataframe`)と蓄えられているデータ範囲(`stock_dataframe`)は区別されます。
-# > 「株」の意味のstockと「蓄え」としての意味のstockをかけています。
-# 
-# `plot_dataframe, stock_dataframe`はインスタンス変数としてアクセスできます。
-# 
-# 5分足のチャートを描き、それぞれのインスタンス変数を表示してみます。
+# In[15]:
 
-# In[28]:
+def ohlc_convert(self, freq: str):
+    """Convert ohlc time span
+
+    USAGE: `fx.ohlc_convert('D')  # 日足に変換`
+
+    * Args:  変更したい期間 M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
+    * Return: スパン変更後のデータフレーム
+    """
+    self.freq = freq
+    self.stock_dataframe = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]        .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})        .dropna()
+    return self.stock_dataframe
+
+
+# ```python
+# df.resample(freq).ohlc()
+# ```
+# 
+# とすると階層が分かれたohlcのデータフレームが出来上がってしまうので
+# 
+# ```python
+# df.resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})
+# ```
+# 
+# のように`agg`メソッドを使うことです。
+# 
+# `freq`は`df.resample`で使える時間であれば自由なので、freq='1D4H2T24S'とすると'1日と4時間2分24秒足'といった変な時間足を作れます。
+
+# In[17]:
+
+fx.ohlc_convert('1D4H2T24S').head()
+
+
+# # グラフ範囲の指定
+
+# `plot`メソッドは`stock_dataframe`の中身を**すべてグラフ化しません**。
+# デフォルトの場合、**最後の足から数えて300本足**がグラフ化されます。
+
+# 例として、5分足のチャートを描きます。
+
+# In[11]:
 
 fx.ohlc_convert('5T')  # 5分足に変換
 fx.plot()
@@ -161,27 +192,19 @@ fx.show('jupyter')
 
 # ![gif6](./candle_plot_movable_files/gif6.gif)
 
-# 2017/3/20-2017/6/17の5分足が描かれましたが、最初の足が2017/6/16で終わっています。
-# 
-# これはプロットされるデータの範囲`plot_dataframe`が2017/6/16までで切られているためです。
+# In[12]:
 
-# In[21]:
-
-# データとして保存される`stock_dataframe`
 fx.stock_dataframe.index
 
 
-# In[19]:
+# 2017/3/20-2017/6/17ののデータフレームを5分足に変換してローソク足を描きました。
+# 最初の足が2017/3/20ではなく2017/6/16で途切れています。
+# これはグラフ化される範囲が5分足の300本足で切られているためです。
 
-# プロットするデータとして保存される`plot_dataframe`
-fx.plot_dataframe.index
-
-
-# 2017/3/20から2017/6/17までを5分足に変換すると、`stock_dataframe`のインデックスは大変長い列(長さ{{len(fx.stock_dataframe)}})になります。  一方で、`plot_dataframe`のインデックスは短い列(長さ{{len(fx.plot_dataframe)}})になります。
+# 描画されるデータが大きいと`show`メソッド時に大変リソースを食います。
+# **グラフとして見る範囲は限定的だろうとの考えから、`plot`メソッドは`stock_dataframe`から一部切り出した形をグラフ化します。**
 # 
-# `stock_dataframe`のようにデータとして保持している分にはいくら長くてもメモリを食いつぶす程度ですが、`plot_dataframe`は描画に用いられるデータですので、長いと`show`メソッド時に大変リソースを食います。**グラフとして表示したところで、見る範囲は限定的だろうとの考えから、`plot_dataframe`は`stock_dataframe`から一部切り出した形にしています。**
-# 
-# `plot_dataframe`の長さは、`plot`メソッドの引数として与えることができます。
+# グラフ化する範囲は、`plot`メソッドの引数として与えることができます。
 
 # * `plot`メソッドのプロット範囲を決める引数
 #     * `start_plot`: グラフ化する最初の日付・時間
@@ -190,14 +213,19 @@ fx.plot_dataframe.index
 # * start, end, periodsのうち二つが指定されている必要がある。
 # * 何も指定しなければ、デフォルト値が入力される。
 # > ```python
-# # デフォルト値
-# end_plot= self.stock_dataframe.index[-1]
-# periods_plot=300
+# # Default Args
+# if com._count_not_none(start_plot,
+#                        end_plot, periods_plot) == 0:  # すべてNoneのままだったら
+#     end_plot = 'last'  # 最後の足から
+#     periods_plot = 300  # 300本足で切る
+# # first/last
+# start_plot = self.stock_dataframe.index[0] if start_plot == 'first' else start_plot
+# end_plot = self.stock_dataframe.index[-1] if end_plot == 'last' else end_plot  # 'last'=最後の足とはindexの最後
 # ```
 
 # `start_plot, end_plot`を指定して描画してみます。
 
-# In[40]:
+# In[ ]:
 
 # fx.ohlc_convert('5T')  # 既に5分足に変換されているので必要ない
 start = pd.datetime(2017,6,17,9,0,0)     # 2017/6/17 09:00
@@ -212,27 +240,14 @@ fx.show('jupyter')
 
 # # ビュー範囲の指定
 
-# `plot_dataframe`の期間を指定すれば、インスタンス化する前のデータフレームに入っている日付・時間内のプロットを見れます。
 # plotlyのズームイン / アウト、スクロールを使えば表示範囲外のところも見れます。
 # しかし、見たい期間が最初から決まっているのにもかかわらず、グラフ化してからスクロールするのはメンドウです。
 # 
 # そこで、`plot`メソッドではグラフ化して最初に見えるビュー範囲(view)を指定できます。
 
-# * `plot`メソッドのビュー範囲を決める引数
-#     * `start_view`: 表示する最初の日付・時間
-#     * `end_view`: 表示する最後の日付・時間
-#     * `periods_view`: 表示する足の数(int型)
-# * start, end, periodsのうち二つが指定されている必要がある。
-# * 何も指定しなければ、デフォルト値が入力される。
-# > ```python
-# # デフォルト値
-# end_view = self.plot_dataframe.index[-1]
-# periods_view = 50
-# ```
-
 # 例えば2017/5/8から2017/6/5の4時間足が見たいとしましょう。
 
-# In[43]:
+# In[ ]:
 
 fx.ohlc_convert('4H')  # 4時間足に変換
 start = pd.datetime(2017,5,8)   # 2017/5/8
@@ -243,9 +258,9 @@ fx.show('jupyter')
 
 # ![gif8](./candle_plot_movable_files/gif8.gif)
 
-# `end_view, periods_view`引数を使って表示してみます。
+# 次は`start_view, end_view`の指定ではなく、`end_view, periods_view`を使って表示してみます。
 
-# In[44]:
+# In[ ]:
 
 fx.ohlc_convert('D')  # 日足に変換
 fx.plot(periods_view=20, end_view='last')
@@ -255,6 +270,106 @@ fx.show('html')  # html形式で表示
 
 
 # ![gif4](./candle_plot_movable_files/gif4.gif)
+
+# * `plot`メソッドのビュー範囲を決める引数
+#     * `start_view`: 表示する最初の日付・時間
+#     * `end_view`: 表示する最後の日付・時間
+#     * `periods_view`: 表示する足の数(int型)
+# * start, end, periodsのうち二つが指定されている必要がある。
+# * 何も指定しなければ、デフォルト値が入力される。
+# > ```python
+# # Default Args
+# if com._count_not_none(start_view,
+#                        end_view, periods_view) == 0:  # すべてNoneのままだったら
+#     end_view = 'last'  # 最後の足から
+#     periods_view = 50  # 50本足までを表示する
+# # first/last
+# start_view = plot_dataframe.index[0] if start_view == 'first' else start_view
+# end_view = plot_dataframe.index[-1] if end_view == 'last' else end_view  # 'last'はindexの最後
+# ```
+
+# `periods`の指定は`end`が指定された場合は`start`、`start`が指定された場合は`end`を計算します。
+# 計算する関数は次のようにしました。
+
+# In[19]:
+
+from pandas.core import common as com
+def set_span(start=None, end=None, periods=None, freq='D'):
+    """ 引数のstart, end, periodsに対して
+    startとendの時間を返す。
+
+    * start, end, periods合わせて2つの引数が指定されていなければエラー
+    * start, endが指定されていたらそのまま返す
+    * start, periodsが指定されていたら、endを計算する
+    * end, periodsが指定されていたら、startを計算する
+    """
+    if com._count_not_none(start, end, periods) != 2:  # 引数が2個以外であればエラー
+        raise ValueError('Must specify two of start, end, or periods')
+    start = start if start else (pd.Period(end, freq) - periods).start_time
+    end = end if end else (pd.Period(start, freq) + periods).start_time
+    return start, end
+
+
+# 呼び出すときは次のようにします。
+# ```python
+# start_view, end_view = set_span(start_view, end_view, periods_view, self.freq)
+# ```
+# > 説明は省きましたが、`periods_plot`引数として、グラフ化する時間足の指定も`view`と同様にできます。
+
+# # 右側に空白を作る
+
+# 引数`shift`に指定した足の本数だけ、右側に空白を作ります。
+# > 時間足が短いとうまくいきません。原因究明中です。
+# 
+# 予測線を引いたり一目均衡表では必要になる機能だと思います。
+
+# In[ ]:
+
+fx.plot()
+fx.show('jupyter')
+
+
+# In[21]:
+
+fx.plot(shift=30)
+fx.show('jupyter')
+
+
+# ![gif5](./candle_plot_movable_files/gif5.gif)
+
+# `plot`メソッドの`fix`引数を30とし、30本の足だけの空白を右側(時間の遅い側)に作ることができました。
+# `start_view, end_view`の位置は指定した日付通りで変わりません。
+# 今回の場合、`start_view, end_view`は指定していないので、デフォルトの`end_view='last', periods_view=50`が指定されたことになります。
+
+# ## data範囲、plot範囲, view範囲、shiftまとめ
+
+# 図示すると以下のような感じです。
+
+# ![png4](./candle_plot_movable_files/png4.png)
+
+# # まとめ
+
+# * `ohlc_convert`メソッド
+#     * `freq`引数で時間足を決める。
+#     * `stock_dataframe`を決める。
+# * `plot`メソッド
+#     * plot範囲(`plot_dataframe`)を決める。
+#         * `start_plot`
+#         * `end_plot`
+#         * `periods_plot`
+#     * view範囲を決める。
+#         * `start_view`
+#         * `end_view`
+#         * `periods_view`
+#     * グラフの右側の空白(shift)を決める。
+#         * `shift`
+# * `show`メソッド
+#     * 出力形式を決める。
+#         * `how='jupyter', 'html', 'png', 'jpeg', 'webp', 'svg'`
+#     * ファイル名を決める。
+#         * `filebasename`
+
+# # ごみ
 
 # * ohlc_convertメソッドで日足に変換します。
 # > ```python
@@ -281,66 +396,11 @@ fx.show('html')  # html形式で表示
 # fx.show('html')
 # ```
 
-# # 右側に空白を作る
-
-# 右側に空白を作ります。
-# 引数`fix`に指定した足の本数だけ、右側に空白を作ります。
-# > 時間足が短いとうまくいきません。原因究明中です。
-# 
-# 予測線を引いたり一目均衡表では必要になる機能だと思います。
-
-# In[13]:
-
-fx.plot()
-fx.show('jupyter')
-
-
-# In[14]:
-
-fx.plot(fix=30)
-fx.show('jupyter')
-
-
-# ![gif5](./candle_plot_movable_files/gif5.gif)
-
-# `plot`メソッドの`fix`引数を30とし、30本の足だけの空白を右側(時間の遅い側)に作ることができました。
-# `start_view, end_view`の位置は指定した日付通りで変わりません。
-# 今回の場合、`start_view, end_view`は指定していないので、デフォルトの`end_view='last', periods_view=50`が指定されたことになります。
-
-# ## data範囲、plot範囲, view範囲、fixまとめ
-
-# 図示すると以下のような感じです。
-
-# ![png4](./candle_plot_movable_files/png4.png)
-
 # |    |  stock_dataframe  |  plot_dataframe  |  view  |
 # |----|-------------------|------------------|----------|
 # |  `show`で最初に表示される  |  x  |  x  |  o  |
 # |  `show`でドラッグすれば見ることができる  | x  |   o  |  o  |
-# |  インスタンス変数としてアクセス可  |  o  |  o  |  x  |
-
-# # まとめ
-
-# * `ohlc_convert`メソッド
-#     * 時間足を決める。
-#         * `freq`
-#     * `stock_dataframe`を決める。
-# * `plot`メソッド
-#     * plot範囲(`plot_dataframe`)を決める。
-#         * `start_plot`
-#         * `end_plot`
-#         * `periods_plot`
-#     * view範囲を決める。
-#         * `start_view`
-#         * `end_view`
-#         * `periods_view`
-#     * グラフの右側の空白(fix)を決める。
-#         * `fix`
-# * `show`メソッド
-#     * 出力形式を決める。
-#         * `how='jupyter', 'html', 'png', 'jpeg', 'webp', 'svg'`
-#     * ファイル名を決める。
-#         * `filebasename`
+# |  インスタンス変数としてアクセス可  |  o  |  x  |  x  |
 
 # In[ ]:
 
