@@ -54,7 +54,7 @@ df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 
 
 # ## インスタンス化
 
-# In[14]:
+# In[4]:
 
 # Convert DataFrame as StockPlot
 fx = sp.StockPlot(df)
@@ -65,11 +65,11 @@ fx = sp.StockPlot(df)
 # # ローソク足の描画
 
 # `fig = sp.StockPlot(sdf)`でインスタンス化されたら時間足を変換します。
-# 変換する際は`ohlc_convert`メソッドを使います。
+# 変換する際は`resample`メソッドを使います。
 
 # In[5]:
 
-fx.ohlc_convert('D').head()
+fx.resample('D').head()
 
 
 # 1分足として入力したデータを日足に変換したデータが返されました。
@@ -96,6 +96,23 @@ fx.plot()
 # `show`メソッドの第一引数`how`のデフォルト引数は`html`です。
 # 引数なしで`show`するとブラウザの新しいタブが立ち上がってそこに表示されます。
 # 今はJupyter Notebook上で描きたいので、`how=jupyter`、または単に`jupyter`を引数にします。
+# 
+# ```python
+# def show(self, how='html', filebasename='candlestick_and_trace'):
+#     """Export file type"""
+#     if how == 'html':
+#         ax = pyo.plot(self._fig, filename=filebasename + '.html',
+#                       validate=False)  # for HTML
+#     elif how == 'jupyter':
+#         ax = pyo.iplot(self._fig, filename=filebasename + '.html',
+#                        validate=False)  # for Jupyter Notebook
+#     elif how in ('png', 'jpeg', 'webp', 'svg'):
+#         ax = pyo.plot(self._fig, image=how, image_filename=filebasename,
+#                       validate=False)  # for file exporting
+#     else:
+#         raise KeyError(how)
+#     return ax
+# ```
 
 # In[8]:
 
@@ -119,11 +136,11 @@ fx.show(how='jupyter')
 
 # 日足だけじゃなくて別の時間足も見たいです。
 # 
-# そういうときは`ohlc_convert`メソッドを使って時間幅を変更します。
+# そういうときは`resample`メソッドを使って時間幅を変更します。
 
 # In[9]:
 
-fx.ohlc_convert('H')  # 1時間足に変更
+fx.resample('H')  # 1時間足に変更
 fx.plot()  # ローソク足プロット
 fx.show('jupyter')  # プロットの表示をJupyter Notebookで開く
 
@@ -140,22 +157,23 @@ fx.show('jupyter')  # プロットの表示をJupyter Notebookで開く
 fx.stock_dataframe.head(), fx.stock_dataframe.tail()
 
 
-# `'open', 'high', 'low', 'close'`のカラムを持ったデータフレームの変換を行う`ohlc_convert`メソッドは以下のように記述されます。
-
-# In[15]:
-
-def ohlc_convert(self, freq: str):
-    """Convert ohlc time span
-
-    USAGE: `fx.ohlc_convert('D')  # 日足に変換`
-
-    * Args:  変更したい期間 M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
-    * Return: スパン変更後のデータフレーム
-    """
-    self.freq = freq
-    self.stock_dataframe = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]        .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})        .dropna()
-    return self.stock_dataframe
-
+# `'open', 'high', 'low', 'close'`のカラムを持ったデータフレームの変換を行う`resample`メソッドは以下のように記述しました。
+# 
+# ```python
+# def resample(self, freq: str):
+#     """Convert ohlc time span
+# 
+#     USAGE: `fx.resample('D')  # 日足に変換`
+# 
+#     * Args:  変更したい期間 M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
+#     * Return: スパン変更後のデータフレーム
+#     """
+#     self.freq = freq  # plotやviewの範囲を決めるために後で使うのでインスタンス変数に入れる
+#     self.stock_dataframe = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]\
+#         .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})\
+#         .dropna()
+#     return self.stock_dataframe
+# ```
 
 # ```python
 # df.resample(freq).ohlc()
@@ -167,33 +185,34 @@ def ohlc_convert(self, freq: str):
 # df.resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})
 # ```
 # 
-# のように`agg`メソッドを使うことです。
+# のように`agg`メソッドを使います。
 # 
-# `freq`は`df.resample`で使える時間であれば自由なので、freq='1D4H2T24S'とすると'1日と4時間2分24秒足'といった変な時間足を作れます。
+# `freq`は`df.resample`で使える時間であれば自由なので、例えばfreq='1D4H2T24S'とすると'1日と4時間2分24秒足'といった変な時間足を作れます。
 
-# In[17]:
+# In[12]:
 
-fx.ohlc_convert('1D4H2T24S').head()
+fx.resample('1D4H2T24S').head()
 
 
-# # グラフ範囲の指定
+# # plot範囲の指定
 
 # `plot`メソッドは`stock_dataframe`の中身を**すべてグラフ化しません**。
 # デフォルトの場合、**最後の足から数えて300本足**がグラフ化されます。
 
 # 例として、5分足のチャートを描きます。
 
-# In[11]:
+# In[13]:
 
-fx.ohlc_convert('5T')  # 5分足に変換
+fx.resample('5T')  # 5分足に変換
 fx.plot()
 fx.show('jupyter')
 
 
 # ![gif6](./candle_plot_movable_files/gif6.gif)
 
-# In[12]:
+# In[14]:
 
+# stock_dataframeは2017/3/20から
 fx.stock_dataframe.index
 
 
@@ -202,7 +221,7 @@ fx.stock_dataframe.index
 # これはグラフ化される範囲が5分足の300本足で切られているためです。
 
 # 描画されるデータが大きいと`show`メソッド時に大変リソースを食います。
-# **グラフとして見る範囲は限定的だろうとの考えから、`plot`メソッドは`stock_dataframe`から一部切り出した形をグラフ化します。**
+# **グラフとして見る範囲は限定的だろうとの考えから、`plot`メソッドは`stock_dataframe`から一部切り出した形をグラフ化(plot)します。**
 # 
 # グラフ化する範囲は、`plot`メソッドの引数として与えることができます。
 
@@ -225,9 +244,9 @@ fx.stock_dataframe.index
 
 # `start_plot, end_plot`を指定して描画してみます。
 
-# In[ ]:
+# In[15]:
 
-# fx.ohlc_convert('5T')  # 既に5分足に変換されているので必要ない
+# fx.resample('5T')  # 既に5分足に変換されているので必要ない
 start = pd.datetime(2017,6,17,9,0,0)     # 2017/6/17 09:00
 end = pd.datetime(2017,6,17,23,0,0)      # 2017/6/17 23:00 
 fx.plot(start_plot=start, end_plot=end)  # 2017/6/17 09:00-23:00までをプロットする
@@ -238,7 +257,7 @@ fx.show('jupyter')
 
 # 2017/6/17 09:00 - 2017/6/17 23:00の5分足が描かれました。
 
-# # ビュー範囲の指定
+# # view範囲の指定
 
 # plotlyのズームイン / アウト、スクロールを使えば表示範囲外のところも見れます。
 # しかし、見たい期間が最初から決まっているのにもかかわらず、グラフ化してからスクロールするのはメンドウです。
@@ -247,9 +266,9 @@ fx.show('jupyter')
 
 # 例えば2017/5/8から2017/6/5の4時間足が見たいとしましょう。
 
-# In[ ]:
+# In[16]:
 
-fx.ohlc_convert('4H')  # 4時間足に変換
+fx.resample('4H')  # 4時間足に変換
 start = pd.datetime(2017,5,8)   # 2017/5/8
 end = pd.Timestamp('20170605')  # 2017/6/5(Timestampでも指定可能)
 fx.plot(start_view=start, end_view=end) # 2017/5/8 - 2017/6/5を表示する
@@ -260,9 +279,9 @@ fx.show('jupyter')
 
 # 次は`start_view, end_view`の指定ではなく、`end_view, periods_view`を使って表示してみます。
 
-# In[ ]:
+# In[17]:
 
-fx.ohlc_convert('D')  # 日足に変換
+fx.resample('D')  # 日足に変換
 fx.plot(periods_view=20, end_view='last')
     # `end_view`を'last'　最後の足に設定する
     # `periods_view`で20本足表示する
@@ -290,46 +309,69 @@ fx.show('html')  # html形式で表示
 
 # `periods`の指定は`end`が指定された場合は`start`、`start`が指定された場合は`end`を計算します。
 # 計算する関数は次のようにしました。
-
-# In[19]:
-
-from pandas.core import common as com
-def set_span(start=None, end=None, periods=None, freq='D'):
-    """ 引数のstart, end, periodsに対して
-    startとendの時間を返す。
-
-    * start, end, periods合わせて2つの引数が指定されていなければエラー
-    * start, endが指定されていたらそのまま返す
-    * start, periodsが指定されていたら、endを計算する
-    * end, periodsが指定されていたら、startを計算する
-    """
-    if com._count_not_none(start, end, periods) != 2:  # 引数が2個以外であればエラー
-        raise ValueError('Must specify two of start, end, or periods')
-    start = start if start else (pd.Period(end, freq) - periods).start_time
-    end = end if end else (pd.Period(start, freq) + periods).start_time
-    return start, end
-
+# 
+# ```python
+# from pandas.core import common as com
+# def set_span(start=None, end=None, periods=None, freq='D'):
+#     """ 引数のstart, end, periodsに対して
+#     startとendの時間を返す。
+# 
+#     * start, end, periods合わせて2つの引数が指定されていなければエラー
+#     * start, endが指定されていたらそのまま返す
+#     * start, periodsが指定されていたら、endを計算する
+#     * end, periodsが指定されていたら、startを計算する
+#     """
+#     if com._count_not_none(start, end, periods) != 2:  # 引数が2個以外であればエラー
+#         raise ValueError('Must specify two of start, end, or periods')
+#     # `start`が指定されていれば`start`をそのまま返し、そうでなければ`end`から`periods`引いた時間を`start`とする。
+#     start = start if start else (pd.Period(end, freq) - periods).start_time
+#     # `end`が指定されていれば`end`をそのまま返し、そうでなければ`start`から`periods`足した時間を`end`とする。
+#     end = end if end else (pd.Period(start, freq) + periods).start_time
+#     return start, end
+# ```
 
 # 呼び出すときは次のようにします。
 # ```python
 # start_view, end_view = set_span(start_view, end_view, periods_view, self.freq)
 # ```
-# > 説明は省きましたが、`periods_plot`引数として、グラフ化する時間足の指定も`view`と同様にできます。
+# > 説明は省きましたが、グラフ化する時間足も`view`と同様に`periods_plot`引数として指定できます。
+
+# `view`は`self._fig`の`layout`において、xaxisの範囲(range)を変更するのに使います。
+# 
+# 変更する際、unix時間に変換する必要があるので、`to_unix_time`関数に通します。
+# 
+# ```python
+# def to_unix_time(*dt: pd.datetime)->iter:
+#     """datetimeをunix秒に変換
+#     引数: datetime(複数指定可能)
+#     戻り値: unix秒に直されたイテレータ"""
+#     epoch = pd.datetime.utcfromtimestamp(0)
+#     return ((i - epoch).total_seconds() * 1000 for i in dt)
+# ```
+# 
+# 
+# ```python
+# view = list(to_unix_time(start_view, end_view))
+# # ---------Plot graph----------
+# self._fig['layout'].update(xaxis={'showgrid': showgrid, 'range': view},
+#                            yaxis={"autorange": True})
+# ```
 
 # # 右側に空白を作る
 
 # 引数`shift`に指定した足の本数だけ、右側に空白を作ります。
 # > 時間足が短いとうまくいきません。原因究明中です。
+# > 想定より多めに足の数を設定することでとりあえず回避しています。
 # 
-# 予測線を引いたり一目均衡表では必要になる機能だと思います。
+# 予測線を引いたり一目均衡表を使うとき必要になる機能だと思います。
 
-# In[ ]:
+# In[19]:
 
 fx.plot()
 fx.show('jupyter')
 
 
-# In[21]:
+# In[20]:
 
 fx.plot(shift=30)
 fx.show('jupyter')
@@ -338,8 +380,12 @@ fx.show('jupyter')
 # ![gif5](./candle_plot_movable_files/gif5.gif)
 
 # `plot`メソッドの`fix`引数を30とし、30本の足だけの空白を右側(時間の遅い側)に作ることができました。
-# `start_view, end_view`の位置は指定した日付通りで変わりません。
-# 今回の場合、`start_view, end_view`は指定していないので、デフォルトの`end_view='last', periods_view=50`が指定されたことになります。
+# 処理としては、先ほど出てきた`set_span`関数を使って、`end_view`に30本足分の時間足を足してあげます。
+# 
+# ```python
+# end_view = set_span(start=end_view, periods=shift,
+#                     freq=self.freq)[-1] if shift else end_view
+# ```
 
 # ## data範囲、plot範囲, view範囲、shiftまとめ
 
@@ -349,7 +395,13 @@ fx.show('jupyter')
 
 # # まとめ
 
-# * `ohlc_convert`メソッド
+# ## メソッド一覧
+
+# * `__init__`
+#     * pandas.Dataframeをインスタンス化
+#     * open, high, low, closeのカラムを持たないとエラー
+#     * indexがDatetimeIndexでなければエラー
+# * `resample`メソッド
 #     * `freq`引数で時間足を決める。
 #     * `stock_dataframe`を決める。
 # * `plot`メソッド
@@ -369,11 +421,167 @@ fx.show('jupyter')
 #     * ファイル名を決める。
 #         * `filebasename`
 
+# ## フローチャート
+# 各メソッドの呼び出しに使う引数と戻り値、プロットに使うフローは以下の図の通りです。
+
+# ![figure1](./candle_plot_movable_files/figure1.png)
+
+# ## ソースコード
+# そのうちgithubリポジトリ作ります。
+
+# In[ ]:
+
+import pandas as pd
+from pandas.core import common as com
+import stockstats as ss
+from plotly.tools import FigureFactory as FF
+import plotly.offline as pyo
+pyo.init_notebook_mode(connected=True)
+
+
+def set_span(start=None, end=None, periods=None, freq='D'):
+    """ 引数のstart, end, periodsに対して
+    startとendの時間を返す。
+
+    * start, end, periods合わせて2つの引数が指定されていなければエラー
+    * start, endが指定されていたらそのまま返す
+    * start, periodsが指定されていたら、endを計算する
+    * end, periodsが指定されていたら、startを計算する
+    """
+    if com._count_not_none(start, end, periods) != 2:  # Like a pd.date_range Error
+        raise ValueError('Must specify two of start, end, or periods')
+    start = start if start else (pd.Period(end, freq) - periods).start_time
+    end = end if end else (pd.Period(start, freq) + periods).start_time
+    return start, end
+
+
+def to_unix_time(*dt: pd.datetime)->iter:
+    """datetimeをunix秒に変換
+    引数: datetime(複数指定可能)
+    戻り値: unix秒に直されたリスト"""
+    epoch = pd.datetime.utcfromtimestamp(0)
+    return ((i - epoch).total_seconds() * 1000 for i in dt)
+
+
+class StockPlot:
+    """Plot candle chart using Plotly & StockDataFrame
+    # USAGE
+
+    ```
+    # Convert StockDataFrame as StockPlot
+    fx = StockPlot(sdf)
+
+    # Add indicator
+    fx.append('close_25_sma')
+
+    # Remove indicator
+    fx.append('close_25_sma')
+
+    # Plot candle chart
+    fx.plot()
+    fx.show()
+    ```
+    """
+
+    def __init__(self, df: pd.core.frame.DataFrame):
+        # Arg Check
+        co = ['open', 'high', 'low', 'close']
+        assert all(i in df.columns for i in co), 'arg\'s columns must have {}, but it has {}'            .format(co, df.columns)
+        if not type(df.index) == pd.tseries.index.DatetimeIndex:
+            raise TypeError(df.index)
+        self._init_stock_dataframe = ss.StockDataFrame(df)  # スパン変更前のデータフレーム
+        self.stock_dataframe = None  # スパン変更後、インジケータ追加後のデータフレーム
+        self.freq = None  # 足の時間幅
+        self._fig = None  # <-- plotly.graph_objs
+
+    def resample(self, freq: str):
+        """Convert ohlc time span
+
+        USAGE: `fx.resample('D')  # 日足に変換`
+
+        * Args:  変更したい期間 M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
+        * Return: スパン変更後のデータフレーム
+        """
+        self.freq = freq
+        self.stock_dataframe = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]            .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})            .dropna()
+        return self.stock_dataframe
+
+    def plot(self, start_view=None, end_view=None, periods_view=None, shift=None,
+             start_plot=None, end_plot=None, periods_plot=None,
+             showgrid=True, validate=False, **kwargs):
+        """Retrun plotly candle chart graph
+
+        USAGE: `fx.plot()`
+
+        * Args:
+            * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
+            * periods: 足の本数
+            > **start, end, periods合わせて2つの引数が必要**
+            * shift: shiftの本数の足だけ右側に空白
+        * Return: グラフデータとレイアウト(plotly.graph_objs.graph_objs.Figure)
+        """
+        # ---------Set "plot_dataframe"----------
+        # Default Args
+        if com._count_not_none(start_plot,
+                               end_plot, periods_plot) == 0:
+            end_plot = 'last'
+            periods_plot = 300
+        # first/last
+        start_plot = self.stock_dataframe.index[0] if start_plot == 'first' else start_plot
+        end_plot = self.stock_dataframe.index[-1] if end_plot == 'last' else end_plot
+        # Set "plot_dataframe"
+        start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
+        plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+        self._fig = FF.create_candlestick(plot_dataframe.open,
+                                          plot_dataframe.high,
+                                          plot_dataframe.low,
+                                          plot_dataframe.close,
+                                          dates=plot_dataframe.index)
+        # ---------Set "view"----------
+        # Default Args
+        if com._count_not_none(start_view,
+                               end_view, periods_view) == 0:
+            end_view = 'last'
+            periods_view = 50
+        # first/last
+        start_view = plot_dataframe.index[0] if start_view == 'first' else start_view
+        end_view = plot_dataframe.index[-1] if end_view == 'last' else end_view
+        # Set "view"
+        start_view, end_view = set_span(start_view, end_view, periods_view, self.freq)
+        end_view = set_span(start=end_view, periods=shift,
+                            freq=self.freq)[-1] if shift else end_view
+        view = list(to_unix_time(start_view, end_view))
+        # ---------Plot graph----------
+        self._fig['layout'].update(xaxis={'showgrid': showgrid, 'range': view},
+                                   yaxis={"autorange": True})
+        return self._fig
+
+    def show(self, how='html', filebasename='candlestick_and_trace'):
+        """Export file type"""
+        if how == 'html':
+            ax = pyo.plot(self._fig, filename=filebasename + '.html',
+                          validate=False)  # for HTML
+        elif how == 'jupyter':
+            ax = pyo.iplot(self._fig, filename=filebasename + '.html',
+                           validate=False)  # for Jupyter Notebook
+        elif how in ('png', 'jpeg', 'webp', 'svg'):
+            ax = pyo.plot(self._fig, image=how, image_filename=filebasename,
+                          validate=False)  # for file exporting
+        else:
+            raise KeyError(how)
+        return ax
+
+
+# ## TODOs
+# * 平均足プロット
+# * サブプロット
+# * 指標の追加/削除
+
 # # ごみ
 
-# * ohlc_convertメソッドで日足に変換します。
+# * resampleメソッドで日足に変換します。
 # > ```python
-# fx.ohlc_convert('D')
+# fx.resample('D')
 # ```
 # * ビューの設定をします。
 #     * `pd.date_range`関数のように、`start, end, periods`のうち二つが指定されなければエラーです。

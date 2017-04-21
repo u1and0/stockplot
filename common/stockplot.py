@@ -22,46 +22,34 @@ def set_span(start=None, end=None, periods=None, freq='D'):
     return start, end
 
 
-def _append_graph(self, df):
-    """
-    for i in self._append_dataframe:
-        self._fig.data.append(i)
-    """
-    pass
-
-
 def to_unix_time(*dt: pd.datetime)->iter:
     """datetimeをunix秒に変換
     引数: datetime(複数指定可能)
-    戻り値: unix秒に直されたリスト"""
+    戻り値: unix秒に直されたイテレータ"""
     epoch = pd.datetime.utcfromtimestamp(0)
     return ((i - epoch).total_seconds() * 1000 for i in dt)
 
 
 class StockPlot:
-    """StockDataFrameの可視化ツール
-
+    """Plot candle chart using Plotly & StockDataFrame
     # USAGE
 
-    ## Convert DataFrame as StockDataFrame
-    ## `df` is a pandas.DataFrame which has [open, high, low, close] columns.
-    sdf = ss.StockDataFrame(df)
-
+    ```
     # Convert StockDataFrame as StockPlot
-    sp = StockPlot(sdf)
+    fx = StockPlot(sdf)
 
-    ## Add indicator
-    `sp.append('close_25_sma')`
+    # Add indicator
+    fx.append('close_25_sma')
 
-    ## Remove indicator
-    `sp.append('close_25_sma')`
+    # Remove indicator
+    fx.append('close_25_sma')
 
-    ## Plot candle chart
-    `sp.candle_chart()`
-
+    # Plot candle chart
+    fx.plot()
+    fx.show()
+    ```
 
     # What do i want do
-
     * StockDataFrameにプロット能力を持たせたい。
     * StockPlotの属性
         * StockDataFrame: 金融指標を取得しやすい改造pandas.DataFrame
@@ -79,43 +67,36 @@ class StockPlot:
     # メソッド詳細
     * dfs.append('hoge')
         * dfs.get('hoge')を実行して、グラフに挿入するデータフレームを入手する
-            > `indi = dfs.get('hoge')`
+        > `indi = dfs.get('hoge')`
         * プロットするための形plotterに変換してやる
-            > `plotter = go.Scatter(x=..., y=...) <- indiを使う`
+        > `plotter = go.Scatter(x=..., y=...) <- indiを使う`
         * plotterをStockPlotのattributeである`fig`に入れてやる
-            > `fig['data'].append(plotter)`
+        > `fig['data'].append(plotter)`
+     * dfs.plot()
+            * `fig = FF.create_candlestick... `でキャンドルチャートを取得できる
+            * figに対してadd / remove_inidcatorで指標の追加 / 削除が行われる。
+            * self_figを返す
+     * dfs.show()
+            * plt.show()に当たる
 
-    * dfs.plot()
-        * `fig = FF.create_candlestick... `でキャンドルチャートを取得できる
-        * figに対してadd / remove_inidcatorで指標の追加 / 削除が行われる。
-        * self_figを返す
-
-    * dfs.show()
-        * plt.show()に当たる
-
-        ```python
-        self._fig['layout'].update(xaxis={'showgrid': True})  # figのレイアウト調整をして
-        pyo.plot(self._fig, filename=filename, validate=False)  # plotlyでhtmlとしてプロットする
-        ```
-
-
-    * `Base.df` is a dataframe. datafraemeの削除の仕方に従うこと
+    # removeメソッドについて
+    * `fx.df` is a dataframe. datafraemeの削除の仕方に従うこと
         * カラムの削除
-            * `Base.df.pop(*'column_name'*)
-            * `del Base.df[*'column_name'*]
-            * `Base.df.drop(*'column_name'*. axis=1)`
-    * `Base.add_line` is a list of graph line.pythonのリスト形式の削除の仕方に従うこと
+            * `fx.df.pop(*'column_name'*)
+            * `del fx.df[*'column_name'*]
+            * `fx.df.drop(*'column_name'*. axis=1)`
+    * `fx.add_line` is a list of graph line.pythonのリスト形式の削除の仕方に従うこと
         * 要素の削除
-            * `Base.add_line.pop(*'index'*)`:
+            * `fx.add_line.pop(*'index'*)`:
                  * `[x.add_line[i]['name'] for i in range(len(x.add_line)) ]`:
                     リスト内辞書のnameだけ抜き出せる
                  * x.add_iine.index('*name*')でなんとかならないかな
-            * `del Base.add_line[*num1* : *num2*]`
+            * `del fx.add_line[*num1* : *num2*]`
             * list.removeは使えない。なぜなら、長い長いデータフレームのような辞書形式をリストに格納しているから、実用的には打ち込めない。
         * 初期化
-            * `Base.add_line.clear(): clear関数
-            * `del Base.add_line[:]`: すべての要素をdel
-            * `Base.add_line = []`: 空のリストの代入
+            * `fx.add_line.clear(): clear関数
+            * `del fx.add_line[:]`: すべての要素をdel
+            * `fx.add_line = []`: 空のリストの代入
 
     # 指標の重複追加、追加削除の情報保存
         append, removeして残った指標を記憶
@@ -127,8 +108,6 @@ class StockPlot:
         * pop, del
         * clear
         * subplot
-        * 拡大縮小(足の数を決める)
-        * 時間足の変更メソッド(インスタンス化する前、外で決めたほうが汎用性あるのかな)
     """
 
     def __init__(self, df: pd.core.frame.DataFrame):
@@ -143,10 +122,10 @@ class StockPlot:
         self.freq = None  # 足の時間幅
         self._fig = None  # <-- plotly.graph_objs
 
-    def ohlc_convert(self, freq: str):
+    def resample(self, freq: str):
         """Convert ohlc time span
 
-        USAGE: `fx.ohlc_convert('D')  # 日足に変換`
+        USAGE: `fx.resample('D')  # 日足に変換`
 
         * Args:  変更したい期間 M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
         * Return: スパン変更後のデータフレーム
