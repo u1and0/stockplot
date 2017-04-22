@@ -574,7 +574,7 @@ end_view = set_span(start=end_view, periods=shift,
 
 図示すると以下のような感じです。
 
-![png4](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/png4.png)
+![png4](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/png4.PNG)
 
 # まとめ
 
