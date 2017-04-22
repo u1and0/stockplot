@@ -1,4 +1,4 @@
-# %load ipython_log
+#!/bin/bash
 # IPython log file
 # ----------General Module----------
 import numpy as np
