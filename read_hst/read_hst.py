@@ -21,12 +21,12 @@ df = pd.read_hdf('data/EURUSD.h5', key="main")
 df
 
 
+# ## 日足に圧縮する
+
 # open, high, low, closeだけにして、
 # resampleで指定した期間だけデータを丸める
 # 
 # 休日はbfill()かdropna()でなくす
-
-# ## 日足に圧縮する
 
 # In[2]:
 
