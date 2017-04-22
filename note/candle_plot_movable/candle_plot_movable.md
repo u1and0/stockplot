@@ -2,7 +2,7 @@
 
 ```python
 import sys
-sys.path.append('../../common/')
+sys.path.append('../../bin/')
 ```
 
 # 下準備

@@ -1,3 +1,4 @@
+#!/bin/bash
 import pandas as pd
 from pandas.core import common as com
 import stockstats as ss
