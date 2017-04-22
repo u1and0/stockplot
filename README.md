@@ -607,7 +607,7 @@ end_view = set_span(start=end_view, periods=shift,
 ## フローチャート
 各メソッドの呼び出しに使う引数と戻り値、プロットに使うフローは以下の図の通りです。
 
-![figure1](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/figure1.png)
+![figure1](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/figure1.PNG)
 
 
 
