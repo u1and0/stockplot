@@ -32,10 +32,12 @@ import plotly
 * General Module, Hide General Moduleは一般に配布されているパッケージなので、condaやpipといったパッケージ管理ソフトなどで追加してください。
     * General ModuleはこのJupyter Notebook内で使います。
     * Hide General Moduleは`stockplot`内で使用します。
->```sh
+
+```sh
 conda install plotly
 pip install stockstats
 ```
+
 * User Moduleのstockplotについては以下にソースコード貼ります。
     * 旧バージョン[Qiita - u1and0 / plotlyでキャンドルチャートプロット](http://qiita.com/u1and0/items/0ebcf097a1d61c636eb9)
 * random_walkについては[Qiita - u1and0 / pythonでローソク足(candle chart)の描画](http://qiita.com/u1and0/items/1d9afdb7216c3d2320ef)
@@ -403,7 +405,8 @@ fx.stock_dataframe.index
     * `periods_plot`: グラフ化する足の数(int型)
 * start, end, periodsのうち二つが指定されている必要がある。
 * 何も指定しなければ、デフォルト値が入力される。
-> ```python
+
+```python
 # Default Args
 if com._count_not_none(start_plot,
                        end_plot, periods_plot) == 0:  # すべてNoneのままだったら
@@ -477,7 +480,8 @@ fx.show('html')  # html形式で表示
     * `periods_view`: 表示する足の数(int型)
 * start, end, periodsのうち二つが指定されている必要がある。
 * 何も指定しなければ、デフォルト値が入力される。
-> ```python
+
+```python
 # Default Args
 if com._count_not_none(start_view,
                        end_view, periods_view) == 0:  # すべてNoneのままだったら
