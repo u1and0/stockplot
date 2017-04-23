@@ -20,8 +20,6 @@ import stockplot as sp
 ```
 
 
-<script>requirejs.config({paths: { 'plotly': ['https://cdn.plot.ly/plotly-latest.min']},});if(!window.Plotly) {{require(['plotly'],function(plotly) {window.Plotly=plotly;});}}</script>
-
 
 ```python
 # ----------Hide General Module----------
@@ -67,7 +65,7 @@ StockPlotクラスでインスタンス化します。
 
 # ローソク足の描画
 
-`fig = sp.StockPlot(sdf)`でインスタンス化されたら時間足を変換します。
+`fx = sp.StockPlot(sdf)`でインスタンス化されたら時間足を変換します。
 変換する際は`resample`メソッドを使います。
 
 
@@ -167,7 +165,7 @@ fx.stock_dataframe.head(), fx.stock_dataframe.tail()
 fx.plot()
 ```
 
-`fig.plot()`で`plotly`で出力する形式`plotly.graph_objs.graph_objs.Figure`(`data`と`layout`がキーとなった辞書)が返されます。
+`fx.plot()`で`plotly`で出力する形式`plotly.graph_objs.graph_objs.Figure`(`data`と`layout`がキーとなった辞書)が返されます。
 
 画像を見るには`matplotlib.pyplot`のように`show`メソッドを使います。
 `show`メソッドの第一引数`how`のデフォルト引数は`html`です。
@@ -618,10 +616,10 @@ end_view = set_span(start=end_view, periods=shift,
 # 追記
 
 __2017/4/21__
-Qiitaに投稿しました。
+Qiitaに投稿しました。README.mdと内容はほぼ同じです。
 [Plotlyでぐりぐり動かせる為替チャートを作る](http://qiita.com/u1and0/items/e2273bd8e03c670be45a)
 
 
 __2017/4/22__
-デイリーランキング4位に入りました。ありがとうございます^^
+Qiitaデイリーランキング4位に入りました。ありがとうございます^^
 ![daily_iine](https://github.com/u1and0/stockplot/blob/master/note/picture/daily_iine.PNG)
