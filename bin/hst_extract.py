@@ -1,5 +1,4 @@
 #!/usr/lib/python
-
 import zipfile
 import struct
 import time
@@ -10,6 +9,7 @@ import os
 HEADER_SIZE = 148
 OLD_FILE_STRUCTURE_SIZE = 44
 NEW_FILE_STRUCTURE_SIZE = 60
+
 
 def file_args():
     """Decide Filename / Filetype"""
@@ -37,26 +37,43 @@ def file_args():
     return (filename, input_filetype, output_filetype)
 
 
-def zip2hst():
-    return hst
+def zip2hst(filename):
+    zf = zipfile.ZipFile(filename, 'r')
+    zf.extractall()
 
 
 def hst2bin(filename):
+    """Convert .hst file to binary."""
     with open(filename, 'rb') as f:
         binary = f.read()
     return binary
 
 
-def bin2df(data):
+def bin2dict(data):
+    """Convert binary to pandas DataFrame."""
 
+    if filetype == "old":
+        bar = struct.unpack("<iddddd", buf)
+    if filetype == "new":
+        bar = struct.unpack("<Qddddqiq", buf)
 
-    data = {'openTime': openTime, 'open': openPrice, 'high': highPrice,
+    openTime.append(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bar[0])))
+    openPrice.append(bar[1])
+    highPrice.append(bar[2])
+    lowPrice.append(bar[3])
+    closePrice.append(bar[4])
+    volume.append(bar[5])
+
+    dic = {'open_time': open_time, 'open': openPrice, 'high': highPrice,
             'low': lowPrice, 'close': closePrice, 'volume': volume}
+    return dic
 
-    result = pd.DataFrame.from_dict(data)
-    result = result.set_index('openTime')
-    result.index = pd.to_datetime(result.index)
-    result = result.ix[:, ['open', 'high', 'low', 'close', 'volume']]
+
+def dict2df(dic):
+    df = pd.DataFrame.from_dict(dic)
+    df = df.set_index('open_time')  # open_timeをindexにする
+    df.index = pd.to_datetime(df.index)  # 時間軸へ型変更
+    df = df.ix[:, ['open', 'high', 'low', 'close', 'volume']]
     return df
 
 
