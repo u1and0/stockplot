@@ -14,7 +14,7 @@ type (-ty) は基本的にold
 ```
 """
 
-
+import zipfile
 import struct
 import time
 import pandas as pd
@@ -27,25 +27,52 @@ NEW_FILE_STRUCTURE_SIZE = 60
 
 
 def main():
+    filename, input_filetype, output_filetype = file_args()
+    print('--- Convert Start ---')
+    print('`{1}` --> `{2}` ---'.format(filename, filename))
+    print('Please wait a moment...\n')
+    df = binary(filename, input_filetype)
+    # df.to_csv(os.path.splitext(filename)[0] + '.csv', header=False)
+    df.to_hdf(os.path.splitext(filename)[0] + '.h5', key='main')
+    print('\n---End of Convert---')
+    print('Using %s.h5 file, type below...' % os.path.splitext(filename)[0])
+    print('`df = pd.read_hdf(\"%s.h5\", key="main")`' % os.path.splitext(filename)[0])
+
+
+def file_args():
+    """Decide Filename / Filetype"""
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename')
-    parser.add_argument('-ty', '--filetype')
+    parser.add_argument('-i', '--input-filetype')
+    parser.add_argument('-o', '--output-filetype')
     args = parser.parse_args()
 
     filename = args.filename
-    filetype = args.filetype
+    input_filetype = args.input_filetype
+    output_filetype = args.output_filetype if args.output_filetype\
+        else 'pickle'  # Default is 'pickle' file
 
     if not filename:
         print("Enter a valid filename (-f)")
         exit()
-
-    if filetype != "new" and filetype != "old":
-        print("Enter a valid filetype (valid options are old and new)")
+    if input_filetype != "new" and input_filetype != "old":
+        print("Enter a valid input-filetype (valid options are 'old' or 'new')")
         exit()
-    return (filename, filetype)
+    elif output_filetype != "hdf" and output_filetype != "pickle":
+        print("Enter a valid output - filetype\
+              (valid options are 'pickle' or 'hdf', Default is pickle.)")
+        exit()
+    return (filename, input_filetype, output_filetype)
+
+
+def xzip():
+    pass
 
 
 def binary(filename, filetype):
+    if zipfile.is_zipfile(filename):
+        filename = xzip(filename)
+
     read = 0
     openTime = []
     openPrice = []
@@ -103,13 +130,4 @@ def binary(filename, filetype):
 
 
 if __name__ == "__main__":
-    filename, filetype = main()
-    print('--- Convert Start ---')
-    print('`%s` --> `%s.h5` ---' % (filename, os.path.splitext(filename)[0]))
-    print('Please wait a moment...\n')
-    df = binary(filename, filetype)
-    # df.to_csv(os.path.splitext(filename)[0] + '.csv', header=False)
-    df.to_hdf(os.path.splitext(filename)[0] + '.h5', key='main')
-    print('\n---End of Convert---')
-    print('Using %s.h5 file, type below...' % os.path.splitext(filename)[0])
-    print('`df = pd.read_hdf(\"%s.h5\", key="main")`' % os.path.splitext(filename)[0])
+    main()
