@@ -1,4 +1,5 @@
 #!/usr/lib/python
+from more_itertools import chunked
 import zipfile
 import struct
 import time
@@ -61,13 +62,19 @@ def zip2bin(filename):
         yield binary
 
 
-def bin2dict(data):
+def bin2dict(binary, filetype):
     """Convert binary to pandas DataFrame."""
+    if filetype == 'old':
+        size = OLD_FILE_STRUCTURE_SIZE
+        unpack_key = "<iddddd"
+    elif filetype == 'new':
+        size= NEW_FILE_STRUCTURE_SIZE
+        unpack_key = "<Qddddqiq"
+    else:
+        raise KeyError(filetype)
 
-    if filetype == "old":
-        bar = struct.unpack("<iddddd", buf)
-    if filetype == "new":
-        bar = struct.unpack("<Qddddqiq", buf)
+    buf = np.array(list(chunked(binary, size)))
+    bar = struct.unpack(unpack_key, buf)
 
     openTime.append(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bar[0])))
     openPrice.append(bar[1])
@@ -77,7 +84,7 @@ def bin2dict(data):
     volume.append(bar[5])
 
     dic = {'open_time': open_time, 'open': openPrice, 'high': highPrice,
-            'low': lowPrice, 'close': closePrice, 'volume': volume}
+           'low': lowPrice, 'close': closePrice, 'volume': volume}
     return dic
 
 

@@ -70,8 +70,8 @@ def xzip():
 
 
 def binary(filename, filetype):
-    if zipfile.is_zipfile(filename):
-        filename = xzip(filename)
+    # if zipfile.is_zipfile(filename):
+    #     filename = xzip(filename)
 
     read = 0
     openTime = []
