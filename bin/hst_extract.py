@@ -38,8 +38,12 @@ def file_args():
 
 
 def zip2hst(filename):
+    """Extract zip file.
+    args: zip filename
+    return: Extract filename"""
     zf = zipfile.ZipFile(filename, 'r')
     zf.extractall()
+    return zf.namelist()
 
 
 def hst2bin(filename):
