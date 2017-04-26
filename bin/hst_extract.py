@@ -37,12 +37,12 @@ def file_args():
     return (filename, input_filetype, output_filetype)
 
 
-def zip2hst(filename):
+def zip2hst(filename, path=None):
     """Extract zip file.
     args: zip filename
     return: Extract filename"""
     zf = zipfile.ZipFile(filename, 'r')
-    zf.extractall()
+    zf.extractall(path=path)
     return zf.namelist()
 
 
@@ -51,6 +51,14 @@ def hst2bin(filename):
     with open(filename, 'rb') as f:
         binary = f.read()
     return binary
+
+
+def zip2bin(filename):
+    hstfiles = zip2hst(filename)
+    for hstfile in hstfiles:
+        binary = hst2bin(hstfile)
+        os.remove(hstfile)  # remove hst files
+        yield binary
 
 
 def bin2dict(data):
