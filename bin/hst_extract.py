@@ -13,7 +13,18 @@ NEW_FILE_STRUCTURE_SIZE = 60
 
 
 def file_args():
-    """Decide Filename / Filetype"""
+    """Decide Filename / Filetype
+
+    # TODO
+    -zh --zip-to-hst
+    -zf --zip-to-hdf
+    -zp --zip-to-pickle
+    -hp --hst-to-pickle
+    -hf --hst-to-hdf
+
+    * あとファイル形式からpd.DataFrame, binaryまでに変換する奴
+        * 関数を呼ぶだけでいいのか？
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename')
     parser.add_argument('-i', '--input-filetype')
@@ -66,15 +77,19 @@ def bin2dict(binary, filetype):
     """Convert binary to pandas DataFrame."""
     if filetype == 'old':
         size = OLD_FILE_STRUCTURE_SIZE
-        unpack_key = "<iddddd"
+        key = "<iddddd"
     elif filetype == 'new':
         size= NEW_FILE_STRUCTURE_SIZE
-        unpack_key = "<Qddddqiq"
+        key = "<Qddddqiq"
     else:
         raise KeyError(filetype)
 
-    buf = np.array(list(chunked(binary, size)))
-    bar = struct.unpack(unpack_key, buf)
+    ray=[]
+    for i in chunked(binary, size):
+        # ray.append(''.join(i))  # 10文字ずつばらばらのbinaryを繋げる
+        str(i)
+    buf = np.array(ray).T
+    bar = struct.unpack(key, buf)
 
     openTime.append(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bar[0])))
     openPrice.append(bar[1])

@@ -9,9 +9,10 @@
 
 ```
 run hst_to_csv.py -f <filename>.hst -ty <new | old>
+```
+
 type (-ty) は基本的にold
 .hstファイルを.h5(hdf5ファイル)に変換してくれるpythonスクリプト
-```
 """
 
 import zipfile
@@ -29,7 +30,7 @@ NEW_FILE_STRUCTURE_SIZE = 60
 def main():
     filename, input_filetype, output_filetype = file_args()
     print('--- Convert Start ---')
-    print('`{1}` --> `{2}` ---'.format(filename, filename))
+    # print('`{1}` --> `{2}` ---'.format(filename, filename))
     print('Please wait a moment...\n')
     df = binary(filename, input_filetype)
     # df.to_csv(os.path.splitext(filename)[0] + '.csv', header=False)
@@ -96,6 +97,7 @@ def binary(filename, filetype):
 
                 if not buf:
                     break
+                import pdb; pdb.set_trace()
 
                 if filetype == "old":
                     bar = struct.unpack("<iddddd", buf)
