@@ -1,9 +1,9 @@
-#!/bin/bash
 import pandas as pd
 from pandas.core import common as com
 import stockstats as ss
 from plotly.tools import FigureFactory as FF
 import plotly.offline as pyo
+import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
 
 
@@ -122,6 +122,7 @@ class StockPlot:
         self.stock_dataframe = None  # スパン変更後、インジケータ追加後のデータフレーム
         self.freq = None  # 足の時間幅
         self._fig = None  # <-- plotly.graph_objs
+        self._indicators = {}
 
     def resample(self, freq: str):
         """Convert ohlc time span
@@ -132,9 +133,12 @@ class StockPlot:
         * Return: スパン変更後のデータフレーム
         """
         self.freq = freq
-        self.stock_dataframe = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]\
+        df = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]\
             .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})\
             .dropna()
+        self.stock_dataframe = ss.StockDataFrame(df)
+        for indicator in self._indicators.keys():
+            self.append(indicator)  # Re-append indicator in dataframe
         return self.stock_dataframe
 
     def plot(self, start_view=None, end_view=None, periods_view=None, shift=None,
@@ -163,11 +167,16 @@ class StockPlot:
         # Set "plot_dataframe"
         start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
         plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+        for indicator in self._indicators:
+            self.append
         self._fig = FF.create_candlestick(plot_dataframe.open,
                                           plot_dataframe.high,
                                           plot_dataframe.low,
                                           plot_dataframe.close,
                                           dates=plot_dataframe.index)
+        # ---------Append indicators----------
+        for indicator in self._indicators.keys():
+            self._append_graph(indicator)  # Re-append indicator in graph
         # ---------Set "view"----------
         # Default Args
         if com._count_not_none(start_view,
@@ -203,20 +212,24 @@ class StockPlot:
         return ax
 
 
-# ---------Doesn't work because of changing above----------
-#     def append(self, indicator):
-#         """Add indicator designated by index (default is last appended one)
-#         from StockDataFrame & figure
+# ---------Indicator----------
+    def append(self, indicator):
+        """Add indicator designated by index (default is last appended one)
+        from StockDataFrame & figure
 
-#         USAGE:
-#             `sp.append('close_25_sma')`
-#             add indicator of 'close 25 sma'
-#         """
-#         indi = self.stock_dataframe.get(indicator)
-#         plotter = go.Scatter(x=indi.index, y=indi,
-#                              name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
-#         self._fig['data'].append(plotter)
-#         return indi
+        USAGE:
+            `sp.append('close_25_sma')`
+            add indicator of 'close 25 sma'
+        """
+        indicator_value = self.stock_dataframe.get(indicator)
+        self._indicators[indicator] = indicator_value
+        return indicator_value
+
+    def _append_graph(self, indicator):
+        graph_value = self._indicators[indicator]
+        plotter = go.Scatter(x=graph_value.index, y=graph_value,
+                             name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
+        self._fig['data'].append(plotter)
 
 #     def remove(self, indicator):
 #         """Remove indicator designated by 'index name'
