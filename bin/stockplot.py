@@ -167,8 +167,6 @@ class StockPlot:
         # Set "plot_dataframe"
         start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
         plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
-        for indicator in self._indicators:
-            self.append
         self._fig = FF.create_candlestick(plot_dataframe.open,
                                           plot_dataframe.high,
                                           plot_dataframe.low,
@@ -176,7 +174,7 @@ class StockPlot:
                                           dates=plot_dataframe.index)
         # ---------Append indicators----------
         for indicator in self._indicators.keys():
-            self._append_graph(indicator)  # Re-append indicator in graph
+            self._append_graph(indicator, start_plot, end_plot)  # Re-append indicator in graph
         # ---------Set "view"----------
         # Default Args
         if com._count_not_none(start_view,
@@ -225,8 +223,14 @@ class StockPlot:
         self._indicators[indicator] = indicator_value
         return indicator_value
 
-    def _append_graph(self, indicator):
-        graph_value = self._indicators[indicator]
+    def _append_graph(self, indicator, start, end):
+        """Auxualy functon as plotting indicator.plot
+
+        USAGE:
+            NONE
+            Used in `plot` method  
+        """
+        graph_value = self._indicators[indicator].loc[start:end]
         plotter = go.Scatter(x=graph_value.index, y=graph_value,
                              name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
         self._fig['data'].append(plotter)

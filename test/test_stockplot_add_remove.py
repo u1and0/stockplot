@@ -27,7 +27,6 @@ for i in range(25, 76, 25):
     fx.append('close_{}_sma'.format(i))
     fx.plot()
 
-print(fx._indicators)
 # Remove indicator
 # for i in [13, 11]:
 #     fx.remove('close_{}_sma'.format(i))
