@@ -218,12 +218,11 @@ class StockPlot:
 
 # ---------Indicator----------
     def append(self, indicator):
-        """Add indicator designated by index (default is last appended one)
-        from StockDataFrame & figure
+        """Add indicator.
+        This method append indicator JUST ONLY self.stock_dataframe NOT self._fig.
 
         Usage:
-            `sp.append('close_25_sma')`
-            add indicator of 'close 25 sma'
+            `sp.append('close_25_sma')`  # add indicator of 'close 25 sma'
         """
         indicator_value = self.stock_dataframe.get(indicator)
         self._indicators[indicator] = indicator_value
@@ -234,7 +233,7 @@ class StockPlot:
 
         Usage:
             NONE
-            Used in `plot` method  
+            Used in `plot` method
         """
         graph_value = self._indicators[indicator].loc[start:end]
         plotter = go.Scatter(x=graph_value.index, y=graph_value,
