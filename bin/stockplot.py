@@ -122,12 +122,12 @@ class StockPlot:
         self.stock_dataframe = None  # スパン変更後、インジケータ追加後のデータフレーム
         self.freq = None  # 足の時間幅
         self._fig = None  # <-- plotly.graph_objs
-        self._indicators = {}
+        self._indicators = {}  # Plotするときに使う指標
 
     def resample(self, freq: str):
         """Convert ohlc time span
 
-        USAGE: `fx.resample('D')  # 日足に変換`
+        Usage: `fx.resample('D')  # 日足に変換`
 
         * Args:  変更したい期間 M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
         * Return: スパン変更後のデータフレーム
@@ -146,7 +146,7 @@ class StockPlot:
              showgrid=True, validate=False, **kwargs):
         """Retrun plotly candle chart graph
 
-        USAGE: `fx.plot()`
+        Usage: `fx.plot()`
 
         * Args:
             * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
@@ -195,7 +195,13 @@ class StockPlot:
         return self._fig
 
     def show(self, how='html', filebasename='candlestick_and_trace'):
-        """Export file type"""
+        """Export file type
+
+        Usage:
+            * fx.show()  # Plot in HTML file
+            * fx.show('jupyter')  # Plot in Jupyter Notebook
+            * fx.show('png', filename='hoge')  # Plot as 'hoge.png' file
+        """
         if how == 'html':
             ax = pyo.plot(self._fig, filename=filebasename + '.html',
                           validate=False)  # for HTML
@@ -215,7 +221,7 @@ class StockPlot:
         """Add indicator designated by index (default is last appended one)
         from StockDataFrame & figure
 
-        USAGE:
+        Usage:
             `sp.append('close_25_sma')`
             add indicator of 'close 25 sma'
         """
@@ -226,7 +232,7 @@ class StockPlot:
     def _append_graph(self, indicator, start, end):
         """Auxualy functon as plotting indicator.plot
 
-        USAGE:
+        Usage:
             NONE
             Used in `plot` method  
         """
@@ -235,11 +241,21 @@ class StockPlot:
                              name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
         self._fig['data'].append(plotter)
 
+    def clear(self):
+        """Remove all indicators.
+        Keep self.freq, self.stock_dataframe
+
+        Usage:
+            fx.clear()
+            """
+        self._fig = None  # <-- plotly.graph_objs
+        self._indicators = {}
+
 #     def remove(self, indicator):
 #         """Remove indicator designated by 'index name'
 #         from StockDataFrame & figure
 
-#         USAGE:
+#         Usage:
 #             `sp.remove('close_25_sma')`
 #             remove indicator named 'close_25_sma'. """
 #         indi = indicator.lower().replace(' ', '_')
@@ -254,7 +270,7 @@ class StockPlot:
 #         """Remove indicator designated by 'index' (default is last appended one)
 #         from StockDataFrame & figure
 
-#         USAGE:
+#         Usage:
 #             * `sp.pop()`
 #             > remove indicator last appended.
 #             * `sp.pop(-2)`
