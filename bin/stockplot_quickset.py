@@ -17,6 +17,9 @@ df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 
 # Convert StockDataFrame as StockPlot
 fx = sp.StockPlot(df)
 
+# Resample as Day OHLC
+fx.resample('D')
+
 # # Add indicator
 # for i in range(10, 17):
 #     fx.append('close_{}_sma'.format(i))

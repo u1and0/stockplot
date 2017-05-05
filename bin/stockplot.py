@@ -218,18 +218,22 @@ class StockPlot:
 
 # ---------Indicator----------
     def append(self, indicator):
-        """Add indicator.
-        This method append indicator JUST ONLY self.stock_dataframe NOT self._fig.
+        """Add indicator in self._indicators & self.stock_dataframe NOT self._fig.
 
         Usage:
             `sp.append('close_25_sma')`  # add indicator of 'close 25 sma'
         """
-        indicator_value = self.stock_dataframe.get(indicator)
-        self._indicators[indicator] = indicator_value
+        try:
+            indicator_value = self.stock_dataframe.get[indicator]
+        except TypeError:
+            raise
+        else:
+            self._indicators[indicator] = indicator_value
         return indicator_value
 
     def _append_graph(self, indicator, start, end):
-        """Auxualy functon as plotting indicator.plot
+        """Auxualy functon as plotting indicator.
+        This function add indicator in self._fig.
 
         Usage:
             NONE
@@ -250,20 +254,20 @@ class StockPlot:
         self._fig = None  # <-- plotly.graph_objs
         self._indicators = {}
 
-#     def remove(self, indicator):
-#         """Remove indicator designated by 'index name'
-#         from StockDataFrame & figure
+    def remove(self, indicator, from_dataframe=False):
+        """Remove indicator from StockDataFrame & figure
 
-#         Usage:
-#             `sp.remove('close_25_sma')`
-#             remove indicator named 'close_25_sma'. """
-#         indi = indicator.lower().replace(' ', '_')
-#         INDI = indicator.upper().replace('_', ' ')
-#         rem = self.stock_dataframe.pop(indi)
-#         for dicc in self._fig['data']:
-#             if dicc['name'] == INDI:
-#                 self._fig['data'].remove(dicc)
-#                 return rem
+        Usage:
+            `fx.remove('close_25_sma')`  # remove indicator named 'close_25_sma'.
+        """
+        popper = self._indicators.pop(indicator)
+        if from_dataframe:
+            self.stock_dataframe = self.stock_dataframe.ix[
+                :, ['open', 'high', 'low', 'close']]  # reset dataframe
+            for reindicator in self._indicators.keys:
+                self.stock_dataframe.get(reindicator)
+        return popper
+
 
 #     def pop(self, index=-1):
 #         """Remove indicator designated by 'index' (default is last appended one)
