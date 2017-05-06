@@ -251,12 +251,13 @@ class StockPlot:
         Usage:
             fx.clear()
             """
-        self.stock_dataframe = reset_dataframe(self.stock_dataframe)
         self._fig = None  # <-- plotly.graph_objs
         self._indicators = {}
         if hard:
-            self.stock_dataframe = self._init_stock_dataframe
+            self.stock_dataframe = None
             self.freq = None  # 足の時間幅
+        else:
+            self.stock_dataframe = reset_dataframe(self.stock_dataframe)
 
     def pop(self, indicator):
         """Remove indicator from StockDataFrame & figure
