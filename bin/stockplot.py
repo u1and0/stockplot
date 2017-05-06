@@ -123,7 +123,7 @@ class StockPlot:
         if not type(df.index) == pd.tseries.index.DatetimeIndex:
             raise TypeError(df.index)
         self._init_stock_dataframe = ss.StockDataFrame(df)  # スパン変更前のデータフレーム
-        self.stock_dataframe = self._init_stock_dataframe  # スパン変更後、インジケータ追加後のデータフレーム
+        self.stock_dataframe = None  # スパン変更後、インジケータ追加後のデータフレーム
         self.freq = None  # 足の時間幅
         self._fig = None  # <-- plotly.graph_objs
         self._indicators = {}  # Plotするときに使う指標

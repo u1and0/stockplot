@@ -71,7 +71,7 @@ fx = sp.StockPlot(df)
 # `fig = sp.StockPlot(sdf)`でインスタンス化されたら時間足を変換します。
 # 変換する際は`resample`メソッドを使います。
 
-# In[6]:
+# In[14]:
 
 fx.resample('4H').head()
 
@@ -98,7 +98,7 @@ fx.show('png', filebasename='png1')
 # 最もポピュラーな単純移動平均(Simple Moving Average)をプロットします。
 # 追加するには`append`メソッドを使います。
 
-# In[7]:
+# In[15]:
 
 fx.append('close_25_sma')
 fx.stock_dataframe.head()
@@ -117,14 +117,17 @@ fx.show('jupyter')
 
 # 指標の削除には`pop`メソッドを使用します。
 
-# In[9]:
+# In[16]:
 
 fx.pop('close_25_sma')
 fx.stock_dataframe.head()
 
 
-# In[10]:
+# 単純移動平均以外の指標も描いてみます。
 
+# In[17]:
+
+fx.append('close_100_ema')  # 終値の指数移動平均線
 fx.append('boll')  # ボリンジャーバンド真ん中(close_20_smaと同じ)
 fx.append('boll_ub')  # ボリンジャーバンド上
 fx.append('boll_lb')  # ボリンジャーバンド下
@@ -133,6 +136,15 @@ fx.append('low_0~20_min')  # 20足前の移動最低値
 fx.plot(start_view='first', end_view='last')
 fx.show('jupyter')
 
+
+# 指標名がわからなくなったら
+
+# In[18]:
+
+fx._indicators.keys()
+
+
+# この中から選んで消します。
 
 # ## 初期化
 
@@ -166,7 +178,7 @@ fx.stock_dataframe.head()
 # 
 # の点が`__init__`と異なります。
 
-# In[12]:
+# In[13]:
 
 fx.clear(hard=True)
 fx.stock_dataframe.head()
@@ -186,15 +198,15 @@ fx.stock_dataframe.head()
 # として定義されています。
 # ここで移動区間を20, $\sigma$を1に変更してみます。
 
-# In[27]:
+# In[15]:
 
 sp.ss.StockDataFrame.BOLL_PERIOD = 5  # ボリンジャーバンド移動区間の設定
 sp.ss.StockDataFrame.BOLL_STD_TIMES = 1  # ボリンジャーバンドσの設定
 boll = sp.StockPlot(df)
 boll.resample('4H')
 boll.append('boll')  # ボリンジャーバンド真ん中(close_5_smaと同じ)
-boll.append('boll_ub', name='BOLL UB_sigma_1')  # ボリンジャーバンド上
-boll.append('boll_lb', name='BOLL LB_sigma_1')  # ボリンジャーバンド下
+boll.append('boll_ub')  # ボリンジャーバンド上
+boll.append('boll_lb')  # ボリンジャーバンド下
 boll.plot(start_view='first', end_view='last')
 boll.show('jupyter')
 
