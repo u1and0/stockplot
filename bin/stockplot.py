@@ -7,6 +7,10 @@ import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
 
 
+def reset_dataframe(df):
+    """Reset dataframe"""
+    return ss.StockDataFrame(df.ix[:, ['open', 'high', 'low', 'close']])
+
 def set_span(start=None, end=None, periods=None, freq='D'):
     """ 引数のstart, end, periodsに対して
     startとendの時間を返す。
@@ -119,7 +123,7 @@ class StockPlot:
         if not type(df.index) == pd.tseries.index.DatetimeIndex:
             raise TypeError(df.index)
         self._init_stock_dataframe = ss.StockDataFrame(df)  # スパン変更前のデータフレーム
-        self.stock_dataframe = None  # スパン変更後、インジケータ追加後のデータフレーム
+        self.stock_dataframe = self._init_stock_dataframe  # スパン変更後、インジケータ追加後のデータフレーム
         self.freq = None  # 足の時間幅
         self._fig = None  # <-- plotly.graph_objs
         self._indicators = {}  # Plotするときに使う指標
@@ -240,15 +244,19 @@ class StockPlot:
                              name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
         self._fig['data'].append(plotter)
 
-    def clear(self):
+    def clear(self, hard=False):
         """Remove all indicators.
         Keep self.freq, self.stock_dataframe
 
         Usage:
             fx.clear()
             """
+        self.stock_dataframe = reset_dataframe(self.stock_dataframe)
         self._fig = None  # <-- plotly.graph_objs
         self._indicators = {}
+        if hard:
+            self.stock_dataframe = self._init_stock_dataframe
+            self.freq = None  # 足の時間幅
 
     def pop(self, indicator, from_dataframe=False):
         """Remove indicator from StockDataFrame & figure
@@ -258,8 +266,7 @@ class StockPlot:
         """
         popper = self._indicators.pop(indicator)
         if from_dataframe:
-            self.stock_dataframe = self.stock_dataframe.ix[
-                :, ['open', 'high', 'low', 'close']]  # reset dataframe
+            self.stock_dataframe = reset_dataframe(self.stock_dataframe)
             for reindicator in self._indicators.keys:
                 self.stock_dataframe.get(reindicator)
         return popper
