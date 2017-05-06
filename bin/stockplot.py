@@ -8,7 +8,7 @@ pyo.init_notebook_mode(connected=True)
 
 
 def reset_dataframe(df):
-    """Reset dataframe"""
+    """Reset dataframe as stockstats"""
     return ss.StockDataFrame(df.ix[:, ['open', 'high', 'low', 'close']])
 
 def set_span(start=None, end=None, periods=None, freq='D'):
@@ -221,14 +221,14 @@ class StockPlot:
 
 
 # ---------Indicator----------
-    def append(self, indicator):
+    def append(self, indicator, name=None):
         """Add indicator in self._indicators & self.stock_dataframe NOT self._fig.
 
         Usage:
             `sp.append('close_25_sma')`  # add indicator of 'close 25 sma'
         """
         indicator_value = self.stock_dataframe[indicator]
-        self._indicators[indicator] = indicator_value
+        self._indicators[indicator if not name else name] = indicator_value
         return indicator_value
 
     def _append_graph(self, indicator, start, end):
@@ -258,17 +258,16 @@ class StockPlot:
             self.stock_dataframe = self._init_stock_dataframe
             self.freq = None  # 足の時間幅
 
-    def pop(self, indicator, from_dataframe=False):
+    def pop(self, indicator):
         """Remove indicator from StockDataFrame & figure
 
         Usage:
             `fx.remove('close_25_sma')`  # remove indicator named 'close_25_sma'.
         """
         popper = self._indicators.pop(indicator)
-        if from_dataframe:
-            self.stock_dataframe = reset_dataframe(self.stock_dataframe)
-            for reindicator in self._indicators.keys:
-                self.stock_dataframe.get(reindicator)
+        self.stock_dataframe = reset_dataframe(self.stock_dataframe)
+        for reindicator in self._indicators.keys():
+            self.stock_dataframe.get(reindicator)
         return popper
 
 
