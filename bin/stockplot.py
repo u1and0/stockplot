@@ -221,14 +221,14 @@ class StockPlot:
 
 
 # ---------Indicator----------
-    def append(self, indicator, name=None):
+    def append(self, indicator):
         """Add indicator in self._indicators & self.stock_dataframe NOT self._fig.
 
         Usage:
             `sp.append('close_25_sma')`  # add indicator of 'close 25 sma'
         """
         indicator_value = self.stock_dataframe[indicator]
-        self._indicators[indicator if not name else name] = indicator_value
+        self._indicators[indicator] = indicator_value
         return indicator_value
 
     def _append_graph(self, indicator, start, end):
