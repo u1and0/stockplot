@@ -223,12 +223,8 @@ class StockPlot:
         Usage:
             `sp.append('close_25_sma')`  # add indicator of 'close 25 sma'
         """
-        try:
-            indicator_value = self.stock_dataframe.get[indicator]
-        except TypeError:
-            raise
-        else:
-            self._indicators[indicator] = indicator_value
+        indicator_value = self.stock_dataframe[indicator]
+        self._indicators[indicator] = indicator_value
         return indicator_value
 
     def _append_graph(self, indicator, start, end):
@@ -254,7 +250,7 @@ class StockPlot:
         self._fig = None  # <-- plotly.graph_objs
         self._indicators = {}
 
-    def remove(self, indicator, from_dataframe=False):
+    def pop(self, indicator, from_dataframe=False):
         """Remove indicator from StockDataFrame & figure
 
         Usage:
