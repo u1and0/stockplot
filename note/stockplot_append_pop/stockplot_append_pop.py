@@ -4,18 +4,23 @@
 # タイトル
 # Plotlyでぐりぐり動かせる為替チャートを作る(2)
 
-# In[2]:
+# In[1]:
 
 import sys
 sys.path.append('../../bin/')
 
+
+# [Qiita - u1and0 / Plotlyでぐりぐり動かせる為替チャートを作る(1)](http://qiita.com/u1and0/items/e2273bd8e03c670be45a)の続き
+# 指標の追加・削除・初期化ができるようになりました。
+
+# ![gif8](./stockplot_append_pop_files/gif8.gif)
 
 # # 下準備
 
 # ## モジュールインポート
 # 必要なモジュールをインポートします。
 
-# In[3]:
+# In[2]:
 
 # ----------General Module----------
 import numpy as np
@@ -25,7 +30,7 @@ from randomwalk import randomwalk
 import stockplot as sp
 
 
-# In[4]:
+# In[3]:
 
 # ----------Hide General Module----------
 import stockstats
@@ -46,7 +51,7 @@ import plotly
 
 # ## サンプルデータの作成
 
-# In[5]:
+# In[4]:
 
 # Make sample data
 np.random.seed(10)
@@ -58,7 +63,7 @@ df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 
 
 # ## インスタンス化
 
-# In[6]:
+# In[5]:
 
 # Convert DataFrame as StockPlot
 fx = sp.StockPlot(df)
@@ -71,7 +76,7 @@ fx = sp.StockPlot(df)
 # `fig = sp.StockPlot(sdf)`でインスタンス化されたら時間足を変換します。
 # 変換する際は`resample`メソッドを使います。
 
-# In[39]:
+# In[6]:
 
 fx.resample('4H').head()
 
@@ -98,29 +103,33 @@ fx.show('png', filebasename='png1')
 # 最もポピュラーな単純移動平均(Simple Moving Average)をプロットします。
 # 追加するには`append`メソッドを使います。
 
-# In[40]:
+# In[7]:
 
 fx.append('close_25_sma')
 fx.stock_dataframe.head()
 
 
-# In[34]:
+# In[8]:
 
 fx.plot(start_view='first', end_view='last')
-fx.show('jupyter')
+fx.show('png', filebasename='png2')
 
+
+# ![png2](./stockplot_append_pop_files/png2.png)
 
 # close_25_sma(25本足単純移動平均線)が追加されました。
 # なお、`append`メソッド単体をJupyter NotebookやIpython上で実行するとclose_25_smaの値が戻り値として表示されます。
 
 # 追加された指標は時間足を変えても、その時間足に合わせて値を変更してくれます。
 
-# In[41]:
+# In[9]:
 
 fx.resample('15T')
 fx.plot(start_view='first', end_view='last')
-fx.show('jupyter')
+fx.show('png', filebasename='png3')
 
+
+# ![png3](./stockplot_append_pop_files/png3.png)
 
 # `resample`メソッドで15分足に変えた後、`append`メソッドを使わなくとも`close_25_sma`が追加されたままです。
 # 
@@ -137,16 +146,16 @@ fx.show('jupyter')
 # ```
 
 # ```python
+# # =======plotメソッド実行時にself._indicatorに蓄えられている指標を_append_graphに渡す==========
 #     def plot(self, (略)):
 #         # (中略)
-#         # =======plotメソッド実行時にself._indicatorに蓄えられている指標を_append_graphに渡す==========
 #         # ---------Append indicators----------
 #         for indicator in self._indicators.keys():
 #             self._append_graph(indicator, start_plot, end_plot)  # Re-append indicator in graph
 #         # (中略)
 #         return self._fig
 # 
-#     # =======self._indicatorに蓄えられている指標をself._figのデータ部分に追加する==========
+# # =======self._indicatorに蓄えられている指標をself._figのデータ部分に追加する==========
 #     def _append_graph(self, indicator, start, end):
 #         graph_value = self._indicators[indicator].loc[start:end]
 #         plotter = go.Scatter(x=graph_value.index, y=graph_value,
@@ -158,7 +167,7 @@ fx.show('jupyter')
 
 # 指標の削除には`pop`メソッドを使用します。
 
-# In[42]:
+# In[10]:
 
 fx.pop('close_25_sma')
 fx.stock_dataframe.head()
@@ -168,7 +177,7 @@ fx.stock_dataframe.head()
 
 # 単純移動平均以外の指標も描いてみます。
 
-# In[43]:
+# In[11]:
 
 fx.append('close_20_ema')  # 終値の指数移動平均線
 fx.append('boll')  # ボリンジャーバンド真ん中(close_20_smaと同じ)
@@ -177,8 +186,10 @@ fx.append('boll_lb')  # ボリンジャーバンド下
 fx.append('high_0~20_max')  # 20足前の移動最高値
 fx.append('low_0~20_min')  # 20足前の移動最安値
 fx.plot(start_view='first', end_view='last')
-fx.show('jupyter')
+fx.show('png', filebasename='png4')
 
+
+# ![png4](./stockplot_append_pop_files/png4.png)
 
 #  * 20本足ボリンジャーバンド
 #  * 20本足移動最高値
@@ -199,7 +210,7 @@ fx._indicators.keys()
 # > `stockstats.StockDataFrame`は指標の生成時に補助的なカラムも発生させます。
 # > そのため、補助指標(グラフにプロットされていないデータ)も混在していて、どれがプロットされているのか見分けづらいためです。
 
-# In[45]:
+# In[13]:
 
 fx.stock_dataframe.columns
 
@@ -208,13 +219,15 @@ fx.stock_dataframe.columns
 
 # ごちゃごちゃしてきたので`high_20_max`, `low_20_min`を削除します。
 
-# In[28]:
+# In[12]:
 
 fx.pop('high_0~20_max')
 fx.pop('low_0~20_min')
 fx.plot(start_view='first', end_view='last')
-fx.show('jupyter')
+fx.show('png', filebasename='png5')
 
+
+# ![png5](./stockplot_append_pop_files/png5.png)
 
 # `high_20_max`, `low_20_min`だけがグラフから削除されました。
 
@@ -238,28 +251,29 @@ fx.show('jupyter')
 # よって、一度`self.stock_dataframe`を`resample`がかかった状態まで戻し(2)、再度指標を追加しています(3)。
 # 
 # (3)は`append`メソッドとほとんど同じことですが、`self._indicators`に追加しません。
-# (1)の段階で`self._indicators`からは余計な指標を取り除いていないため、`self._indicators`に再度追加する必要がないからです。
+# (1)の段階で`self._indicators`からは余計な指標を取り除いていないため、`self._indicators`に再度追加する必要がありません。
 
-# ## 初期化
+# ## 指標の初期化
 
-# 追加した指標をすべて消すときは初期化を行います。
-# 初期化は`clear`メソッドを使います。
+# 追加した指標をすべて消すときは`clear`メソッドを使います。
 
-# In[50]:
+# In[14]:
 
 fx.clear()
 fx.stock_dataframe.head()
 
 
-# In[51]:
+# In[15]:
 
 fx.plot(start_view='first', end_view='last')
-fx.show('jupyter')
+fx.show('png', filebasename='png6')
 
 
-# * データフレーム(`fx.stock_dataframe`)を初期化します。
-# * プロットデータ(`fx._fig`)を初期化します。
-# * インジケータ(`fx._indicators`)を初期化します。
+# ![png6](./stockplot_append_pop_files/png6.png)
+
+# * データフレーム(`self.stock_dataframe`)を初期化します。
+# * グラフ(`self._fig`)を初期化します。
+# * 指標(`self._indicators`)を初期化します。
 # * **時間足は初期化しません。**
 # > hardオプションをTrueにする(`fx.clear(hard=True)`として実行する)ことで時間足も初期化できます(ハードリセット)。
 # > `self.stock_dataframe`は`None`に戻ります。
@@ -285,7 +299,15 @@ fx.show('jupyter')
 # 
 # の点が`__init__`と異なります。
 
-# # 応用
+# # まとめと補足
+
+# ## フローチャート
+# 各メソッドの使用順序は以下に示すフローチャートの通りです。
+# ![png8](./stockplot_append_pop_files/png8.png)
+# 
+# 左側が追加と表示、右側が削除とリセットを表しています。
+
+# ## ボリンジャーバンドについて
 
 # `stockstats`ではボリンジャーバンドで使う移動区間と$\sigma$がクラス変数として定義されています。
 # 
@@ -296,7 +318,7 @@ fx.show('jupyter')
 # 
 # ここで移動区間を5, $\sigma$を1に変更してみます。
 
-# In[15]:
+# In[16]:
 
 sp.ss.StockDataFrame.BOLL_PERIOD = 5  # ボリンジャーバンド移動区間の設定
 sp.ss.StockDataFrame.BOLL_STD_TIMES = 1  # ボリンジャーバンドσの設定
@@ -306,8 +328,10 @@ boll.append('boll')  # ボリンジャーバンド真ん中(close_5_smaと同じ
 boll.append('boll_ub')  # ボリンジャーバンド上
 boll.append('boll_lb')  # ボリンジャーバンド下
 boll.plot(start_view='first', end_view='last')
-boll.show('jupyter')
+boll.show('png', filebasename='png7')
 
+
+# ![png7](./stockplot_append_pop_files/png7.png)
 
 # $\sigma_1$と$\sigma_2$は同時に描けないのが残念です。
 # 
@@ -317,3 +341,44 @@ boll.show('jupyter')
 # しかし、`stockstats`が指標を追加するとき、`_get`メソッドを使うので、一度追加した指標が上書きされてしまいます。
 # 
 # グラフに描くだけであれば何とかすればできそうですが、今後の課題とします。
+
+# ## サブチャートについて
+
+# [`stockstats`](https://github.com/jealous/stockstats)は多くの指標の出力に対応していますが、サブチャートを必要とする指標が多くあります。(MACD, RSI, ADX...)
+# 今回のリリースではサブチャートに手を付けていません。
+# [Cufflinks](https://github.com/santosjorge/cufflinks)を使ってみたらサブプロットととかも簡単にいきそうな気がします。
+
+# ## トップのgifファイルについて
+
+# 最初のgif画像はチャートをipython上からインタラクティブにhtmlとして出力している様子です。
+# 
+# * モジュールのインポートから日足に変更するところまでを実行する`./bin/stockplot_quickset.py`を実行します。
+# * 'close_25_sma'を追加します。
+# * 時間足を15分足に変えます。
+# * 'close_75_sma'を追加します。
+
+# ```python
+# # ----------General Module----------
+# import numpy as np
+# import pandas as pd
+# # ----------User Module----------
+# from randomwalk import randomwalk
+# import stockplot as sp
+# # ----------Plotly Module----------
+# import plotly.offline as pyo
+# pyo.init_notebook_mode(connected=True)
+# 
+# # Make sample data
+# np.random.seed(1)
+# # 90日分の1秒tickを1分足に直す
+# df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 3, 20)).resample('T').ohlc() + 115
+# 
+# # Convert StockDataFrame as StockPlot
+# fx = sp.StockPlot(df)
+# 
+# # Resample as Day OHLC
+# fx.resample('H')
+# ```
+
+# ソースコードはgithubに上げました。
+# [github - u1and0/stockplot](https://github.com/u1and0/stockplot)
