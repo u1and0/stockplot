@@ -7,9 +7,36 @@ import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
 
 
+def heikin_ashi(self):
+    """Return HEIKIN ASHI columns"""
+    self['hopen'] = (self.open.shift() + self.close.shift()) / 2
+    self['hclose'] = (self.ix[:, ['open', 'high', 'low', 'close']]).mean(1)
+
+    # "close" higher than "open" && "low" is lower than "hopen"
+    self['hlow'] = self.low[self.hclose >= self.hopen][self.low <= self.hopen]
+
+    # "close" lower than "open" && "high" is high than "hopen"
+    self['hhigh'] = self.high[self.hclose < self.hopen][self.high >= self.hopen]
+
+    # "close" higher then "open"
+    self.hlow[self.hlow.isnull()] = self.hopen[self.hclose >= self.hopen]
+    self.hhigh[self.hhigh.isnull()] = self.high[self.hclose >= self.hopen]
+
+    # "close" lower then "open"
+    self.hhigh[self.hhigh.isnull()] = self.hopen[self.hclose < self.hopen]
+    self.hlow[self.hlow.isnull()] = self.low[self.hclose < self.hopen]
+
+    # return self
+    return self.ix[:, ['hopen', 'hhigh', 'hlow', 'hclose']]
+
+
+ss.StockDataFrame.heikin_ashi = heikin_ashi
+
+
 def reset_dataframe(df):
     """Reset dataframe as stockstats"""
     return ss.StockDataFrame(df.ix[:, ['open', 'high', 'low', 'close']])
+
 
 def set_span(start=None, end=None, periods=None, freq='D'):
     """ 引数のstart, end, periodsに対して
@@ -145,7 +172,7 @@ class StockPlot:
             self.append(indicator)  # Re-append indicator in dataframe
         return self.stock_dataframe
 
-    def plot(self, start_view=None, end_view=None, periods_view=None, shift=None,
+    def plot(self, how='candle', start_view=None, end_view=None, periods_view=None, shift=None,
              start_plot=None, end_plot=None, periods_plot=None,
              showgrid=True, validate=False, **kwargs):
         """Retrun plotly candle chart graph
@@ -153,6 +180,7 @@ class StockPlot:
         Usage: `fx.plot()`
 
         * Args:
+            * how: 'candle', 'c' -> candle_plot / 'heikin', 'h' -> heikin_ahi plot
             * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
             * periods: 足の本数
             > **start, end, periods合わせて2つの引数が必要**
@@ -170,12 +198,23 @@ class StockPlot:
         end_plot = self.stock_dataframe.index[-1] if end_plot == 'last' else end_plot
         # Set "plot_dataframe"
         start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
-        plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
-        self._fig = FF.create_candlestick(plot_dataframe.open,
-                                          plot_dataframe.high,
-                                          plot_dataframe.low,
-                                          plot_dataframe.close,
-                                          dates=plot_dataframe.index)
+        if how in ('candle', 'c'):
+            plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+            self._fig = FF.create_candlestick(plot_dataframe.open,
+                                              plot_dataframe.high,
+                                              plot_dataframe.low,
+                                              plot_dataframe.close,
+                                              dates=plot_dataframe.index)
+        elif how in ('heikin', 'h'):
+            self.stock_dataframe.heikin_ashi()
+            plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+            self._fig = FF.create_candlestick(plot_dataframe.hopen,
+                                              plot_dataframe.hhigh,
+                                              plot_dataframe.hlow,
+                                              plot_dataframe.hclose,
+                                              dates=plot_dataframe.index)
+        else:
+            raise KeyError('Use how = "[c]andle" or "[h]eikin"')
         # ---------Append indicators----------
         for indicator in self._indicators.keys():
             self._append_graph(indicator, start_plot, end_plot)  # Re-append indicator in graph
