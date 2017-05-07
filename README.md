@@ -1,3 +1,6 @@
+![append_pop_gif8](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/gif8.gif)
+
+
 ```python
 import sys
 sys.path.append('../../bin/')
@@ -617,8 +620,6 @@ end_view = set_span(start=end_view, periods=shift,
 
 # 指標の操作
 
-![gif_append_pop](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/gif8.gif)
-
 
 ## 指標の追加
 
@@ -640,52 +641,52 @@ fx.stock_dataframe.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>close</th>
-      <th>open</th>
       <th>high</th>
       <th>low</th>
+      <th>open</th>
+      <th>close</th>
       <th>close_25_sma</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>2017-03-20 00:00:00</th>
-      <td>115.34</td>
-      <td>115.00</td>
       <td>115.98</td>
       <td>114.79</td>
+      <td>115.00</td>
+      <td>115.34</td>
       <td>115.340000</td>
     </tr>
     <tr>
       <th>2017-03-20 04:00:00</th>
-      <td>116.03</td>
-      <td>115.34</td>
       <td>116.48</td>
       <td>115.16</td>
+      <td>115.34</td>
+      <td>116.03</td>
       <td>115.685000</td>
     </tr>
     <tr>
       <th>2017-03-20 08:00:00</th>
-      <td>116.31</td>
-      <td>116.03</td>
       <td>116.75</td>
       <td>115.76</td>
+      <td>116.03</td>
+      <td>116.31</td>
       <td>115.893333</td>
     </tr>
     <tr>
       <th>2017-03-20 12:00:00</th>
-      <td>115.92</td>
-      <td>116.32</td>
       <td>116.87</td>
       <td>115.62</td>
+      <td>116.32</td>
+      <td>115.92</td>
       <td>115.900000</td>
     </tr>
     <tr>
       <th>2017-03-20 16:00:00</th>
-      <td>114.36</td>
-      <td>115.92</td>
       <td>116.12</td>
       <td>113.85</td>
+      <td>115.92</td>
+      <td>114.36</td>
       <td>115.592000</td>
     </tr>
   </tbody>
@@ -704,9 +705,6 @@ fx.show('png', filebasename='png2')
 
 
 
-
-
-
 ![png2](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png2.png)
 
 close_25_sma(25本足単純移動平均線)が追加されました。
@@ -720,9 +718,6 @@ fx.resample('15T')
 fx.plot(start_view='first', end_view='last')
 fx.show('png', filebasename='png3')
 ```
-
-
-
 
 
 
@@ -790,43 +785,55 @@ fx.stock_dataframe.head()
     <tr>
       <th>2017-03-20 00:00:00</th>
       <td>115.00</td>
-      <td>115.26</td>
-      <td>114.87</td>
-      <td>115.11</td>
+      <td>115.98</td>
+      <td>114.79</td>
+      <td>115.34</td>
     </tr>
     <tr>
-      <th>2017-03-20 00:15:00</th>
-      <td>115.11</td>
-      <td>115.21</td>
-      <td>114.85</td>
-      <td>115.01</td>
+      <th>2017-03-20 04:00:00</th>
+      <td>115.34</td>
+      <td>116.48</td>
+      <td>115.16</td>
+      <td>116.03</td>
     </tr>
     <tr>
-      <th>2017-03-20 00:30:00</th>
-      <td>115.01</td>
-      <td>115.49</td>
-      <td>114.90</td>
-      <td>115.47</td>
+      <th>2017-03-20 08:00:00</th>
+      <td>116.03</td>
+      <td>116.75</td>
+      <td>115.76</td>
+      <td>116.31</td>
     </tr>
     <tr>
-      <th>2017-03-20 00:45:00</th>
-      <td>115.47</td>
-      <td>115.50</td>
-      <td>115.24</td>
-      <td>115.26</td>
+      <th>2017-03-20 12:00:00</th>
+      <td>116.32</td>
+      <td>116.87</td>
+      <td>115.62</td>
+      <td>115.92</td>
     </tr>
     <tr>
-      <th>2017-03-20 01:00:00</th>
-      <td>115.25</td>
-      <td>115.49</td>
-      <td>115.10</td>
-      <td>115.27</td>
+      <th>2017-03-20 16:00:00</th>
+      <td>115.92</td>
+      <td>116.12</td>
+      <td>113.85</td>
+      <td>114.36</td>
     </tr>
   </tbody>
 </table>
 </div>
 
 
+
+
+```python
+fx.plot(start_view='first', end_view='last')
+fx.show('png', filebasename='png3_1')
+```
+
+
+
+
+
+![png6](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png6.png)
 
 close_25_smaが削除されました。
 
@@ -843,9 +850,6 @@ fx.append('low_0~20_min')  # 20足前の移動最安値
 fx.plot(start_view='first', end_view='last')
 fx.show('png', filebasename='png4')
 ```
-
-
-
 
 
 
@@ -912,9 +916,6 @@ fx.pop('low_0~20_min')
 fx.plot(start_view='first', end_view='last')
 fx.show('png', filebasename='png5')
 ```
-
-
-
 
 
 
@@ -1022,9 +1023,6 @@ fx.show('png', filebasename='png6')
 
 
 
-
-
-
 ![png6](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png6.png)
 
 * データフレーム(`self.stock_dataframe`)を初期化します。
@@ -1091,9 +1089,6 @@ boll.show('png', filebasename='png7')
 
 
 
-
-
-
 ![png7](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png7.png)
 
 $\sigma_1$と$\sigma_2$は同時に描けないのが残念です。
@@ -1147,7 +1142,7 @@ fx.resample('H')
 
 
 
-
+---
 # 追記
 
 __2017/4/21__

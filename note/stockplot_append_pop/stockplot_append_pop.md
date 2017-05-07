@@ -92,47 +92,47 @@ fx.resample('4H').head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>close</th>
-      <th>open</th>
       <th>high</th>
       <th>low</th>
+      <th>open</th>
+      <th>close</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>2017-03-20 00:00:00</th>
-      <td>115.34</td>
-      <td>115.00</td>
       <td>115.98</td>
       <td>114.79</td>
+      <td>115.00</td>
+      <td>115.34</td>
     </tr>
     <tr>
       <th>2017-03-20 04:00:00</th>
-      <td>116.03</td>
-      <td>115.34</td>
       <td>116.48</td>
       <td>115.16</td>
+      <td>115.34</td>
+      <td>116.03</td>
     </tr>
     <tr>
       <th>2017-03-20 08:00:00</th>
-      <td>116.31</td>
-      <td>116.03</td>
       <td>116.75</td>
       <td>115.76</td>
+      <td>116.03</td>
+      <td>116.31</td>
     </tr>
     <tr>
       <th>2017-03-20 12:00:00</th>
-      <td>115.92</td>
-      <td>116.32</td>
       <td>116.87</td>
       <td>115.62</td>
+      <td>116.32</td>
+      <td>115.92</td>
     </tr>
     <tr>
       <th>2017-03-20 16:00:00</th>
-      <td>114.36</td>
-      <td>115.92</td>
       <td>116.12</td>
       <td>113.85</td>
+      <td>115.92</td>
+      <td>114.36</td>
     </tr>
   </tbody>
 </table>
@@ -183,52 +183,52 @@ fx.stock_dataframe.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>close</th>
-      <th>open</th>
       <th>high</th>
       <th>low</th>
+      <th>open</th>
+      <th>close</th>
       <th>close_25_sma</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>2017-03-20 00:00:00</th>
-      <td>115.34</td>
-      <td>115.00</td>
       <td>115.98</td>
       <td>114.79</td>
+      <td>115.00</td>
+      <td>115.34</td>
       <td>115.340000</td>
     </tr>
     <tr>
       <th>2017-03-20 04:00:00</th>
-      <td>116.03</td>
-      <td>115.34</td>
       <td>116.48</td>
       <td>115.16</td>
+      <td>115.34</td>
+      <td>116.03</td>
       <td>115.685000</td>
     </tr>
     <tr>
       <th>2017-03-20 08:00:00</th>
-      <td>116.31</td>
-      <td>116.03</td>
       <td>116.75</td>
       <td>115.76</td>
+      <td>116.03</td>
+      <td>116.31</td>
       <td>115.893333</td>
     </tr>
     <tr>
       <th>2017-03-20 12:00:00</th>
-      <td>115.92</td>
-      <td>116.32</td>
       <td>116.87</td>
       <td>115.62</td>
+      <td>116.32</td>
+      <td>115.92</td>
       <td>115.900000</td>
     </tr>
     <tr>
       <th>2017-03-20 16:00:00</th>
-      <td>114.36</td>
-      <td>115.92</td>
       <td>116.12</td>
       <td>113.85</td>
+      <td>115.92</td>
+      <td>114.36</td>
       <td>115.592000</td>
     </tr>
   </tbody>
@@ -333,43 +333,58 @@ fx.stock_dataframe.head()
     <tr>
       <th>2017-03-20 00:00:00</th>
       <td>115.00</td>
-      <td>115.26</td>
-      <td>114.87</td>
-      <td>115.11</td>
+      <td>115.98</td>
+      <td>114.79</td>
+      <td>115.34</td>
     </tr>
     <tr>
-      <th>2017-03-20 00:15:00</th>
-      <td>115.11</td>
-      <td>115.21</td>
-      <td>114.85</td>
-      <td>115.01</td>
+      <th>2017-03-20 04:00:00</th>
+      <td>115.34</td>
+      <td>116.48</td>
+      <td>115.16</td>
+      <td>116.03</td>
     </tr>
     <tr>
-      <th>2017-03-20 00:30:00</th>
-      <td>115.01</td>
-      <td>115.49</td>
-      <td>114.90</td>
-      <td>115.47</td>
+      <th>2017-03-20 08:00:00</th>
+      <td>116.03</td>
+      <td>116.75</td>
+      <td>115.76</td>
+      <td>116.31</td>
     </tr>
     <tr>
-      <th>2017-03-20 00:45:00</th>
-      <td>115.47</td>
-      <td>115.50</td>
-      <td>115.24</td>
-      <td>115.26</td>
+      <th>2017-03-20 12:00:00</th>
+      <td>116.32</td>
+      <td>116.87</td>
+      <td>115.62</td>
+      <td>115.92</td>
     </tr>
     <tr>
-      <th>2017-03-20 01:00:00</th>
-      <td>115.25</td>
-      <td>115.49</td>
-      <td>115.10</td>
-      <td>115.27</td>
+      <th>2017-03-20 16:00:00</th>
+      <td>115.92</td>
+      <td>116.12</td>
+      <td>113.85</td>
+      <td>114.36</td>
     </tr>
   </tbody>
 </table>
 </div>
 
 
+
+
+```python
+fx.plot(start_view='first', end_view='last')
+fx.show('png', filebasename='png3_1')
+```
+
+
+
+
+    'file://C:\\Users\\U1and0\\Dropbox\\Program\\python\\stockplot\\note\\stockplot_append_pop\\temp-plot.html'
+
+
+
+![png6](./stockplot_append_pop_files/png6.png)
 
 close_25_smaが削除されました。
 

@@ -167,11 +167,19 @@ fx.show('png', filebasename='png3')
 
 # 指標の削除には`pop`メソッドを使用します。
 
-# In[10]:
+# In[8]:
 
 fx.pop('close_25_sma')
 fx.stock_dataframe.head()
 
+
+# In[10]:
+
+fx.plot(start_view='first', end_view='last')
+fx.show('png', filebasename='png3_1')
+
+
+# ![png6](./stockplot_append_pop_files/png6.png)
 
 # close_25_smaが削除されました。
 
