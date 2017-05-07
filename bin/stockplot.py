@@ -7,6 +7,10 @@ import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
 
 
+def reset_dataframe(df):
+    """Reset dataframe as stockstats"""
+    return ss.StockDataFrame(df.ix[:, ['open', 'high', 'low', 'close']])
+
 def set_span(start=None, end=None, periods=None, freq='D'):
     """ 引数のstart, end, periodsに対して
     startとendの時間を返す。
@@ -240,7 +244,7 @@ class StockPlot:
                              name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
         self._fig['data'].append(plotter)
 
-    def clear(self):
+    def clear(self, hard=False):
         """Remove all indicators.
         Keep self.freq, self.stock_dataframe
 
@@ -249,19 +253,22 @@ class StockPlot:
             """
         self._fig = None  # <-- plotly.graph_objs
         self._indicators = {}
+        if hard:
+            self.stock_dataframe = None
+            self.freq = None  # 足の時間幅
+        else:
+            self.stock_dataframe = reset_dataframe(self.stock_dataframe)
 
-    def pop(self, indicator, from_dataframe=False):
+    def pop(self, indicator):
         """Remove indicator from StockDataFrame & figure
 
         Usage:
             `fx.remove('close_25_sma')`  # remove indicator named 'close_25_sma'.
         """
         popper = self._indicators.pop(indicator)
-        if from_dataframe:
-            self.stock_dataframe = self.stock_dataframe.ix[
-                :, ['open', 'high', 'low', 'close']]  # reset dataframe
-            for reindicator in self._indicators.keys:
-                self.stock_dataframe.get(reindicator)
+        self.stock_dataframe = reset_dataframe(self.stock_dataframe)
+        for reindicator in self._indicators.keys():
+            self.stock_dataframe.get(reindicator)
         return popper
 
 
