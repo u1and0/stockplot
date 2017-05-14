@@ -51,11 +51,15 @@ def file_args():
 
 def zip2hst(filename, path=None):
     """Extract zip file.
-    args: zip filename
-    return: Extract filename"""
+    args:
+        filename: zip filename
+        path: Extraction directory
+    return: Extract filename
+    """
     zf = zipfile.ZipFile(filename, 'r')
-    zf.extractall(path=path if path else os.path.dirname(filename))
-    return zf.namelist()
+    path = path if path else os.path.dirname(filename)
+    zf.extractall(path=path)
+    return path + '/' + zf.namelist()[0]
 
 
 def hst2bin(filename):
@@ -79,12 +83,12 @@ def bin2dict(binary, filetype):
         size = OLD_FILE_STRUCTURE_SIZE
         key = "<iddddd"
     elif filetype == 'new':
-        size= NEW_FILE_STRUCTURE_SIZE
+        size = NEW_FILE_STRUCTURE_SIZE
         key = "<Qddddqiq"
     else:
         raise KeyError(filetype)
 
-    ray=[]
+    ray = []
     for i in chunked(binary, size):
         # ray.append(''.join(i))  # 10文字ずつばらばらのbinaryを繋げる
         str(i)
