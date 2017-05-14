@@ -54,7 +54,7 @@ def zip2hst(filename, path=None):
     args: zip filename
     return: Extract filename"""
     zf = zipfile.ZipFile(filename, 'r')
-    zf.extractall(path=path)
+    zf.extractall(path=path if path else os.path.dirname(filename))
     return zf.namelist()
 
 

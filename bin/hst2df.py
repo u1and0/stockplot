@@ -97,7 +97,6 @@ def binary(filename, filetype):
 
                 if not buf:
                     break
-                import pdb; pdb.set_trace()
 
                 if filetype == "old":
                     bar = struct.unpack("<iddddd", buf)
