@@ -11,6 +11,7 @@ def reset_dataframe(df):
     """Reset dataframe as stockstats"""
     return ss.StockDataFrame(df.ix[:, ['open', 'high', 'low', 'close']])
 
+
 def set_span(start=None, end=None, periods=None, freq='D'):
     """ 引数のstart, end, periodsに対して
     startとendの時間を返す。
@@ -120,7 +121,7 @@ class StockPlot:
         co = ['open', 'high', 'low', 'close']
         assert all(i in df.columns for i in co), 'arg\'s columns must have {}, but it has {}'\
             .format(co, df.columns)
-        if not type(df.index) == pd.tseries.index.DatetimeIndex:
+        if not type(df.index) == pd.core.indexes.datetimes.DatetimeIndex:
             raise TypeError(df.index)
         self._init_stock_dataframe = ss.StockDataFrame(df)  # スパン変更前のデータフレーム
         self.stock_dataframe = None  # スパン変更後、インジケータ追加後のデータフレーム
