@@ -80,10 +80,10 @@ def hst2bin(filename):
 
 def bin2dict(binary, filetype):
     """Convert binary to pandas DataFrame."""
-    if filetype == 'old':
+    if filetype in ('old', 'o'):
         size = OLD_FILE_STRUCTURE_SIZE
         fmt = "<iddddd"
-    elif filetype == 'new':
+    elif filetype in ('new', 'n'):
         size = NEW_FILE_STRUCTURE_SIZE
         fmt = "<Qddddqiq"
     else:
