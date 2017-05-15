@@ -1,4 +1,5 @@
 #!/usr/lib/python
+import numpy as np
 from more_itertools import chunked
 import zipfile
 import struct
@@ -69,31 +70,42 @@ def hst2bin(filename):
     return binary
 
 
-def zip2bin(filename):
-    hstfiles = zip2hst(filename)
-    for hstfile in hstfiles:
-        binary = hst2bin(hstfile)
-        os.remove(hstfile)  # remove hst files
-        yield binary
+# def zip2bin(filename):
+#     hstfiles = zip2hst(filename)
+#     for hstfile in hstfiles:
+#         binary = hst2bin(hstfile)
+#         os.remove(hstfile)  # remove hst files
+#         yield binary
 
 
 def bin2dict(binary, filetype):
     """Convert binary to pandas DataFrame."""
     if filetype == 'old':
         size = OLD_FILE_STRUCTURE_SIZE
-        key = "<iddddd"
+        fmt = "<iddddd"
     elif filetype == 'new':
         size = NEW_FILE_STRUCTURE_SIZE
-        key = "<Qddddqiq"
+        fmt = "<Qddddqiq"
     else:
         raise KeyError(filetype)
 
+    # =================np unpack===================
     ray = []
-    for i in chunked(binary, size):
+    # for i in chunked(binary, size):
         # ray.append(''.join(i))  # 10文字ずつばらばらのbinaryを繋げる
-        str(i)
-    buf = np.array(ray).T
-    bar = struct.unpack(key, buf)
+        # str(i)
+    bls = [i for i in chunked(binary, size)]
+    nls = np.array(bls)
+    # buf = np.array(ray).T
+    bar = struct.unpack(fmt, buf)
+
+    # =================unpack_from===================
+    for i in range(0, len(binary),size):
+        try:
+            bar = struct.unpack_from(fmt, binary,i)
+        except Exception:
+            pass
+
 
     openTime.append(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bar[0])))
     openPrice.append(bar[1])
