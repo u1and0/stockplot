@@ -90,23 +90,27 @@ def bin2dict(binary, filetype):
         raise KeyError(filetype)
 
     # =================np unpack===================
-    ray = []
-    # for i in chunked(binary, size):
-        # ray.append(''.join(i))  # 10文字ずつばらばらのbinaryを繋げる
-        # str(i)
-    bls = [i for i in chunked(binary, size)]
-    nls = np.array(bls)
-    # buf = np.array(ray).T
-    bar = struct.unpack(fmt, buf)
+    # ray = []
+    # # for i in chunked(binary, size):
+    #     # ray.append(''.join(i))  # 10文字ずつばらばらのbinaryを繋げる
+    #     # str(i)
+    # bls = [i for i in chunked(binary, size)]
+    # nls = np.array(bls)
+    # # buf = np.array(ray).T
+    # bar = struct.unpack(fmt, buf)
 
     # =================unpack_from===================
-    for i in range(0, len(binary),size):
+    bar = []
+    for i in range(HEADER_SIZE, len(binary), size):
         try:
-            bar = struct.unpack_from(fmt, binary,i)
+            bar.append(struct.unpack_from(fmt, binary, i))
         except Exception:
             pass
+    # ====================================
+    return bar
 
 
+def something():
     openTime.append(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bar[0])))
     openPrice.append(bar[1])
     highPrice.append(bar[2])
