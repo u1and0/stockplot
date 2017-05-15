@@ -78,7 +78,7 @@ def hst2bin(filename):
 #         yield binary
 
 
-def bin2dict(binary, filetype):
+def bin2py(binary, filetype):
     """Convert binary to pandas DataFrame."""
     if filetype in ('old', 'o'):
         size = OLD_FILE_STRUCTURE_SIZE
@@ -103,11 +103,16 @@ def bin2dict(binary, filetype):
     bar = []
     for i in range(HEADER_SIZE, len(binary), size):
         try:
-            bar.append(struct.unpack_from(fmt, binary, i))
+            unp = list(struct.unpack_from(fmt, binary, i))
+            unp[0] = pd.datetime.utcfromtimestamp(unp[0])
+            bar.append(unp)
         except Exception:
             pass
-    # ====================================
-    return bar
+    # ===============to DataFrame=====================
+    df = pd.DataFrame(bar, columns=['DateTime', 'open', 'high', 'low', 'close', 'volume'])
+    df.index = df.DateTime
+    df = pd.DataFrame(df.ix[:, ['open', 'high', 'low', 'close', 'volume']])
+    return df
 
 
 def something():

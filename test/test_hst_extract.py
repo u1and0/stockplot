@@ -1,8 +1,7 @@
 import sys
 import os
-home = os.environ['HOME'] + '/python/stockplot'
-sys.path.append('{}/bin/'.format(home))
-from hst_extract import zip2hst, bin2dict, hst2bin
+sys.path.append('../bin/')
+from hst_extract import zip2hst, bin2py, hst2bin
 
 # =================zip2hst test===================
 # file = ('../data/USDJPY.zip')
@@ -14,8 +13,8 @@ from hst_extract import zip2hst, bin2dict, hst2bin
 # ====================================
 
 # =================struct.unpack test===================
-file = '{}/test/test_bin.txt'.format(home)
+file = 'test_bin.txt'
 bi = hst2bin(file)
-li = bin2dict(bi, 'old')
+li = bin2py(bi, 'old')
 print(li)
 # ====================================
