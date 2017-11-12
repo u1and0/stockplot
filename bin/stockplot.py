@@ -116,8 +116,6 @@ class StockPlot:
         co = ['open', 'high', 'low', 'close']
         assert all(i in df.columns for i in co), 'arg\'s columns must have {}, but it has {}'\
             .format(co, df.columns)
-        if not type(df.index) == pd.tseries.index.DatetimeIndex:
-            raise TypeError(df.index)
         self._init_stock_dataframe = ss.StockDataFrame(df)  # スパン変更前のデータフレーム
         self.stock_dataframe = None  # スパン変更後、インジケータ追加後のデータフレーム
         self.freq = None  # 足の時間幅
