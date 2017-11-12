@@ -1,6 +1,6 @@
 #!/usr/lib/python
 import numpy as np
-from more_itertools import chunked
+# from more_itertools import chunked
 import zipfile
 import struct
 import time
@@ -50,17 +50,32 @@ def file_args():
     return (filename, input_filetype, output_filetype)
 
 
-def zip2hst(filename, path=None):
+def zip2hst(fullpath):
     """Extract zip file.
+
+    Usage:
+        zip2hst('~/data/USDJPY.zip')
+        > ~/data/USDJPY.hst
+        zip2hst('USDJPY.zip')
+        > USDJPY.hst
+
     args:
-        filename: zip filename
-        path: Extraction directory
-    return: Extract filename
+        fullpath: Zip filename or path
+    return:
+        Extract filename or path
     """
-    zf = zipfile.ZipFile(filename, 'r')
-    path = path if path else os.path.dirname(filename)
-    zf.extractall(path=path)
-    return path + '/' + zf.namelist()[0]
+    if zipfile.is_zipfile(fullpath):
+        with zipfile.ZipFile(fullpath, 'r') as zf:
+            zf.extractall()  # zip展開
+            ziplist = zf.namelist()
+            assert len(ziplist) == 1,\
+                'There are {} files in zipfile. Try again.'.format(len(ziplist))
+        pathname = os.path.dirname(fullpath)
+        hstfile = ziplist[0]
+        return pathname + '/' + hstfile if pathname else hstfile  # フルパスかファイルネームだけを返す
+    else:  # zipファイルでなければそのまま返す
+        # print('{} is not zip file.'.format(filename))
+        return fullpath
 
 
 def hst2bin(filename):
@@ -78,7 +93,7 @@ def hst2bin(filename):
 #         yield binary
 
 
-def bin2py(binary, filetype):
+def bin2df(binary, filetype):
     """Convert binary to pandas DataFrame."""
     if filetype in ('old', 'o'):
         size = OLD_FILE_STRUCTURE_SIZE
@@ -115,25 +130,25 @@ def bin2py(binary, filetype):
     return df
 
 
-def something():
-    openTime.append(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bar[0])))
-    openPrice.append(bar[1])
-    highPrice.append(bar[2])
-    lowPrice.append(bar[3])
-    closePrice.append(bar[4])
-    volume.append(bar[5])
+# def something():
+#     openTime.append(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bar[0])))
+#     openPrice.append(bar[1])
+#     highPrice.append(bar[2])
+#     lowPrice.append(bar[3])
+#     closePrice.append(bar[4])
+#     volume.append(bar[5])
 
-    dic = {'open_time': open_time, 'open': openPrice, 'high': highPrice,
-           'low': lowPrice, 'close': closePrice, 'volume': volume}
-    return dic
+#     dic = {'open_time': open_time, 'open': openPrice, 'high': highPrice,
+#            'low': lowPrice, 'close': closePrice, 'volume': volume}
+#     return dic
 
 
-def dict2df(dic):
-    df = pd.DataFrame.from_dict(dic)
-    df = df.set_index('open_time')  # open_timeをindexにする
-    df.index = pd.to_datetime(df.index)  # 時間軸へ型変更
-    df = df.ix[:, ['open', 'high', 'low', 'close', 'volume']]
-    return df
+# def dict2df(dic):
+#     df = pd.DataFrame.from_dict(dic)
+#     df = df.set_index('open_time')  # open_timeをindexにする
+#     df.index = pd.to_datetime(df.index)  # 時間軸へ型変更
+#     df = df.ix[:, ['open', 'high', 'low', 'close', 'volume']]
+#     return df
 
 
 def df2pickle(df, filename):
@@ -141,7 +156,7 @@ def df2pickle(df, filename):
 
 
 def df2hdf(df, filename):
-    return df.to_hdf(filename)
+    return df.to_hdf(filename, key='main')
 
 
 if __name__ == "__main__":

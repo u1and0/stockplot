@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Coded by Daniel Fernandez
 # mechanicalForex.com, asirikuy.com 2015
 # http://mechanicalforex.com/2015/12/converting-mt4-binary-history-files-hst-to-csv-using-a-python-script.html
@@ -66,14 +66,16 @@ def file_args():
     return (filename, input_filetype, output_filetype)
 
 
-def xzip():
-    pass
+def zip_extract(file):
+    if zipfile.is_zipfile(file):
+        with zipfile.ZipFile(file) as z:
+            z.extractall()
+    else:
+        pass
+
 
 
 def binary(filename, filetype):
-    # if zipfile.is_zipfile(filename):
-    #     filename = xzip(filename)
-
     read = 0
     openTime = []
     openPrice = []
@@ -81,23 +83,18 @@ def binary(filename, filetype):
     highPrice = []
     closePrice = []
     volume = []
-
     with open(filename, 'rb') as f:
         while True:
 
             if read >= HEADER_SIZE:
-
                 if filetype == "old":
                     buf = f.read(OLD_FILE_STRUCTURE_SIZE)
                     read += OLD_FILE_STRUCTURE_SIZE
-
-                if filetype == "new":
+                elif filetype == "new":
                     buf = f.read(NEW_FILE_STRUCTURE_SIZE)
                     read += NEW_FILE_STRUCTURE_SIZE
-
                 if not buf:
                     break
-
                 if filetype == "old":
                     bar = struct.unpack("<iddddd", buf)
                     openTime.append(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bar[0])))
@@ -106,7 +103,7 @@ def binary(filename, filetype):
                     lowPrice.append(bar[2])
                     closePrice.append(bar[4])
                     volume.append(bar[5])
-                if filetype == "new":
+                elif filetype == "new":
                     bar = struct.unpack("<Qddddqiq", buf)
                     openTime.append(time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bar[0])))
                     openPrice.append(bar[1])
@@ -114,7 +111,6 @@ def binary(filename, filetype):
                     lowPrice.append(bar[3])
                     closePrice.append(bar[4])
                     volume.append(bar[5])
-
             else:
                 buf = f.read(HEADER_SIZE)
                 read += HEADER_SIZE
