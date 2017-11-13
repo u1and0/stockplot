@@ -1,6 +1,6 @@
 #!/usr/lib/python
 import numpy as np
-# from more_itertools import chunked
+from more_itertools import chunked
 import zipfile
 import struct
 import time
@@ -105,15 +105,9 @@ def bin2df(binary, filetype):
         raise KeyError(filetype)
 
     # =================np unpack===================
-    # ray = []
-    # # for i in chunked(binary, size):
-    #     # ray.append(''.join(i))  # 10文字ずつばらばらのbinaryを繋げる
-    #     # str(i)
-    # bls = [i for i in chunked(binary, size)]
-    # nls = np.array(bls)
-    # # buf = np.array(ray).T
-    # bar = struct.unpack(fmt, buf)
-
+    # nls = np.asarray([np.array(i) for i in chunked(binary[HEADER_SIZE:], size)])  # ndarray
+    # struct_array = np.frompyfunc(struct.unpack, 2, 1)  # 動かない
+    # bar = struct.unpack(fmt, nls)  # ndarray全要素に対してunpackをかける 動かない
     # =================unpack_from===================
     bar = []
     for i in range(HEADER_SIZE, len(binary), size):
