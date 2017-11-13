@@ -103,12 +103,6 @@ def bin2df(binary, filetype):
         fmt = "<Qddddqiq"
     else:
         raise KeyError(filetype)
-
-    # =================np unpack===================
-    # nls = np.asarray([np.array(i) for i in chunked(binary[HEADER_SIZE:], size)])  # ndarray
-    # struct_array = np.frompyfunc(struct.unpack, 2, 1)  # 動かない
-    # bar = struct.unpack(fmt, nls)  # ndarray全要素に対してunpackをかける 動かない
-    # =================unpack_from===================
     bar = []
     for i in range(HEADER_SIZE, len(binary), size):
         try:
