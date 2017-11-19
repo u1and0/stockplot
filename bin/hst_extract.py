@@ -15,7 +15,6 @@ NEW_FILE_STRUCTURE_SIZE = 60
 
 def file_args():
     """Decide Filename / Filetype
-
     # TODO
     -zh --zip-to-hst
     -zf --zip-to-hdf
@@ -94,7 +93,34 @@ def hst2bin(filename):
 
 
 def bin2df(binary, filetype):
-    """Convert binary to pandas DataFrame."""
+    """Convert binary to pandas DataFrame.
+    # for文によるループ
+    4.78 s ± 74.2 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+    ```
+    %%timeit
+    bar=[]
+    for i in range(HEADER_SIZE, len(binary), size):
+        unp = list(struct.unpack_from(fmt, binary, i))
+        unp[0] = pd.datetime.utcfromtimestamp(unp[0])
+        bar.append(unp)
+    ```
+
+    ```
+
+    # 内包方表記による
+    5.14 s ± 17.5 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+    ```
+    %%timeit
+    ar = np.asarray([struct.unpack_from(fmt, binary, i)  # numpy.arrayとして返す
+           for i in range(HEADER_SIZE, len(binary), size)])  # 内包表記で一挙にbinaryを解凍
+
+    ```
+
+    %timeitによる測定が、内包表記よる方法では止まる
+    単純にforループを用いた方法を使おうと思う
+    """
     if filetype in ('old', 'o'):
         size = OLD_FILE_STRUCTURE_SIZE
         fmt = "<iddddd"
@@ -103,18 +129,39 @@ def bin2df(binary, filetype):
         fmt = "<Qddddqiq"
     else:
         raise KeyError(filetype)
-    bar = []
-    for i in range(HEADER_SIZE, len(binary), size):
-        try:
-            unp = list(struct.unpack_from(fmt, binary, i))
-            unp[0] = pd.datetime.utcfromtimestamp(unp[0])
-            bar.append(unp)
-        except Exception:
-            pass
-    # ===============to DataFrame=====================
-    df = pd.DataFrame(bar, columns=['DateTime', 'open', 'high', 'low', 'close', 'volume'])
-    df.index = df.DateTime
-    df = pd.DataFrame(df.ix[:, ['open', 'high', 'low', 'close', 'volume']])
+    # =================1. 内包表記によるループ===================
+    # ====47.1 s ± 312 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)====
+    # ====↓to_datetime消した場合====
+    # ====4.98 s ± 13.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each) ====
+    # ====↓datetime.fromtimestamp使用した場合====
+    # ====16.1 s ± 63.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)====
+    ar = np.asarray([struct.unpack_from(fmt, binary, i)  # numpy.arrayとして返す
+                     for i in range(HEADER_SIZE, len(binary), size)])  # 内包表記でbinaryを解凍
+    ar_index = [pd.datetime.fromtimestamp(i) for i in ar[:, 0]]
+    df = pd.DataFrame(ar[:, 1:], index=ar_index,
+                      columns=['open', 'low', 'high', 'close', 'volume'])  # データフレーム化
+    # df.index = pd.to_datetime(df.index, utc=True, unit='s')  # インデックスを時間表記に変更←これが時間かかる
+    # =================2. for文によるループ===================
+    # ====7.76 s ± 440 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)====
+    # ====7.44 s ± 107 ms per loop (mean ± std. dev. of 7 runs, 1 loop each) =====
+    # bar = []
+    # for i in range(HEADER_SIZE, len(binary), size):
+    #     unp = list(struct.unpack_from(fmt, binary, i))
+    #     unp[0] = pd.datetime.utcfromtimestamp(unp[0])
+    #     bar.append(unp)
+    # df = pd.DataFrame(bar, columns=['DateTime', 'open', 'high', 'low', 'close', 'volume'])
+    # df.index = df.DateTime
+    # df = pd.DataFrame(df.ix[:, ['open', 'high', 'low', 'close', 'volume']])
+    # =================3. mapを使う===================
+    # ====48.5 s ± 540 ms per loop (mean ± std. dev. of 7 runs, 1 loop each) ====
+    # ====↓to_datetime消した場合====
+    # ====5.59 s ± 14.7 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)====
+    # binary_list = [binary[i:i + size] for i in range(HEADER_SIZE, len(binary), size)]  # binary切り出し
+    # binary_map = map(lambda x: struct.unpack(fmt, x), binary_list)  # mapで一気にunpack
+    # binary_array = np.asarray(list(binary_map))  # np.array化
+    # df = pd.DataFrame(binary_array[:, 1:], index=binary_array[:, 0],
+    #                   columns=['open', 'low', 'high', 'close', 'volume'])  # データフレーム化
+    # df.index = pd.to_datetime(df.index, utc=True, unit='s')  # インデックスを時間表記に変更←これが時間かかる
     return df
 
 
