@@ -614,7 +614,6 @@ end_view = set_span(start=end_view, periods=shift,
 
 ![figure1](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/figure1.PNG)
 
-
 ---
 
 
@@ -1135,8 +1134,7 @@ df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 
 fx = sp.StockPlot(df)
 
 # Resample as Day OHLC
-fx.resample('H')
-```
+	```
 
 
 
