@@ -135,33 +135,34 @@ def bin2df(binary, filetype):
     # ====4.98 s ± 13.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each) ====
     # ====↓datetime.fromtimestamp使用した場合====
     # ====16.1 s ± 63.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)====
-    ar = np.asarray([struct.unpack_from(fmt, binary, i)  # numpy.arrayとして返す
-                     for i in range(HEADER_SIZE, len(binary), size)])  # 内包表記でbinaryを解凍
-    ar_index = [pd.datetime.fromtimestamp(i) for i in ar[:, 0]]
-    df = pd.DataFrame(ar[:, 1:], index=ar_index,
-                      columns=['open', 'low', 'high', 'close', 'volume'])  # データフレーム化
-    # df.index = pd.to_datetime(df.index, utc=True, unit='s')  # インデックスを時間表記に変更←これが時間かかる
+    # ar = np.asarray([struct.unpack_from(fmt, binary, i)  # numpy.arrayとして返す
+    #                  for i in range(HEADER_SIZE, len(binary), size)])  # 内包表記でbinaryを解凍
+    # ar_index = [pd.datetime.fromtimestamp(i) for i in ar[:, 0]]
+    # df = pd.DataFrame(ar[:, 1:], index=ar_index,
+    #                   columns=['open', 'low', 'high', 'close', 'volume'])  # データフレーム化
     # =================2. for文によるループ===================
     # ====7.76 s ± 440 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)====
     # ====7.44 s ± 107 ms per loop (mean ± std. dev. of 7 runs, 1 loop each) =====
-    # bar = []
-    # for i in range(HEADER_SIZE, len(binary), size):
-    #     unp = list(struct.unpack_from(fmt, binary, i))
-    #     unp[0] = pd.datetime.utcfromtimestamp(unp[0])
-    #     bar.append(unp)
-    # df = pd.DataFrame(bar, columns=['DateTime', 'open', 'high', 'low', 'close', 'volume'])
-    # df.index = df.DateTime
-    # df = pd.DataFrame(df.ix[:, ['open', 'high', 'low', 'close', 'volume']])
+    bar = []
+    for i in range(HEADER_SIZE, len(binary), size):
+        unp = list(struct.unpack_from(fmt, binary, i))
+        unp[0] = pd.datetime.utcfromtimestamp(unp[0])
+        bar.append(unp)
+    df = pd.DataFrame(bar, columns=['DateTime', 'open', 'high', 'low', 'close', 'volume'])
+    df.index = df.DateTime
+    df = pd.DataFrame(df.loc[:, ['open', 'high', 'low', 'close', 'volume']])
     # =================3. mapを使う===================
     # ====48.5 s ± 540 ms per loop (mean ± std. dev. of 7 runs, 1 loop each) ====
     # ====↓to_datetime消した場合====
     # ====5.59 s ± 14.7 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)====
+    # ====↓datetime.fromtimestamp使用した場合====
+    # ====17 s ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)====
     # binary_list = [binary[i:i + size] for i in range(HEADER_SIZE, len(binary), size)]  # binary切り出し
     # binary_map = map(lambda x: struct.unpack(fmt, x), binary_list)  # mapで一気にunpack
     # binary_array = np.asarray(list(binary_map))  # np.array化
-    # df = pd.DataFrame(binary_array[:, 1:], index=binary_array[:, 0],
+    # ar_index = [pd.datetime.fromtimestamp(i) for i in binary_array[:, 0]]
+    # df = pd.DataFrame(binary_array[:, 1:], index=ar_index,
     #                   columns=['open', 'low', 'high', 'close', 'volume'])  # データフレーム化
-    # df.index = pd.to_datetime(df.index, utc=True, unit='s')  # インデックスを時間表記に変更←これが時間かかる
     return df
 
 
