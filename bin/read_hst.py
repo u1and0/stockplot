@@ -6,7 +6,8 @@
 
 
 # データのダウンロード
-[FXDD Trading](http://www.fxdd.com/bm/jp/forex-resources/forex-trading-tools/metatrader-1-minute-data/) というサイトなどからヒストリカルデータ(一分足のティックデータ)の圧縮ファイルをダウンロードしてください。
+[FXDD Trading](http://www.fxdd.com/bm/jp/forex-resources/forex-trading-tools/metatrader-1-minute-data/)
+というサイトなどからヒストリカルデータ(一分足のティックデータ)の圧縮ファイルをダウンロードしてください。
 
 wget, curl, aria2などのコマンドが使える環境にあれば
 
@@ -30,17 +31,16 @@ tickdata()関数はこのファイル内のその他の関数をラップして�
 ```
 import hst_extract as h
 df = h.tickdata('data/USDJPY.zip')  # zipファイルの相対/絶対パス
-df = h.tickdata('data/USDJPY.hst')  # hstファイルの相対/絶対パス。ただし、hstファイルは削除されます。
+# hstファイル以外の拡張子が与えられると展開したhstファイルは削除します。
+
+df = h.tickdata('data/USDJPY.hst')  # hstファイルの相対/絶対パス
+# hstファイルが直接与えられたらファイルは削除されません。
 ```
 """
 import zipfile
-import struct
 import pandas as pd
 import os
-
-HEADER_SIZE = 148
-OLD_FILE_STRUCTURE_SIZE = 44
-NEW_FILE_STRUCTURE_SIZE = 60
+import numpy as np
 
 
 def zip2hst(fullpath):
@@ -70,36 +70,26 @@ def zip2hst(fullpath):
         return fullpath
 
 
-def bin2df(binary, filetype, utc):
-    """Convert binary to pandas DataFrame.
-
-    args:
-        binary: readed hst file as binary
-        filetype: 'old' or 'new' default 'old'
-        utc: boolen defalt False
-    return:
-        pandas DataFrame
-    """
-    if filetype in ('old', 'o'):
-        size = OLD_FILE_STRUCTURE_SIZE
-        fmt = "<iddddd"
-    elif filetype in ('new', 'n'):
-        size = NEW_FILE_STRUCTURE_SIZE
-        fmt = "<Qddddqiq"
-    else:
-        raise KeyError(filetype)
-    bar = []
-    for i in range(HEADER_SIZE, len(binary), size):
-        unp = list(struct.unpack_from(fmt, binary, i))
-        unp[0] = pd.datetime.utcfromtimestamp(unp[0]) if utc else pd.datetime.fromtimestamp(unp[0])
-        bar.append(unp)
-    df = pd.DataFrame(bar, columns=['DateTime', 'open', 'high', 'low', 'close', 'volume'])
-    df.index = df.DateTime
-    df = pd.DataFrame(df.loc[:, ['open', 'high', 'low', 'close', 'volume']])
-    return df
+def read_hst(filepath):
+    """numpy使ってbinaryをpandas DataFrame化
+    参考: (´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む
+    http://fatbald.seesaa.net/article/447016624.html)"""
+    with open(filepath, 'rb') as f:
+        ver = np.frombuffer(f.read(148)[:4], 'i4')
+        if ver == 400:
+            dtype = [('time', 'u4'), ('open', 'f8'), ('low', 'f8'),
+                     ('high', 'f8'), ('close', 'f8'), ('volume', 'f8')]
+            df = pd.DataFrame(np.frombuffer(f.read(), dtype=dtype))
+            df = df['time open high low close volume'.split()]
+        elif ver == 401:
+            dtype = [('time', 'u8'), ('open', 'f8'), ('high', 'f8'), ('low', 'f8'),
+                     ('close', 'f8'), ('volume', 'i8'), ('s', 'i4'), ('r', 'i8')]
+            df = pd.DataFrame(np.frombuffer(f.read(), dtype=dtype).astype(dtype[:-2]))
+        df = df.set_index(pd.to_datetime(df['time'], unit='s')).drop('time', axis=1)
+        return df
 
 
-def tickdata(fullpath, filetype='old', utc=False):
+def tickdata(fullpath):
     """Extracting hst file from zip file.
 
     Usage:
@@ -115,8 +105,7 @@ def tickdata(fullpath, filetype='old', utc=False):
     """
     hstfile = zip2hst(fullpath)  # Extract zip in current directory.
     print('Extracting {}...'.format(hstfile))
-    with open(hstfile, 'rb') as f:
-        binary = f.read()
-        df = bin2df(binary, filetype, utc)  # Convert binary to pandas DataFrame.
-    os.remove(hstfile)
+    df = read_hst(hstfile)  # Convert binary to pandas DataFrame.
+    if not os.path.splitext(fullpath)[1] == '.hst':  # fullpathにhstファイル以外が与えられた場合、ファイルを消す
+        os.remove(hstfile)
     return df
