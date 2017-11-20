@@ -2,15 +2,24 @@
 # -*- coding: utf-8 -*-
 """
 # 何をするためのスクリプト？
+ヒストリカルデータをpythonを使用してpandas DataFrameとして読み出したり、csvやpickleに書き込みを行います。
 
-ヒストリカルデータをpython上で扱いやすい形式へ読み出したり、書き込みを行います。
+
+# インストール
+[github - u1and0/stockplot](https://github.com/u1and0/stockplot.git)からpullしてください。
+binディレクトリ下のread_hst.pyを使用してください。
+その他のファイルは次のページで説明しています。
+
+* [pythonでローソク足(candle chart)の描画](https://qiita.com/u1and0/items/1d9afdb7216c3d2320ef)
+* [plotlyでキャンドルチャートプロット](https://qiita.com/u1and0/items/0ebcf097a1d61c636eb9)
+* [Plotlyでぐりぐり動かせる為替チャートを作る(1)](https://qiita.com/u1and0/items/e2273bd8e03c670be45a)
+* [Plotlyでぐりぐり動かせる為替チャートを作る(2)](https://qiita.com/u1and0/items/b6e1cfba55778d505e7d)
 
 
 # データのダウンロード
-[FXDD Trading](http://www.fxdd.com/bm/jp/forex-resources/forex-trading-tools/metatrader-1-minute-data/)
-というサイトなどからヒストリカルデータ(一分足のティックデータ)の圧縮ファイルをダウンロードしてください。
+[FXDD Trading](http://www.fxdd.com/bm/jp/forex-resources/forex-trading-tools/metatrader-1-minute-data/) などからヒストリカルデータ(一分足のティックデータ)の圧縮ファイルをダウンロードしてください。
 
-wget, curl, aria2などのコマンドが使える環境にあれば
+wget, aria2などのコマンドが使える環境にあれば
 
 ```
 $ wget http://tools.fxdd.com/tools/M1Data/USDJPY.zip
@@ -19,24 +28,52 @@ $ wget http://tools.fxdd.com/tools/M1Data/USDJPY.zip
 などとしてヒストリカルデータの圧縮ファイルをダウンロードできます。 容量は50MB程度です。
 
 
-# データの読み出し
-zipを解凍すると'.hst'拡張子のヒストリカルデータが得られます。 容量は200MB程度です。
-tickdata()関数はこのファイル内のその他の関数をラップしている関数です。
-
-1. zipファイル内のhstファイルをカレントディレクトリに展開
-2. hstをバイナリとして読み出す
-3. バイナリをpandas DataFrameとして返す
-
-
 # 使用方法
-```
-import hst_extract as h
+
+## jupyter notebook や ipython上で使うとき
+
+1. read_hstモジュールをインポートします。
+2. tickdata()関数にダウンロードしたzipファイルのパス、または解凍したhstファイルのパスを入れます。
+3. 結果はpandas DataFrameとして返されます。
+
+```python
+import read_hst as h
 df = h.tickdata('data/USDJPY.zip')  # zipファイルの相対/絶対パス
-# hstファイル以外の拡張子が与えられると展開したhstファイルは削除します。
+# hstファイル以外の拡張子が与えられると、展開したhstファイルは削除されます。
 
 df = h.tickdata('data/USDJPY.hst')  # hstファイルの相対/絶対パス
-# hstファイルが直接与えられたらファイルは削除されません。
+# zipを解凍してhstファイルを引数に与えたらファイルを削除しません。
+
+df.tail
+
+                        open     high      low    close  volume
+time
+2017-11-17 08:32:00  112.573  112.584  112.573  112.581    50.0
+2017-11-17 08:33:00  112.581  112.583  112.578  112.580    38.0
+2017-11-17 08:34:00  112.580  112.583  112.578  112.580    51.0
+2017-11-17 08:35:00  112.580  112.580  112.572  112.572    44.0
+2017-11-17 08:36:00  112.572  112.574  112.572  112.572    24.0
 ```
+
+## bashなどのshell上で使うとき
+以下のコマンドは~/Data/USDJPY.zipを~/Data/USDJPY.csvとして保存します。
+`-o pickle`とすればpickleファイル(拡張子はpkl)としても保存できます。
+
+```shell-session
+$ cd ~/python/stockplot
+$ bin/read_hst.py -f ~/Data/USDJPY.zip -o csv
+$ bin/read_hst.py -h
+    usage: read_hst.py [-h] [-f FILENAME] [-o OUTPUT_FILETYPE]
+
+    optional arguments:
+        -h, --help            show this help message and exit
+        -f FILENAME, --filename FILENAME
+        -o OUTPUT_FILETYPE, --output-filetype OUTPUT_FILETYPE
+```
+
+# 参考
+* numpyを使用して高速にバイナリ→テキスト変換 >> [(´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む](http://fatbald.seesaa.net/article/447016624.html)
+* 引数読み込み >> [Converting MT4 binary history files: hst to csv using a python script](http://mechanicalforex.com/2015/12/converting-mt4-binary-history-files-hst-to-csv-using-a-python-script.html)
 """
 import argparse
 import zipfile
@@ -73,9 +110,11 @@ def zip2hst(fullpath):
 
 
 def read_hst(filepath):
-    """numpy使ってbinaryをpandas DataFrame化
+    """binary to pandas DataFrame using numpy.
+
     参考: (´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む
-    http://fatbald.seesaa.net/article/447016624.html)"""
+    http://fatbald.seesaa.net/article/447016624.html
+    """
     with open(filepath, 'rb') as f:
         ver = np.frombuffer(f.read(148)[:4], 'i4')
         if ver == 400:
@@ -95,13 +134,11 @@ def tickdata(fullpath):
     """Extracting hst file from zip file.
 
     Usage:
-    import hst_extract as h
-    df = h.tickdata('data/USDJPY.zip')
+        import hst_extract as h
+        df = h.tickdata('data/USDJPY.zip')
 
     args:
         fullpath: zip / hst file path
-        filetype: 'old' or 'new' default 'old'
-        utc: boolen defalt False
     return:
         pandas DataFrame
     """
@@ -116,9 +153,15 @@ def tickdata(fullpath):
 def main():
     """Arg parser
 
-    Usage:
-        stockplot/bin/read_hst.py -f ~/Data/USDJPY.zip -o csv
-        # Reading '~/Data/USDJPY.zip' then save to '~/Data/USDJPY.csv' as csv file.
+    Usage: read_hst.py [-h] [-f FILENAME] [-o OUTPUT_FILETYPE]
+
+    optional arguments:
+        -h, --help            show this help message and exit
+        -f FILENAME, --filename FILENAME
+        -o OUTPUT_FILETYPE, --output-filetype OUTPUT_FILETYPE
+
+    `stockplot/bin/read_hst.py -f ~/Data/USDJPY.zip -o csv`
+    Reading '~/Data/USDJPY.zip' then save to '~/Data/USDJPY.csv' as csv file.
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename')
@@ -129,21 +172,21 @@ def main():
     output_filetype = args.output_filetype
 
     if not filename:
-        print("Enter a valid filename (-f)")
-        exit()
-
-    df = tickdata(filename)
-    basename = os.path.splitext(filename)[0]
-    if output_filetype == 'csv':
-        outfile = basename + '.csv'
-        df.to_csv(outfile)
-    elif output_filetype == 'pickle':
-        outfile = basename + '.pkl'
-        df.to_pickle(outfile)
+        print("\nEnter a valid filename (-f)\n")
+        raise KeyError
+    elif not output_filetype == 'csv' or output_filetype == 'pickle':
+        print("\nEnter a valid output - filetype 'csv' or 'pickle'.\n")
+        raise KeyError
     else:
-        print("Enter a valid output - filetype 'csv' or 'pickle'.)")
-        exit()
-    return outfile
+        df = tickdata(filename)
+        basename = os.path.splitext(filename)[0]
+        if output_filetype == 'csv':
+            outfile = basename + '.csv'
+            df.to_csv(outfile)
+        elif output_filetype == 'pickle':
+            outfile = basename + '.pkl'
+            df.to_pickle(outfile)
+        return outfile
 
 
 if __name__ == '__main__':
