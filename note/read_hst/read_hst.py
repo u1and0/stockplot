@@ -8,7 +8,20 @@
 # * 解凍して.hstを取り出す。
 # * 以下の`hst_to_df.py`に食べさせると.h5ファイルのうんこを出す。
 
+# In[11]:
+
+
+ls ../../data/USDJPY.hst
+
+
+# In[18]:
+
+
+get_ipython().magic('run ../../bin/hst2df.py -f ../../data/USDJPY.hst -i old -o pickle')
+
+
 # In[6]:
+
 
 get_ipython().magic('run hst_to_df.py  -f data/EURUSD.hst -ty old')
 
@@ -16,6 +29,7 @@ get_ipython().magic('run hst_to_df.py  -f data/EURUSD.hst -ty old')
 # ## hdfファイル(.h5)の扱い
 
 # In[1]:
+
 
 df = pd.read_hdf('data/EURUSD.h5', key="main")
 df
@@ -30,6 +44,7 @@ df
 
 # In[2]:
 
+
 dff = df.ix[:, :4].resample('d').agg({'open':'first',
                                       'high':'max',
                                       'low':'min',
@@ -41,6 +56,7 @@ dff
 
 # In[3]:
 
+
 dfl = dff[-100:]
 dfl.plot()
 
@@ -49,10 +65,12 @@ dfl.plot()
 
 # In[4]:
 
+
 import matplotlib.finance as fi
 
 
 # In[69]:
+
 
 dfl
 
@@ -63,10 +81,12 @@ dfl
 
 # In[87]:
 
+
 dfl.open.values
 
 
 # In[103]:
+
 
 def mydate(x,pos):
     try:
@@ -103,10 +123,6 @@ def candlechart(ohlc, width=0.8):
 
 # In[105]:
 
+
 candlechart(dfl)
-
-
-# In[ ]:
-
-
 
