@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 # 何をするためのスクリプト？
 
@@ -37,6 +38,7 @@ df = h.tickdata('data/USDJPY.hst')  # hstファイルの相対/絶対パス
 # hstファイルが直接与えられたらファイルは削除されません。
 ```
 """
+import argparse
 import zipfile
 import pandas as pd
 import os
@@ -109,3 +111,40 @@ def tickdata(fullpath):
     if not os.path.splitext(fullpath)[1] == '.hst':  # fullpathにhstファイル以外が与えられた場合、ファイルを消す
         os.remove(hstfile)
     return df
+
+
+def main():
+    """Arg parser
+
+    Usage:
+        stockplot/bin/read_hst.py -f ~/Data/USDJPY.zip -o csv
+        # Reading '~/Data/USDJPY.zip' then save to '~/Data/USDJPY.csv' as csv file.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--filename')
+    parser.add_argument('-o', '--output-filetype')
+    args = parser.parse_args()
+
+    filename = args.filename
+    output_filetype = args.output_filetype
+
+    if not filename:
+        print("Enter a valid filename (-f)")
+        exit()
+
+    df = tickdata(filename)
+    basename = os.path.splitext(filename)[0]
+    if output_filetype == 'csv':
+        outfile = basename + '.csv'
+        df.to_csv(outfile)
+    elif output_filetype == 'pickle':
+        outfile = basename + '.pkl'
+        df.to_pickle(outfile)
+    else:
+        print("Enter a valid output - filetype 'csv' or 'pickle'.)")
+        exit()
+    return outfile
+
+
+if __name__ == '__main__':
+    main()
