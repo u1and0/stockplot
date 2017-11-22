@@ -157,37 +157,42 @@ def main():
 
     optional arguments:
         -h, --help            show this help message and exit
-        -f FILENAME, --filename FILENAME
-        -o OUTPUT_FILETYPE, --output-filetype OUTPUT_FILETYPE
+        -c, --csv
+        -p, --pickle
 
     `stockplot/bin/read_hst.py -f ~/Data/USDJPY.zip -o csv`
     Reading '~/Data/USDJPY.zip' then save to '~/Data/USDJPY.csv' as csv file.
     """
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--filename')
-    parser.add_argument('-o', '--output-filetype')
+    description = 'Convering historical file (.hst) to csv or pickle file.'
+    parser = argparse.ArgumentParser(prog=__file__, description=description)
+    parser.add_argument('filenames', nargs='+')  # 1個以上のファイルネーム
+    parser.add_argument('-c', '--csv', action='store_true', help='Convert to csv file')
+    parser.add_argument('-p', '--pickle', action='store_true', help='Convert to pickle file')
+
     args = parser.parse_args()
+    filenames = args.filenames
+    csv = args.csv
+    pickle = args.pickle
 
-    filename = args.filename
-    output_filetype = args.output_filetype
-
-    if not filename:
-        print("\nEnter a valid filename (-f)\n")
+    if not filenames:
+        print("\nEnter a valid filenames\n")
         raise KeyError
-    elif not output_filetype == 'csv' or output_filetype == 'pickle':
+    elif not (csv or pickle):
         print("\nEnter a valid output - filetype 'csv' or 'pickle'.\n")
         raise KeyError
     else:
-        df = tickdata(filename)
-        basename = os.path.splitext(filename)[0]
-        if output_filetype == 'csv':
-            outfile = basename + '.csv'
-            df.to_csv(outfile)
-        elif output_filetype == 'pickle':
-            outfile = basename + '.pkl'
-            df.to_pickle(outfile)
-        return outfile
+        for filename in filenames:
+            df = tickdata(filename)
+            basename = os.path.splitext(filename)[0]
+            if csv:
+                outfile = basename + '.csv'
+                df.to_csv(outfile)
+                yield outfile
+            if pickle:
+                outfile = basename + '.pkl'
+                df.to_pickle(outfile)
+                yield outfile
 
 
 if __name__ == '__main__':
-    main()
+    print(list(main()))
