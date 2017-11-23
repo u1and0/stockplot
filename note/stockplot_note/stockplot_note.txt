@@ -1,0 +1,112 @@
+
+import sys, os
+sys.path.append('../../common/')
+
+np.random.seed(9)
+from randomwalk import randomwalk
+df = randomwalk(60 * 24 * 90, freq='T', tick=0.01, start=pd.datetime(2017, 3, 20)
+                ).resample('B').ohlc() + 115  # 90日分の1分足を日足に直す
+
+from stockstats import StockDataFrame
+sdf = StockDataFrame(df.copy())
+
+from stockplot import StockPlot
+
+# StockPlotクラスのインスタンス化
+x = StockPlot(sdf)
+
+# キャンドルチャートのプロット
+x.candle_plot()
+
+# 終値25日移動平均線追加
+x.append('close_25_sma')
+
+# キャンドルチャートと追加された指標のプロット
+x.candle_plot()
+
+# 終値25日指数移動平均線の追加とプロット
+x.append('close_25_ema')
+x.candle_plot()
+
+y = StockPlot(sdf)
+# 10,11,12,13足移動平均線
+for i in range(10, 14):
+    y.append('close_{}_sma'.format(i))
+y.candle_plot()
+
+# 10, 12足移動平均線の削除
+for i in (10, 12):
+    y.remove('close_{}_sma'.format(i))
+y.candle_plot()
+
+import plotly.offline as pyo
+pyo.plot(y._fig, filename='candle_y.html', validate=False)  # 新しいタブを開いてhtml表示します
+
+pyo.plot(y._fig, image='png', image_filename='candle_y')
+# 新しいtmpタブを開いて
+# imageに指定した拡張子として
+# デフォルトのダウンロードディレクトリに保存します
+
+# 使い方
+np.random.seed(2)
+df = pd.DataFrame(np.random.randn(10,4), columns=['open', 'high', 'low', 'close'])
+from stockstats import StockDataFrame
+sdf = StockDataFrame(df)  # pandasデータフレームをStockDataFrameに入れてあげる
+sdf
+
+sdf.get('close_5_sma'); sdf
+
+sdf['close_5_sma']; sdf
+
+import numpy as np
+import pandas as pd
+# ----------User Module----------
+from randomwalk import randomwalk
+import stockstats as ss
+# ----------Plotly Module----------
+from plotly.tools import FigureFactory as FF
+import plotly.offline as pyo
+import plotly.graph_objs as go
+pyo.init_notebook_mode(connected=True)
+
+
+class StockPlot:
+    """StockDataFrameの可視化ツール
+    # TODO
+    * heikin_plot
+    * pop
+    * subplot
+    """
+
+    def __init__(self, sdf: ss.StockDataFrame):
+        self.StockDataFrame = sdf
+        self._fig = FF.create_candlestick(self.StockDataFrame.open,
+                                         self.StockDataFrame.high,
+                                         self.StockDataFrame.low,
+                                         self.StockDataFrame.close,
+                                         dates=self.StockDataFrame.index)
+
+    def candle_plot(self, filebasename='candlestick_and_trace'):
+        """StockDataFrameをキャンドルチャート化する
+        引数: dfs: StockDataFrame
+        戻り値: plotly plot"""
+        self._fig['layout'].update(xaxis={'showgrid': True})
+        ax = pyo.iplot(self._fig, filename=filebasename + '.html', validate=False)
+        # pyo.plot(self._fig, image='png', image_filename=filebasename, validate=False)
+        return ax
+
+    def append(self, indicator):
+        indi = self.StockDataFrame.get(indicator)
+        plotter = go.Scatter(x=indi.index, y=indi,
+                             name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
+        self._fig['data'].append(plotter)
+        return indi
+
+    def remove(self, indicator):
+        indi = indicator.lower().replace(' ', '_')
+        INDI = indicator.upper().replace('_', ' ')
+        self.StockDataFrame.pop(indi)
+        for dicc in self._fig['data']:
+            if dicc['name'] == INDI:
+                self._fig['data'].remove(dicc)
+                return dicc
