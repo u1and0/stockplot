@@ -201,7 +201,7 @@ fx.show(how='jupyter')
 
 
 
-![gif1](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/gif1.gif)
+![gif1](./note/candle_plot_movable/candle_plot_movable_files/gif1.gif)
 
 2017/3/20-2017/6/17の日足が描かれました。
 
@@ -229,7 +229,7 @@ fx.show('jupyter')  # プロットの表示をJupyter Notebookで開く
 
 
 
-![gif2](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/gif2.gif)
+![gif2](./note/candle_plot_movable/candle_plot_movable_files/gif2.gif)
 
 1時間足がプロットされました。
 あえて時間をかけてマウスオーバーしているのですが、1時間ごとにプロットされていることがわかりましたでしょうか。
@@ -367,7 +367,7 @@ fx.show('jupyter')
 ```
 
 
-![gif6](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/gif6.gif)
+![gif6](./note/candle_plot_movable/candle_plot_movable_files/gif6.gif)
 
 
 ```python
@@ -432,7 +432,7 @@ fx.show('jupyter')
 ```
 
 
-![gif7](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/gif7.gif)
+![gif7](./note/candle_plot_movable/candle_plot_movable_files/gif7.gif)
 
 2017/6/17 09:00 - 2017/6/17 23:00の5分足が描かれました。
 
@@ -455,7 +455,7 @@ fx.show('jupyter')
 ```
 
 
-![gif8](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/gif8.gif)
+![gif8](./note/candle_plot_movable/candle_plot_movable_files/gif8.gif)
 
 次は`start_view, end_view`の指定ではなく、`end_view, periods_view`を使って表示してみます。
 
@@ -475,7 +475,7 @@ fx.show('html')  # html形式で表示
 
 
 
-![gif4](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/gif4.gif)
+![gif4](./note/candle_plot_movable/candle_plot_movable_files/gif4.gif)
 
 * `plot`メソッドのビュー範囲を決める引数
     * `start_view`: 表示する最初の日付・時間
@@ -567,7 +567,7 @@ fx.show('jupyter')
 ```
 
 
-![gif5](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/gif5.gif)
+![gif5](./note/candle_plot_movable/candle_plot_movable_files/gif5.gif)
 
 `plot`メソッドの`fix`引数を30とし、30本の足だけの空白を右側(時間の遅い側)に作ることができました。
 処理としては、先ほど出てきた`set_span`関数を使って、`end_view`に30本足分の時間足を足してあげます。
@@ -581,7 +581,7 @@ end_view = set_span(start=end_view, periods=shift,
 
 図示すると以下のような感じです。
 
-![png4](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/png4.PNG)
+![png4](./note/candle_plot_movable/candle_plot_movable_files/png4.PNG)
 
 ## まとめ
 
@@ -614,7 +614,7 @@ end_view = set_span(start=end_view, periods=shift,
 ### フローチャート
 各メソッドの呼び出しに使う引数と戻り値、プロットに使うフローは以下の図の通りです。
 
-![figure1](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/figure1.PNG)
+![figure1](./note/candle_plot_movable/candle_plot_movable_files/figure1.PNG)
 
 ---
 
@@ -706,7 +706,7 @@ fx.show('png', filebasename='png2')
 
 
 
-![png2](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png2.png)
+![png2](./note/stockplot_append_pop/stockplot_append_pop_files/png2.png)
 
 close_25_sma(25本足単純移動平均線)が追加されました。
 なお、`append`メソッド単体をJupyter NotebookやIpython上で実行するとclose_25_smaの値が戻り値として表示されます。
@@ -724,7 +724,7 @@ fx.show('png', filebasename='png3')
 
 
 
-![png3](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png3.png)
+![png3](./note/stockplot_append_pop/stockplot_append_pop_files/png3.png)
 
 `resample`メソッドで15分足に変えた後、`append`メソッドを使わなくとも`close_25_sma`が追加されたままです。
 
@@ -834,7 +834,7 @@ fx.show('png', filebasename='png3_1')
 
 
 
-![png6](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png6.png)
+![png6](./note/stockplot_append_pop/stockplot_append_pop_files/png6.png)
 
 close_25_smaが削除されました。
 
@@ -856,7 +856,7 @@ fx.show('png', filebasename='png4')
 
 
 
-![png4](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png4.png)
+![png4](./note/stockplot_append_pop/stockplot_append_pop_files/png4.png)
 
  * 20本足ボリンジャーバンド
  * 20本足移動最高値
@@ -922,7 +922,7 @@ fx.show('png', filebasename='png5')
 
 
 
-![png5](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png5.png)
+![png5](./note/stockplot_append_pop/stockplot_append_pop_files/png5.png)
 
 `high_20_max`, `low_20_min`だけがグラフから削除されました。
 
@@ -1024,7 +1024,7 @@ fx.show('png', filebasename='png6')
 
 
 
-![png6](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png6.png)
+![png6](./note/stockplot_append_pop/stockplot_append_pop_files/png6.png)
 
 * データフレーム(`self.stock_dataframe`)を初期化します。
 * グラフ(`self._fig`)を初期化します。
@@ -1058,7 +1058,7 @@ fx.show('png', filebasename='png6')
 
 ### フローチャート
 各メソッドの使用順序は以下に示すフローチャートの通りです。
-![png8](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png8.png)
+![png8](./note/stockplot_append_pop/stockplot_append_pop_files/png8.png)
 
 左側が追加と表示、右側が削除とリセットを表しています。
 
@@ -1090,7 +1090,7 @@ boll.show('png', filebasename='png7')
 
 
 
-![png7](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png7.png)
+![png7](./note/stockplot_append_pop/stockplot_append_pop_files/png7.png)
 
 $\sigma_1$と$\sigma_2$は同時に描けないのが残念です。
 
@@ -1153,7 +1153,7 @@ Qiitaに投稿しました。README.mdと内容はほぼ同じです。
 
 __2017/4/22__
 Qiitaデイリーランキング4位に入りました。ありがとうございます^^
-![daily_iine](https://github.com/u1and0/stockplot/blob/master/note/picture/daily_iine.PNG)
+![daily_iine](./note/picture/daily_iine.PNG)
 
 
 
