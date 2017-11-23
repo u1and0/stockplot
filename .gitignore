@@ -8,22 +8,10 @@ TODO.md
 /note/*
 !/note/
 !/note/picture
-
 !/note/stockplot_note/
-/note/stockplot_note/*
-!/note/stockplot_note/*.html
-
 !/note/candle_plot_movable/
-/note/candle_plot_movable/*
-!/note/candle_plot_movable/*.html
-
 !/note/stockplot_append_pop/
-/note/stockplot_append_pop/*
-!/note/stockplot_append_pop/*.html
-
 !/note/py_candle_chart/
-/note/py_candle_chart/*
-!/note/py_candle_chart/*.html
 
 /test/
 !/test/stockplot_quickset.py
