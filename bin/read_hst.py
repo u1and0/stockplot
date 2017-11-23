@@ -6,10 +6,10 @@
 
 
 # インストール
-[github - u1and0/stockplot](https://github.com/u1and0/stockplot.git)からpullしてください。
+[github - u1and0/stockplot](https://github.com/u1and0/stockplot.git)からcloneしてください。
 
 ```shell-session
-git pull https://github.com/u1and0/stockplot.git
+git clone https://github.com/u1and0/stockplot.git
 ```
 
 binディレクトリ下のread_hst.pyを使用してください。
@@ -195,11 +195,9 @@ def main():
     pickle = args.pickle
 
     if not filenames:
-        print("\nEnter a valid filenames\n")
-        raise KeyError
+        raise KeyError("Enter a valid filenames")
     elif not (csv or pickle):
-        print("\nEnter a valid output - filetype '-c'(--csv) or '-p'(--pickle).\n")
-        raise KeyError
+        raise KeyError("Enter a valid output - filetype '-c'(--csv) or '-p'(--pickle).")
     else:
         for filename in filenames:
             df = read_hst(filename)  # convert historical to pandas Dataframe

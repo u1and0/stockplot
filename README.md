@@ -1172,10 +1172,10 @@ Qiitaデイリーランキング4位に入りました。ありがとうござ�
 
 
 ## インストール
-[github - u1and0/stockplot](https://github.com/u1and0/stockplot.git)からpullしてください。
+[github - u1and0/stockplot](https://github.com/u1and0/stockplot.git)からcloneしてください。
 
 ```shell-session
-git pull https://github.com/u1and0/stockplot.git
+git clone https://github.com/u1and0/stockplot.git
 ```
 
 binディレクトリ下のread_hst.pyを使用してください。
