@@ -1,4 +1,4 @@
-![append_pop_gif8](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/gif8.gif)
+![append_pop_gif8](./note/stockplot_append_pop/stockplot_append_pop_files/gif8.gif)
 
 
 # stockplot.py
