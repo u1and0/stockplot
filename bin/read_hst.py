@@ -7,6 +7,11 @@
 
 # インストール
 [github - u1and0/stockplot](https://github.com/u1and0/stockplot.git)からpullしてください。
+
+```shell-session
+git pull https://github.com/u1and0/stockplot.git
+```
+
 binディレクトリ下のread_hst.pyを使用してください。
 その他のファイルは次のページで説明しています。
 
@@ -33,15 +38,15 @@ $ wget http://tools.fxdd.com/tools/M1Data/USDJPY.zip
 ## jupyter notebook や ipython上で使うとき
 
 1. read_hstモジュールをインポートします。
-2. tickdata()関数にダウンロードしたzipファイルのパス、または解凍したhstファイルのパスを入れます。
+2. read_hst()関数にダウンロードしたzipファイルのパス、または解凍したhstファイルのパスを入れます。
 3. 結果はpandas DataFrameとして返されます。
 
 ```python
 import read_hst as h
-df = h.tickdata('data/USDJPY.zip')  # zipファイルの相対/絶対パス
+df = h.read_hst('data/USDJPY.zip')  # zipファイルの相対/絶対パス
 # hstファイル以外の拡張子が与えられると、展開したhstファイルは削除されます。
 
-df = h.tickdata('data/USDJPY.hst')  # hstファイルの相対/絶対パス
+df = h.read_hst('data/USDJPY.hst')  # hstファイルの相対/絶対パス
 # zipを解凍してhstファイルを引数に与えたらファイルを削除しません。
 
 df.tail
@@ -57,18 +62,24 @@ time
 
 ## bashなどのshell上で使うとき
 以下のコマンドは~/Data/USDJPY.zipを~/Data/USDJPY.csvとして保存します。
-`-o pickle`とすればpickleファイル(拡張子はpkl)としても保存できます。
+`-p`とすればpickleファイル(拡張子はpkl)としても保存できます。
 
 ```shell-session
 $ cd ~/python/stockplot
-$ bin/read_hst.py -f ~/Data/USDJPY.zip -o csv
+$ bin/read_hst.py -c ~/Data/USDJPY.zip  # Convert .hst to .csv
 $ bin/read_hst.py -h
-    usage: read_hst.py [-h] [-f FILENAME] [-o OUTPUT_FILETYPE]
 
-    optional arguments:
-        -h, --help            show this help message and exit
-        -f FILENAME, --filename FILENAME
-        -o OUTPUT_FILETYPE, --output-filetype OUTPUT_FILETYPE
+usage: bin/read_hst.py [-h] [-c] [-p] filenames [filenames ...]
+
+Convering historical file (.hst) to csv or pickle file.
+
+positional arguments:
+  filenames
+
+optional arguments:
+  -h, --help    show this help message and exit
+  -c, --csv     Convert to csv file
+  -p, --pickle  Convert to pickle file
 ```
 
 # 参考
@@ -86,8 +97,8 @@ def zip2hst(fullpath):
     """Extract zip file.
 
     Usage:
-        zip2hst('~/data/USDJPY.zip')
-        > ~/data/USDJPY.hst
+        zip2hst('~/Data/USDJPY.zip')
+        > ~/Data/USDJPY.hst
         zip2hst('USDJPY.zip')
         > USDJPY.hst
 
@@ -109,7 +120,7 @@ def zip2hst(fullpath):
         return fullpath
 
 
-def read_hst(filepath):
+def tickdata(filepath):
     """binary to pandas DataFrame using numpy.
 
     参考: (´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む
@@ -130,12 +141,12 @@ def read_hst(filepath):
         return df
 
 
-def tickdata(fullpath):
+def read_hst(fullpath):
     """Extracting hst file from zip file.
 
     Usage:
         import hst_extract as h
-        df = h.tickdata('data/USDJPY.zip')
+        df = h.read_hst('~/Data/USDJPY.zip')
 
     args:
         fullpath: zip / hst file path
@@ -144,7 +155,7 @@ def tickdata(fullpath):
     """
     hstfile = zip2hst(fullpath)  # Extract zip in current directory.
     print('Extracting {}...'.format(hstfile))
-    df = read_hst(hstfile)  # Convert binary to pandas DataFrame.
+    df = tickdata(hstfile)  # Convert binary to pandas DataFrame.
     if not os.path.splitext(fullpath)[1] == '.hst':  # fullpathにhstファイル以外が与えられた場合、ファイルを消す
         os.remove(hstfile)
     return df
@@ -153,15 +164,24 @@ def tickdata(fullpath):
 def main():
     """Arg parser
 
-    Usage: read_hst.py [-h] [-f FILENAME] [-o OUTPUT_FILETYPE]
+    usage: bin/read_hst.py [-h] [-c] [-p] filenames [filenames ...]
+
+    Convering historical file (.hst) to csv or pickle file.
+
+    positional arguments:
+      filenames
 
     optional arguments:
-        -h, --help            show this help message and exit
-        -c, --csv
-        -p, --pickle
+      -h, --help    show this help message and exit
+      -c, --csv     Convert to csv file
+      -p, --pickle  Convert to pickle file
 
-    `stockplot/bin/read_hst.py -f ~/Data/USDJPY.zip -o csv`
-    Reading '~/Data/USDJPY.zip' then save to '~/Data/USDJPY.csv' as csv file.
+
+    `stockplot/bin/read_hst.py -cp ~/Data/USDJPY.zip ~/Data/EURUSD.zip`
+    Extracting '~/Data/USDJPY.zip' and '~/Data/EURUSD.zip' then save to
+
+    * '~/Data/USDJPY.csv' and '~/Data/EURUSD.csv' as csv file.
+    * '~/Data/USDJPY.pkl' and '~/Data/EURUSD.pkl' as pickle file.
     """
     description = 'Convering historical file (.hst) to csv or pickle file.'
     parser = argparse.ArgumentParser(prog=__file__, description=description)
@@ -178,11 +198,11 @@ def main():
         print("\nEnter a valid filenames\n")
         raise KeyError
     elif not (csv or pickle):
-        print("\nEnter a valid output - filetype 'csv' or 'pickle'.\n")
+        print("\nEnter a valid output - filetype '-c'(--csv) or '-p'(--pickle).\n")
         raise KeyError
     else:
         for filename in filenames:
-            df = tickdata(filename)
+            df = read_hst(filename)  # convert historical to pandas Dataframe
             basename = os.path.splitext(filename)[0]
             if csv:
                 outfile = basename + '.csv'
@@ -195,4 +215,5 @@ def main():
 
 
 if __name__ == '__main__':
-    print(list(main()))
+    for convert_filename in main():
+        print(convert_filename)

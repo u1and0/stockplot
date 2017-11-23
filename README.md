@@ -1,14 +1,16 @@
 ![append_pop_gif8](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/gif8.gif)
 
 
+# stockplot.py
+
 ```python
 import sys
 sys.path.append('../../bin/')
 ```
 
-# 下準備
+## 下準備
 
-## モジュールインポート
+### モジュールインポート
 
 必要なモジュールをインポートします。
 
@@ -43,7 +45,7 @@ pip install stockstats
     * 旧バージョン[Qiita - u1and0 / plotlyでキャンドルチャートプロット](http://qiita.com/u1and0/items/0ebcf097a1d61c636eb9)
 * random_walkについては[Qiita - u1and0 / pythonでローソク足(candle chart)の描画](http://qiita.com/u1and0/items/1d9afdb7216c3d2320ef)
 
-## サンプルデータの作成
+### サンプルデータの作成
 
 
 ```python
@@ -56,7 +58,7 @@ df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 
 ランダムな為替チャートを作成します。
 randomwalk関数で**2017/3/20からの1分足を90日分**作成します。
 
-## インスタンス化
+### インスタンス化
 
 
 ```python
@@ -66,7 +68,7 @@ fx = sp.StockPlot(df)
 
 StockPlotクラスでインスタンス化します。
 
-# ローソク足の描画
+## ローソク足の描画
 
 `fx = sp.StockPlot(sdf)`でインスタンス化されたら時間足を変換します。
 変換する際は`resample`メソッドを使います。
@@ -212,7 +214,7 @@ plotlyの操作は
 * ダブルクリックで元のビューに戻る
 * トリプルクリックで全体表示
 
-# 時間足の変更
+## 時間足の変更
 
 日足だけじゃなくて別の時間足も見たいです。
 
@@ -350,7 +352,7 @@ fx.resample('1D4H2T24S').head()
 
 
 
-# plot範囲の指定
+## plot範囲の指定
 
 `plot`メソッドは`stock_dataframe`の中身を**すべてグラフ化しません**。
 デフォルトの場合、**最後の足から数えて300本足**がグラフ化されます。
@@ -434,7 +436,7 @@ fx.show('jupyter')
 
 2017/6/17 09:00 - 2017/6/17 23:00の5分足が描かれました。
 
-# view範囲の指定
+## view範囲の指定
 
 plotlyのズームイン / アウト、スクロールを使えば表示範囲外のところも見れます。
 しかし、見たい期間が最初から決まっているのにもかかわらず、グラフ化してからスクロールするのはメンドウです。
@@ -543,7 +545,7 @@ self._fig['layout'].update(xaxis={'showgrid': showgrid, 'range': view},
                            yaxis={"autorange": True})
 ```
 
-# 右側に空白を作る
+## 右側に空白を作る
 
 引数`shift`に指定した足の本数だけ、右側に空白を作ります。
 > 時間足が短いとうまくいきません。原因究明中です。
@@ -575,15 +577,15 @@ end_view = set_span(start=end_view, periods=shift,
                     freq=self.freq)[-1] if shift else end_view
 ```
 
-## data範囲、plot範囲, view範囲、shiftまとめ
+### data範囲、plot範囲, view範囲、shiftまとめ
 
 図示すると以下のような感じです。
 
 ![png4](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/png4.PNG)
 
-# まとめ
+## まとめ
 
-## メソッド一覧
+### メソッド一覧
 
 * `__init__`
     * pandas.Dataframeをインスタンス化
@@ -609,7 +611,7 @@ end_view = set_span(start=end_view, periods=shift,
     * ファイル名を決める。
         * `filebasename`
 
-## フローチャート
+### フローチャート
 各メソッドの呼び出しに使う引数と戻り値、プロットに使うフローは以下の図の通りです。
 
 ![figure1](https://github.com/u1and0/stockplot/blob/master/note/candle_plot_movable/candle_plot_movable_files/figure1.PNG)
@@ -617,10 +619,10 @@ end_view = set_span(start=end_view, periods=shift,
 ---
 
 
-# 指標の操作
+## 指標の操作
 
 
-## 指標の追加
+### 指標の追加
 
 指標をプロットしてみます。
 最もポピュラーな単純移動平均(Simple Moving Average)をプロットします。
@@ -756,7 +758,7 @@ fx.show('png', filebasename='png3')
         self._fig['data'].append(plotter)
 ```
 
-## 指標の削除
+### 指標の削除
 
 指標の削除には`pop`メソッドを使用します。
 
@@ -946,7 +948,7 @@ fx.show('png', filebasename='png5')
 (3)は`append`メソッドとほとんど同じことですが、`self._indicators`に追加しません。
 (1)の段階で`self._indicators`からは余計な指標を取り除いていないため、`self._indicators`に再度追加する必要がありません。
 
-## 指標の初期化
+### 指標の初期化
 
 追加した指標をすべて消すときは`clear`メソッドを使います。
 
@@ -1052,15 +1054,15 @@ fx.show('png', filebasename='png6')
 
 の点が`__init__`と異なります。
 
-# まとめと補足
+## まとめと補足
 
-## フローチャート
+### フローチャート
 各メソッドの使用順序は以下に示すフローチャートの通りです。
 ![png8](https://github.com/u1and0/stockplot/blob/master/note/stockplot_append_pop/stockplot_append_pop_files/png8.png)
 
 左側が追加と表示、右側が削除とリセットを表しています。
 
-## ボリンジャーバンドについて
+### ボリンジャーバンドについて
 
 `stockstats`ではボリンジャーバンドで使う移動区間と$\sigma$がクラス変数として定義されています。
 
@@ -1099,17 +1101,17 @@ $\sigma_1$と$\sigma_2$は同時に描けないのが残念です。
 
 グラフに描くだけであれば何とかすればできそうですが、今後の課題とします。
 
-## サブチャートについて
+### サブチャートについて
 
 [`stockstats`](https://github.com/jealous/stockstats)は多くの指標の出力に対応していますが、サブチャートを必要とする指標が多くあります。(MACD, RSI, ADX...)
 今回のリリースではサブチャートに手を付けていません。
 [Cufflinks](https://github.com/santosjorge/cufflinks)を使ってみたらサブプロットととかも簡単にいきそうな気がします。
 
-## トップのgifファイルについて
+### トップのgifファイルについて
 
 最初のgif画像はチャートをipython上からインタラクティブにhtmlとして出力している様子です。
 
-* モジュールのインポートから日足に変更するところまでを実行する`./bin/stockplot_quickset.py`を実行します。
+* モジュールのインポートから日足に変更するところまでを実行する`./test/stockplot_quickset.py`を実行します。
 * 'close_25_sma'を追加します。
 * 時間足を15分足に変えます。
 * 'close_75_sma'を追加します。
@@ -1134,14 +1136,15 @@ df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 
 fx = sp.StockPlot(df)
 
 # Resample as Day OHLC
-	```
+fx.resample('D')
+```
 
 
 
 
 
 ---
-# 追記
+## 追記
 
 __2017/4/21__
 Qiitaに投稿しました。README.mdと内容はほぼ同じです。
@@ -1151,3 +1154,100 @@ Qiitaに投稿しました。README.mdと内容はほぼ同じです。
 __2017/4/22__
 Qiitaデイリーランキング4位に入りました。ありがとうございます^^
 ![daily_iine](https://github.com/u1and0/stockplot/blob/master/note/picture/daily_iine.PNG)
+
+
+
+
+
+
+
+
+
+
+# read_hst.py
+
+
+## 何をするためのスクリプト？
+ヒストリカルデータをpythonを使用してpandas DataFrameとして読み出したり、csvやpickleに書き込みを行います。
+
+
+## インストール
+[github - u1and0/stockplot](https://github.com/u1and0/stockplot.git)からpullしてください。
+
+```shell-session
+git pull https://github.com/u1and0/stockplot.git
+```
+
+binディレクトリ下のread_hst.pyを使用してください。
+その他のファイルは次のページで説明しています。
+
+* [pythonでローソク足(candle chart)の描画](https://qiita.com/u1and0/items/1d9afdb7216c3d2320ef)
+* [plotlyでキャンドルチャートプロット](https://qiita.com/u1and0/items/0ebcf097a1d61c636eb9)
+* [Plotlyでぐりぐり動かせる為替チャートを作る(1)](https://qiita.com/u1and0/items/e2273bd8e03c670be45a)
+* [Plotlyでぐりぐり動かせる為替チャートを作る(2)](https://qiita.com/u1and0/items/b6e1cfba55778d505e7d)
+
+
+## データのダウンロード
+[FXDD Trading](http://www.fxdd.com/bm/jp/forex-resources/forex-trading-tools/metatrader-1-minute-data/) などからヒストリカルデータ(一分足のティックデータ)の圧縮ファイルをダウンロードしてください。
+
+wget, aria2などのコマンドが使える環境にあれば
+
+```
+$ wget http://tools.fxdd.com/tools/M1Data/USDJPY.zip
+```
+
+などとしてヒストリカルデータの圧縮ファイルをダウンロードできます。 容量は50MB程度です。
+
+
+## 使用方法
+
+### jupyter notebook や ipython上で使うとき
+
+1. read_hstモジュールをインポートします。
+2. read_hst()関数にダウンロードしたzipファイルのパス、または解凍したhstファイルのパスを入れます。
+3. 結果はpandas DataFrameとして返されます。
+
+```python
+import read_hst as h
+df = h.read_hst('data/USDJPY.zip')  # zipファイルの相対/絶対パス
+# hstファイル以外の拡張子が与えられると、展開したhstファイルは削除されます。
+
+df = h.read_hst('data/USDJPY.hst')  # hstファイルの相対/絶対パス
+# zipを解凍してhstファイルを引数に与えたらファイルを削除しません。
+
+df.tail
+
+                        open     high      low    close  volume
+time
+2017-11-17 08:32:00  112.573  112.584  112.573  112.581    50.0
+2017-11-17 08:33:00  112.581  112.583  112.578  112.580    38.0
+2017-11-17 08:34:00  112.580  112.583  112.578  112.580    51.0
+2017-11-17 08:35:00  112.580  112.580  112.572  112.572    44.0
+2017-11-17 08:36:00  112.572  112.574  112.572  112.572    24.0
+```
+
+### bashなどのshell上で使うとき
+以下のコマンドは~/Data/USDJPY.zipを~/Data/USDJPY.csvとして保存します。
+`-p`とすればpickleファイル(拡張子はpkl)としても保存できます。
+
+```shell-session
+$ cd ~/python/stockplot
+$ bin/read_hst.py -c ~/Data/USDJPY.zip  # Convert .hst to .csv
+$ bin/read_hst.py -h
+
+usage: bin/read_hst.py [-h] [-c] [-p] filenames [filenames ...]
+
+Convering historical file (.hst) to csv or pickle file.
+
+positional arguments:
+  filenames
+
+optional arguments:
+  -h, --help    show this help message and exit
+  -c, --csv     Convert to csv file
+  -p, --pickle  Convert to pickle file
+```
+
+## 参考
+* numpyを使用して高速にバイナリ→テキスト変換 >> [(´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む](http://fatbald.seesaa.net/article/447016624.html)
+* 引数読み込み >> [Converting MT4 binary history files: hst to csv using a python script](http://mechanicalforex.com/2015/12/converting-mt4-binary-history-files-hst-to-csv-using-a-python-script.html)
