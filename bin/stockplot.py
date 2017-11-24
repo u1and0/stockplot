@@ -2,7 +2,7 @@
 import pandas as pd
 from pandas.core import common as com
 import stockstats as ss
-from plotly.tools import FigureFactory as FF
+from plotly import figure_factory as FF
 import plotly.offline as pyo
 import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
