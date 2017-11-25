@@ -28,11 +28,11 @@ def set_span(start=None, end=None, periods=None, freq='D'):
     return start, end
 
 
-def to_unix_time(*dt: pd.datetime) -> iter:
+def to_unix_time(*dt):
     """datetimeをunix秒に変換
     引数: datetime(複数指定可能)
     戻り値: unix秒に直されたイテレータ"""
-    epoch = pd.datetime.utcfromtimestamp(0)
+    epoch = pd.datetime.fromtimestamp(0)
     return ((i - epoch).total_seconds() * 1000 for i in dt)
 
 
@@ -43,9 +43,6 @@ class StockPlot:
     ```
     # Convert StockDataFrame as StockPlot
     fx = StockPlot(sdf)
-
-    # Resample StockDataFrame to some time frame
-    fx.resample('D')
 
     # Add indicator
     fx.append('close_25_sma')
@@ -58,7 +55,7 @@ class StockPlot:
     fx.show()
     ```
 
-    # What do I want do
+    # What do i want do
     * StockDataFrameにプロット能力を持たせたい。
     * StockPlotの属性
         * StockDataFrame: 金融指標を取得しやすい改造pandas.DataFrame
