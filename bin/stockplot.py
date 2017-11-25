@@ -156,8 +156,8 @@ class StockPlot:
     def __init__(self, df: pd.core.frame.DataFrame):
         # Arg Check
         co = ['open', 'high', 'low', 'close']
-        assert all(i in df.columns for i in co), 'arg\'s columns must have {}, but it has {}'\
-            .format(co, df.columns)
+        if not all(i in df.columns for i in co):
+            raise KeyError("arg's columns must have {}, but it has {}".format(co, df.columns))
         self._init_stock_dataframe = ss.StockDataFrame(df)  # スパン変更前のデータフレーム
         self.stock_dataframe = None  # スパン変更後、インジケータ追加後のデータフレーム
         self.freq = None  # 足の時間幅
@@ -173,8 +173,7 @@ class StockPlot:
         * Return: スパン変更後のデータフレーム
         """
         self.freq = freq
-        df = self._init_stock_dataframe.loc[:, ['open', 'high', 'low', 'close']]\
-            .resample(freq).ohlc2().dropna()
+        df = self._init_stock_dataframe.resample(freq).ohlc2().dropna()
         self.stock_dataframe = ss.StockDataFrame(df)
         for indicator in self._indicators.keys():
             self.append(indicator)  # Re-append indicator in dataframe
@@ -201,9 +200,13 @@ class StockPlot:
                                end_plot, periods_plot) == 0:
             end_plot = 'last'
             periods_plot = 300
-        # first/last
-        start_plot = self.stock_dataframe.index[0] if start_plot == 'first' else start_plot
-        end_plot = self.stock_dataframe.index[-1] if end_plot == 'last' else end_plot
+        try:
+            # first/last
+            start_plot = self.stock_dataframe.index[0] if start_plot == 'first' else start_plot
+            end_plot = self.stock_dataframe.index[-1] if end_plot == 'last' else end_plot
+        except AttributeError:
+            raise AttributeError('{} Use `fx.resample(<TimeFrame>)` at first'
+                                 .format(type(self.stock_dataframe)))
         # Set "plot_dataframe"
         start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
         if how in ('candle', 'c'):
