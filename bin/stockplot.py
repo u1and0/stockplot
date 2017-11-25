@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import pandas as pd
 from pandas.core import common as com
+from pandas.core import resample
 import stockstats as ss
 from plotly import figure_factory as FF
 import plotly.offline as pyo
@@ -34,6 +35,21 @@ def heikin_ashi(self):
 ss.StockDataFrame.heikin_ashi = heikin_ashi
 
 
+def ohlc2(self):
+    """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
+    Resample method converting OHLC to OHLC
+    """
+    return self.agg({'open': 'first',
+                     'high': 'max',
+                     'low': 'min',
+                     'close': 'last',
+                     'volume': 'sum'})
+
+
+# Add instance as `pd.DataFrame.resample('<TimeFrame>').ohlc2()`
+resample.DatetimeIndexResampler.ohlc2 = ohlc2
+
+
 def reset_dataframe(df):
     """Reset dataframe as stockstats"""
     return ss.StockDataFrame(df.ix[:, ['open', 'high', 'low', 'close']])
@@ -55,7 +71,7 @@ def set_span(start=None, end=None, periods=None, freq='D'):
     return start, end
 
 
-def to_unix_time(*dt: pd.datetime)->iter:
+def to_unix_time(*dt: pd.datetime) -> iter:
     """datetimeをunix秒に変換
     引数: datetime(複数指定可能)
     戻り値: unix秒に直されたイテレータ"""
@@ -163,9 +179,8 @@ class StockPlot:
         * Return: スパン変更後のデータフレーム
         """
         self.freq = freq
-        df = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]\
-            .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})\
-            .dropna()
+        df = self._init_stock_dataframe.loc[:, ['open', 'high', 'low', 'close']]\
+            .resample(freq).ohlc2().dropna()
         self.stock_dataframe = ss.StockDataFrame(df)
         for indicator in self._indicators.keys():
             self.append(indicator)  # Re-append indicator in dataframe
