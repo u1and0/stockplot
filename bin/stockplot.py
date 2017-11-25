@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import pandas as pd
 from pandas.core import common as com
 from pandas.core import resample
@@ -39,11 +40,18 @@ def ohlc2(self):
     """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
     Resample method converting OHLC to OHLC
     """
-    return self.agg({'open': 'first',
-                     'high': 'max',
-                     'low': 'min',
-                     'close': 'last',
-                     'volume': 'sum'})
+    agdict = {'open': 'first',
+              'high': 'max',
+              'low': 'min',
+              'close': 'last'}
+    columns = list(agdict.keys())
+    if all(i in columns for i in self.columns):
+        pass
+    elif all(i in columns + ['volume'] for i in self.columns):
+        agdict['volume'] = 'sum'
+    else:
+        raise KeyError("columns must have ['open', 'high', 'low', 'close'(, 'volume')]")
+    return self.agg(agdict)
 
 
 # Add instance as `pd.DataFrame.resample('<TimeFrame>').ohlc2()`
