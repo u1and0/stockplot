@@ -28,11 +28,11 @@ def set_span(start=None, end=None, periods=None, freq='D'):
     return start, end
 
 
-def to_unix_time(*dt: pd.datetime)->iter:
+def to_unix_time(*dt):
     """datetimeをunix秒に変換
     引数: datetime(複数指定可能)
     戻り値: unix秒に直されたイテレータ"""
-    epoch = pd.datetime.utcfromtimestamp(0)
+    epoch = pd.datetime.fromtimestamp(0)
     return ((i - epoch).total_seconds() * 1000 for i in dt)
 
 
