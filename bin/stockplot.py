@@ -1,10 +1,47 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import pandas as pd
 from pandas.core import common as com
+from pandas.core import resample
 import stockstats as ss
-from plotly.tools import FigureFactory as FF
+from plotly import figure_factory as FF
 import plotly.offline as pyo
 import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
+
+
+def heikin_ashi(self):
+    """Return HEIKIN ASHI columns"""
+    self['hopen'] = (self.open.shift() + self.close.shift()) / 2
+    self['hclose'] = (self[['open', 'high', 'low', 'close']]).mean(1)
+    self['hhigh'] = self[['high', 'hopen', 'hclose']].max(1)
+    self['hlow'] = self[['low', 'hopen', 'hclose']].min(1)
+    return self[['hopen', 'hhigh', 'hlow', 'hclose']]
+
+
+pd.DataFrame.heikin_ashi = heikin_ashi
+
+
+def ohlc2(self):
+    """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
+    Resample method converting OHLC to OHLC
+    """
+    agdict = {'open': 'first',
+              'high': 'max',
+              'low': 'min',
+              'close': 'last'}
+    columns = list(agdict.keys())
+    if all(i in columns for i in self.columns):
+        pass
+    elif all(i in columns + ['volume'] for i in self.columns):
+        agdict['volume'] = 'sum'
+    else:
+        raise KeyError("columns must have ['open', 'high', 'low', 'close'(, 'volume')]")
+    return self.agg(agdict)
+
+
+# Add instance as `pd.DataFrame.resample('<TimeFrame>').ohlc2()`
+resample.DatetimeIndexResampler.ohlc2 = ohlc2
 
 
 def reset_dataframe(df):
@@ -136,15 +173,14 @@ class StockPlot:
         * Return: スパン変更後のデータフレーム
         """
         self.freq = freq
-        df = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]\
-            .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})\
-            .dropna()
+        df = self._init_stock_dataframe.loc[:, ['open', 'high', 'low', 'close']]\
+            .resample(freq).ohlc2().dropna()
         self.stock_dataframe = ss.StockDataFrame(df)
         for indicator in self._indicators.keys():
             self.append(indicator)  # Re-append indicator in dataframe
         return self.stock_dataframe
 
-    def plot(self, start_view=None, end_view=None, periods_view=None, shift=None,
+    def plot(self, how='candle', start_view=None, end_view=None, periods_view=None, shift=None,
              start_plot=None, end_plot=None, periods_plot=None,
              showgrid=True, validate=False, **kwargs):
         """Retrun plotly candle chart graph
@@ -152,6 +188,7 @@ class StockPlot:
         Usage: `fx.plot()`
 
         * Args:
+            * how: 'candle', 'c' -> candle_plot / 'heikin', 'h' -> heikin_ahi plot
             * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
             * periods: 足の本数
             > **start, end, periods合わせて2つの引数が必要**
@@ -169,12 +206,23 @@ class StockPlot:
         end_plot = self.stock_dataframe.index[-1] if end_plot == 'last' else end_plot
         # Set "plot_dataframe"
         start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
-        plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
-        self._fig = FF.create_candlestick(plot_dataframe.open,
-                                          plot_dataframe.high,
-                                          plot_dataframe.low,
-                                          plot_dataframe.close,
-                                          dates=plot_dataframe.index)
+        if how in ('candle', 'c'):
+            plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+            self._fig = FF.create_candlestick(plot_dataframe.open,
+                                              plot_dataframe.high,
+                                              plot_dataframe.low,
+                                              plot_dataframe.close,
+                                              dates=plot_dataframe.index)
+        elif how in ('heikin', 'h'):
+            self.stock_dataframe.heikin_ashi()
+            plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+            self._fig = FF.create_candlestick(plot_dataframe.hopen,
+                                              plot_dataframe.hhigh,
+                                              plot_dataframe.hlow,
+                                              plot_dataframe.hclose,
+                                              dates=plot_dataframe.index)
+        else:
+            raise KeyError('Use how = "[c]andle" or "[h]eikin"')
         # ---------Append indicators----------
         for indicator in self._indicators.keys():
             self._append_graph(indicator, start_plot, end_plot)  # Re-append indicator in graph
