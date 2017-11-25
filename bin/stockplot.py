@@ -13,27 +13,13 @@ pyo.init_notebook_mode(connected=True)
 def heikin_ashi(self):
     """Return HEIKIN ASHI columns"""
     self['hopen'] = (self.open.shift() + self.close.shift()) / 2
-    self['hclose'] = (self.ix[:, ['open', 'high', 'low', 'close']]).mean(1)
-
-    # "close" higher than "open" && "low" is lower than "hopen"
-    self['hlow'] = self.low[self.hclose >= self.hopen][self.low <= self.hopen]
-
-    # "close" lower than "open" && "high" is high than "hopen"
-    self['hhigh'] = self.high[self.hclose < self.hopen][self.high >= self.hopen]
-
-    # "close" higher then "open"
-    self.hlow[self.hlow.isnull()] = self.hopen[self.hclose >= self.hopen]
-    self.hhigh[self.hhigh.isnull()] = self.high[self.hclose >= self.hopen]
-
-    # "close" lower then "open"
-    self.hhigh[self.hhigh.isnull()] = self.hopen[self.hclose < self.hopen]
-    self.hlow[self.hlow.isnull()] = self.low[self.hclose < self.hopen]
-
-    # return self
-    return self.ix[:, ['hopen', 'hhigh', 'hlow', 'hclose']]
+    self['hclose'] = (self[['open', 'high', 'low', 'close']]).mean(1)
+    self['hhigh'] = self[['high', 'hopen', 'hclose']].max(1)
+    self['hlow'] = self[['low', 'hopen', 'hclose']].min(1)
+    return self[['hopen', 'hhigh', 'hlow', 'hclose']]
 
 
-ss.StockDataFrame.heikin_ashi = heikin_ashi
+pd.DataFrame.heikin_ashi = heikin_ashi
 
 
 def ohlc2(self):
