@@ -1,6 +1,5 @@
 ![append_pop_gif8](./note/stockplot_append_pop/stockplot_append_pop_files/gif8.gif)
 
-
 # stockplot.py
 
 ```python
@@ -68,9 +67,35 @@ fx = sp.StockPlot(df)
 
 StockPlotクラスでインスタンス化します。
 
-## ローソク足の描画
 
-`fx = sp.StockPlot(sdf)`でインスタンス化されたら時間足を変換します。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## チャートの作成
+
+
+### 時間足の変更
+
+
+`fx = sp.StockPlot(sdf)`でインスタンス化されたらまずは時間足を指定します。
 変換する際は`resample`メソッドを使います。
 
 
@@ -162,100 +187,6 @@ fx.stock_dataframe.head(), fx.stock_dataframe.tail()
 
 2017/3/20-2017/6/17の日足ができたことを確認しました。
 
-時間足の変換が済むと、プロットが可能です。
-プロットするときは`plot`メソッドを使います。
-
-
-```python
-fx.plot()
-```
-
-`fx.plot()`で`plotly`で出力する形式`plotly.graph_objs.graph_objs.Figure`(`data`と`layout`がキーとなった辞書)が返されます。
-
-画像を見るには`matplotlib.pyplot`のように`show`メソッドを使います。
-`show`メソッドの第一引数`how`のデフォルト引数は`html`です。
-引数なしで`show`するとブラウザの新しいタブが立ち上がってそこに表示されます。
-今はJupyter Notebook上で描きたいので、`how=jupyter`、または単に`jupyter`を引数にします。
-
-```python
-def show(self, how='html', filebasename='candlestick_and_trace'):
-    """Export file type"""
-    if how == 'html':
-        ax = pyo.plot(self._fig, filename=filebasename + '.html',
-                      validate=False)  # for HTML
-    elif how == 'jupyter':
-        ax = pyo.iplot(self._fig, filename=filebasename + '.html',
-                       validate=False)  # for Jupyter Notebook
-    elif how in ('png', 'jpeg', 'webp', 'svg'):
-        ax = pyo.plot(self._fig, image=how, image_filename=filebasename,
-                      validate=False)  # for file exporting
-    else:
-        raise KeyError(how)
-    return ax
-```
-
-
-```python
-fx.show(how='jupyter')
-```
-
-
-
-![gif1](./note/candle_plot_movable/candle_plot_movable_files/gif1.gif)
-
-2017/3/20-2017/6/17の日足が描かれました。
-
-plotlyの操作は
-
-* グラフ上のマウスオーバーで値の表示
-* グラフ上のドラッグでズームイン
-* 軸上(真ん中)のドラッグでスクロール
-* 軸上(端)のドラッグでズームアウト
-* ダブルクリックで元のビューに戻る
-* トリプルクリックで全体表示
-
-## 時間足の変更
-
-日足だけじゃなくて別の時間足も見たいです。
-
-そういうときは`resample`メソッドを使って時間幅を変更します。
-
-
-```python
-fx.resample('H')  # 1時間足に変更
-fx.plot()  # ローソク足プロット
-fx.show('jupyter')  # プロットの表示をJupyter Notebookで開く
-```
-
-
-
-![gif2](./note/candle_plot_movable/candle_plot_movable_files/gif2.gif)
-
-1時間足がプロットされました。
-あえて時間をかけてマウスオーバーしているのですが、1時間ごとにプロットされていることがわかりましたでしょうか。
-
-ここで再度`stock_dataframe`を確認してみますと、1時間足に変わっていることがわかります。
-
-
-```python
-fx.stock_dataframe.head(), fx.stock_dataframe.tail()
-```
-
-
-
-
-    (                        low    open   close    high
-     2017-03-20 00:00:00  114.76  115.00  115.26  115.49
-     2017-03-20 01:00:00  115.27  115.27  116.11  116.47
-     2017-03-20 02:00:00  115.69  116.10  115.69  116.53
-     2017-03-20 03:00:00  115.62  115.68  116.02  116.19
-     2017-03-20 04:00:00  115.74  116.01  116.00  116.31,
-                             low    open   close    high
-     2017-06-17 19:00:00  108.50  108.65  109.91  109.93
-     2017-06-17 20:00:00  109.56  109.90  109.76  110.03
-     2017-06-17 21:00:00  109.47  109.76  109.77  110.06
-     2017-06-17 22:00:00  109.27  109.77  109.31  110.10
-     2017-06-17 23:00:00  108.96  109.30  109.22  109.70)
 
 
 
@@ -424,7 +355,252 @@ fx.resample('1D4H2T24S').head()
 
 
 
-## plot範囲の指定
+
+### ローソク足の描画
+
+時間足の変換が済むと、プロットが可能です。
+プロットするときは`plot`メソッドを使います。
+
+
+```python
+fx.plot()
+```
+
+`fx.plot()`で`plotly`で出力する形式`plotly.graph_objs.graph_objs.Figure`(`data`と`layout`がキーとなった辞書)が返されます。
+
+
+```python
+def plot(self, how='candle', start_view=None, end_view=None, periods_view=None, shift=None,
+             start_plot=None, end_plot=None, periods_plot=None,
+             showgrid=True, validate=False, **kwargs):
+        """Retrun plotly candle chart graph
+
+        Usage: `fx.plot()`
+
+        * Args:
+            * how: 'candle', 'c' -> candle_plot / 'heikin', 'h' -> heikin_ahi plot
+            * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
+            * periods: 足の本数
+            > **start, end, periods合わせて2つの引数が必要**
+            * shift: shiftの本数の足だけ右側に空白
+        * Return: グラフデータとレイアウト(plotly.graph_objs.graph_objs.Figure)
+        """
+        # ---------Set "plot_dataframe"----------
+        # Default Args
+        if com._count_not_none(start_plot,
+                               end_plot, periods_plot) == 0:
+            end_plot = 'last'
+            periods_plot = 300
+        try:
+            # first/last
+            start_plot = self.stock_dataframe.index[0] if start_plot == 'first' else start_plot
+            end_plot = self.stock_dataframe.index[-1] if end_plot == 'last' else end_plot
+        except AttributeError:
+            raise AttributeError('{} Use `fx.resample(<TimeFrame>)` at first'
+                                 .format(type(self.stock_dataframe)))
+        # Set "plot_dataframe"
+        start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
+        if how in ('candle', 'c'):
+            plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+            self._fig = FF.create_candlestick(plot_dataframe.open,
+                                              plot_dataframe.high,
+                                              plot_dataframe.low,
+                                              plot_dataframe.close,
+                                              dates=plot_dataframe.index)
+        elif how in ('heikin', 'h'):
+            self.stock_dataframe.heikin_ashi()
+            plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+            self._fig = FF.create_candlestick(plot_dataframe.hopen,
+                                              plot_dataframe.hhigh,
+                                              plot_dataframe.hlow,
+                                              plot_dataframe.hclose,
+                                              dates=plot_dataframe.index)
+        else:
+            raise KeyError('Use how = "[c]andle" or "[h]eikin"')
+        # ---------Append indicators----------
+        for indicator in self._indicators.keys():
+            self._append_graph(indicator, start_plot, end_plot)  # Re-append indicator in graph
+        # ---------Set "view"----------
+        # Default Args
+        if com._count_not_none(start_view,
+                               end_view, periods_view) == 0:
+            end_view = 'last'
+            periods_view = 50
+        # first/last
+        start_view = plot_dataframe.index[0] if start_view == 'first' else start_view
+        end_view = plot_dataframe.index[-1] if end_view == 'last' else end_view
+        # Set "view"
+        start_view, end_view = set_span(start_view, end_view, periods_view, self.freq)
+        end_view = set_span(start=end_view, periods=shift,
+                            freq=self.freq)[-1] if shift else end_view
+        view = list(to_unix_time(start_view, end_view))
+        # ---------Plot graph----------
+        self._fig['layout'].update(xaxis={'showgrid': showgrid, 'range': view},
+                                   yaxis={"autorange": True})
+        return self._fig
+```
+
+### チャートの表示
+
+チャートを見るには`matplotlib.pyplot`のように`show`メソッドを使います。
+`show`メソッドの第一引数`how`のデフォルト引数は`html`です。
+引数なしで`show`するとブラウザの新しいタブが立ち上がってそこに表示されます。
+今はJupyter Notebook上で描きたいので、`how=jupyter`、または単に`jupyter`を引数にします。
+
+```python
+def show(self, how='html', filebasename='candlestick_and_trace'):
+    """Export file type"""
+    if how == 'html':
+        ax = pyo.plot(self._fig, filename=filebasename + '.html',
+                      validate=False)  # for HTML
+    elif how == 'jupyter':
+        ax = pyo.iplot(self._fig, filename=filebasename + '.html',
+                       validate=False)  # for Jupyter Notebook
+    elif how in ('png', 'jpeg', 'webp', 'svg'):
+        ax = pyo.plot(self._fig, image=how, image_filename=filebasename,
+                      validate=False)  # for file exporting
+    else:
+        raise KeyError(how)
+    return ax
+```
+
+
+```python
+fx.show(how='jupyter')
+```
+
+
+
+![gif1](./note/candle_plot_movable/candle_plot_movable_files/gif1.gif)
+
+2017/3/20-2017/6/17の日足が描かれました。
+
+plotlyの操作は
+
+* グラフ上のマウスオーバーで値の表示
+* グラフ上のドラッグでズームイン
+* 軸上(真ん中)のドラッグでスクロール
+* 軸上(端)のドラッグでズームアウト
+* ダブルクリックで元のビューに戻る
+* トリプルクリックで全体表示
+
+
+
+
+
+
+
+
+
+
+
+
+### 再度時間足の変更
+
+日足だけじゃなくて別の時間足も見たいです。
+
+そういうときは再度`resample`メソッドを使って時間幅を変更します。
+
+
+```python
+fx.resample('H')  # 1時間足に変更
+fx.plot()  # ローソク足プロット
+fx.show('jupyter')  # プロットの表示をJupyter Notebookで開く
+```
+
+
+
+![gif2](./note/candle_plot_movable/candle_plot_movable_files/gif2.gif)
+
+1時間足がプロットされました。
+あえて時間をかけてマウスオーバーしているのですが、1時間ごとにプロットされていることがわかりましたでしょうか。
+
+ここで再度`stock_dataframe`を確認してみますと、1時間足に変わっていることがわかります。
+
+
+```python
+fx.stock_dataframe.head(), fx.stock_dataframe.tail()
+```
+
+
+
+
+    (                        low    open   close    high
+     2017-03-20 00:00:00  114.76  115.00  115.26  115.49
+     2017-03-20 01:00:00  115.27  115.27  116.11  116.47
+     2017-03-20 02:00:00  115.69  116.10  115.69  116.53
+     2017-03-20 03:00:00  115.62  115.68  116.02  116.19
+     2017-03-20 04:00:00  115.74  116.01  116.00  116.31,
+                             low    open   close    high
+     2017-06-17 19:00:00  108.50  108.65  109.91  109.93
+     2017-06-17 20:00:00  109.56  109.90  109.76  110.03
+     2017-06-17 21:00:00  109.47  109.76  109.77  110.06
+     2017-06-17 22:00:00  109.27  109.77  109.31  110.10
+     2017-06-17 23:00:00  108.96  109.30  109.22  109.70)
+
+
+
+
+### 平均足の描画
+
+[平均足の計算](http://www.craigmasonforcongress.com/keisan.html)は以下のとおりです。
+
+
+```
+始値　＝　（一本前の始値（平均足）　＋　一本前の終値（平均足））÷２
+高値　＝　高値（ローソク足）
+安値　＝　安値（ローソク足）
+終値　＝　（始値（ローソク足）　＋　高値（ローソク足）　＋　安値（ローソク足）　＋　終値（ローソク足） ）÷４ 
+```
+
+![heikin_calc](note/heikin/heikin_files/heikin_calc.png)
+
+
+
+pythonで書くと次のようになります。
+
+```python
+def heikin_ashi(self):
+    """Return HEIKIN ASHI columns"""
+    self['hopen'] = (self.open.shift() + self.close.shift()) / 2
+    self['hclose'] = (self[['open', 'high', 'low', 'close']]).mean(1)
+    self['hhigh'] = self[['high', 'hopen', 'hclose']].max(1)
+    self['hlow'] = self[['low', 'hopen', 'hclose']].min(1)
+    return self[['hopen', 'hhigh', 'hlow', 'hclose']]
+
+
+pd.DataFrame.heikin_ashi = heikin_ashi
+```
+
+`plot`メソッドで描画方法を`heikin`(または`h`)と指定するとデフォルトのローソク足(`candle`)から平均足の描画に切り替わります。
+
+```python
+fx.plot('h')
+fx.show(how='png', filebasename = 'heikin')
+```
+USDJPY 2017年1月 時間足
+平均足
+![USDJPYheikin](note/heikin/heikin_files/heikin.png)
+
+同通貨同期間
+ローソク足
+![USDJPYcandle](note/heikin/heikin_files/candle.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 描画の範囲
+
+### plot範囲の指定
 
 `plot`メソッドは`stock_dataframe`の中身を**すべてグラフ化しません**。
 デフォルトの場合、**最後の足から数えて300本足**がグラフ化されます。
@@ -508,7 +684,7 @@ fx.show('jupyter')
 
 2017/6/17 09:00 - 2017/6/17 23:00の5分足が描かれました。
 
-## view範囲の指定
+### view範囲の指定
 
 plotlyのズームイン / アウト、スクロールを使えば表示範囲外のところも見れます。
 しかし、見たい期間が最初から決まっているのにもかかわらず、グラフ化してからスクロールするのはメンドウです。
@@ -615,7 +791,7 @@ self._fig['layout'].update(xaxis={'showgrid': showgrid, 'range': view},
                            yaxis={"autorange": True})
 ```
 
-## 右側に空白を作る
+### 右側に空白を作る
 
 引数`shift`に指定した足の本数だけ、右側に空白を作ります。
 > 時間足が短いとうまくいきません。原因究明中です。
@@ -681,7 +857,7 @@ end_view = set_span(start=end_view, periods=shift,
     * ファイル名を決める。
         * `filebasename`
 
-### フローチャート
+### 使用メソッドフローチャート
 各メソッドの呼び出しに使う引数と戻り値、プロットに使うフローは以下の図の通りです。
 
 ![figure1](./note/candle_plot_movable/candle_plot_movable_files/figure1.PNG)
@@ -1126,7 +1302,7 @@ fx.show('png', filebasename='png6')
 
 ## まとめと補足
 
-### フローチャート
+### 使用メソッドフローチャート
 各メソッドの使用順序は以下に示すフローチャートの通りです。
 ![png8](./note/stockplot_append_pop/stockplot_append_pop_files/png8.png)
 
