@@ -259,37 +259,109 @@ fx.stock_dataframe.head(), fx.stock_dataframe.tail()
 
 
 
-`'open', 'high', 'low', 'close'`のカラムを持ったデータフレームの変換を行う`resample`メソッドは以下のように記述しました。
+
+
+
+
+resampleメソッドは`'open', 'high', 'low', 'close'`のカラムを持ったデータフレーム(OHLC)の時間足変換を行います。
 
 ```python
 def resample(self, freq: str):
     """Convert ohlc time span
 
-    USAGE: `fx.resample('D')  # 日足に変換`
+    Usage: `fx.resample('D')  # 日足に変換`
 
     * Args:  変更したい期間 M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
     * Return: スパン変更後のデータフレーム
     """
-    self.freq = freq  # plotやviewの範囲を決めるために後で使うのでインスタンス変数に入れる
-    self.stock_dataframe = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]\
-        .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})\
-        .dropna()
+    self.freq = freq
+    df = self._init_stock_dataframe.resample(freq).ohlc2().dropna()
+    self.stock_dataframe = ss.StockDataFrame(df)
+    for indicator in self._indicators.keys():
+        self.append(indicator)  # Re-append indicator in dataframe
     return self.stock_dataframe
 ```
 
-```python
-df.resample(freq).ohlc()
-```
 
-とすると階層が分かれたohlcのデータフレームが出来上がってしまうので
+
+OHLCの時間足を変えたいとき、`fx.resample('D').ohlc()`とやりがちですが、`open high low close`それぞれに対して`open high low close`を分けようとするため思ったように変換してくれません。
 
 ```python
-df.resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})
+df.resample('D').ohlc()  # やりがちなohlcデータを再度resampleしてohlcで集計
+
+           open                high                 low                close  \
+           open high low close open high low close open high low close  open   
+2017-11-25    1   13   1    13    2   13   2    13    1   12   1    12     2   
+2017-11-26   12   15  10    13   14   16  10    13   12   14   9    13    14   
+2017-11-27   12   15   7    15   12   16   9    15   10   15   7    14    10   
+
+           high low close  
+2017-11-25   10   0     8  
+2017-11-26   15   6     9  
+2017-11-27   14   6     8  
+2017-11-28    6 -10    -9  
+2017-11-29   -6 -17    -9  
+
+                                   ...
 ```
 
-のように`agg`メソッドを使います。
+そこで、OHLC->OHLCの変換をメソッドでできるように[`ohlc2()`メソッドを作成](https://qiita.com/u1and0/items/8e7bcaaf3668ed2afee1)しました。
 
-`freq`は`df.resample`で使える時間であれば自由なので、例えばfreq='1D4H2T24S'とすると'1日と4時間2分24秒足'といった変な時間足を作れます。
+```python
+from pandas.core import resample
+
+def ohlc2(self):
+    """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
+    Resample method converting OHLC to OHLC
+    """
+    agdict = {'open': 'first',
+              'high': 'max',
+              'low': 'min',
+              'close': 'last'}
+    columns = list(agdict.keys())
+    if all(i in columns for i in self.columns):
+        pass
+    elif all(i in columns + ['volume'] for i in self.columns):
+        agdict['volume'] = 'sum'
+    else:
+        raise KeyError("columns must have ['open', 'high', 'low', 'close'(, 'volume')]")
+    return self.agg(agdict)
+
+
+# Add instance as `pd.DataFrame.resample('<TimeFrame>').ohlc2()`
+resample.DatetimeIndexResampler.ohlc2 = ohlc2
+
+
+# 使い方
+
+df
+
+                     open  high  low  close
+2017-11-25 00:00:00     1     2    1      2
+2017-11-25 01:00:00     1     3    1      3
+2017-11-25 02:00:00     4     5    4      5
+2017-11-25 03:00:00     6     8    6      7
+2017-11-25 04:00:00     7     8    7      7
+                 ...
+# ↑これが
+
+
+df.resample('D').ohlc2()
+
+# ↓こう
+            open  high  low  close
+2017-11-25     1    13    1     12
+2017-11-26    12    16    9     13
+2017-11-27    12    16    7     14
+2017-11-28    13    14    3     10
+2017-11-29    11    21   11     12
+                 ...
+```
+
+
+
+
+`freq`は`df.resample`で使える時間であれば自由なので、例えばfreq="1D4H2T24S"とすると"1日と4時間2分24秒足"といった変な時間足を作れます。
 
 
 ```python
@@ -470,8 +542,6 @@ fx.show('html')  # html形式で表示
 
 
 
-
-    'file://C:\\Users\\U1and0\\Dropbox\\Program\\python\\fxpy\\note\\candle_plot_movable\\candlestick_and_trace.html'
 
 
 
