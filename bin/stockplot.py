@@ -179,7 +179,7 @@ class StockPlot:
             self.append(indicator)  # Re-append indicator in dataframe
         return self.stock_dataframe
 
-    def plot(self, how='candle', start_view=None, end_view=None, periods_view=None, shift=None,
+    def plot(self, bar='candle', start_view=None, end_view=None, periods_view=None, shift=None,
              start_plot=None, end_plot=None, periods_plot=None,
              showgrid=True, validate=False, **kwargs):
         """Retrun plotly candle chart graph
@@ -187,7 +187,7 @@ class StockPlot:
         Usage: `fx.plot()`
 
         * Args:
-            * how: 'candle', 'c' -> candle_plot / 'heikin', 'h' -> heikin_ahi plot
+            * bar: 'candle', 'c' -> candle_plot / 'heikin', 'h' -> heikin_ashi plot
             * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
             * periods: 足の本数
             > **start, end, periods合わせて2つの引数が必要**
@@ -209,14 +209,14 @@ class StockPlot:
                                  .format(type(self.stock_dataframe)))
         # Set "plot_dataframe"
         start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
-        if how in ('candle', 'c'):
+        if bar in ('candle', 'c'):
             plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
             self._fig = FF.create_candlestick(plot_dataframe.open,
                                               plot_dataframe.high,
                                               plot_dataframe.low,
                                               plot_dataframe.close,
                                               dates=plot_dataframe.index)
-        elif how in ('heikin', 'h'):
+        elif bar in ('heikin', 'h'):
             self.stock_dataframe.heikin_ashi()
             plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
             self._fig = FF.create_candlestick(plot_dataframe.hopen,
@@ -225,7 +225,7 @@ class StockPlot:
                                               plot_dataframe.hclose,
                                               dates=plot_dataframe.index)
         else:
-            raise KeyError('Use how = "[c]andle" or "[h]eikin"')
+            raise KeyError('Use bar = "[c]andle" or "[h]eikin"')
         # ---------Append indicators----------
         for indicator in self._indicators.keys():
             self._append_graph(indicator, start_plot, end_plot)  # Re-append indicator in graph

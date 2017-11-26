@@ -1,87 +1,98 @@
-![append_pop_gif8](./note/stockplot_append_pop/stockplot_append_pop_files/gif8.gif)
-
-+ stockplot.py
-  + 下準備
-    + モジュールインポート
-    + サンプルデータの作成
-    + インスタンス化
-  + チャートの作成
-    + 時間足の変更
-    + ローソク足の描画
-    + チャートの表示
-    + 再度時間足の変更
-    + 平均足の描画
-  + 描画の範囲
-    + plot範囲の指定
-    + view範囲の指定
-    + 右側に空白を作る
-    + data範囲、plot範囲, view範囲、shiftまとめ
-  + まとめ
-    + メソッド一覧
-    + 使用メソッドフローチャート
-  + 指標の操作
-    + 指標の追加
-    + 指標の削除
-    + 指標の初期化
-  + まとめと補足
-    + 使用メソッドフローチャート
-    + ボリンジャーバンドについて
-    + サブチャートについて
-    + トップのgifファイルについて
-  + 追記
-+ read_hst.py
-  + 何をするためのスクリプト？
-  + インストール
-  + データのダウンロード
-  + 使用方法
-    + jupyter notebook や ipython上で使うとき
-    + bashなどのshell上で使うとき
-  + 参考
-
-
 # stockplot.py
 
-```python
-import sys
-sys.path.append('../../bin/')
-```
+![append_pop_gif8](./note/stockplot_append_pop/stockplot_append_pop_files/gif8.gif)
+
+TOC
+
+<!-- MarkdownTOC -->
+
++ stockplot.py
+    + 下準備
+        + インストール
+        + モジュールインポート
+        + サンプルデータの作成
+        + インスタンス化
+    + チャートの作成
+        + 時間足の変更
+        + ローソク足の描画
+        + チャートの表示
+        + 再度時間足の変更
+        + 平均足の描画
+    + 描画の範囲
+        + plot範囲の指定
+        + view範囲の指定
+        + 右側に空白を作る
+        + data範囲、plot範囲, view範囲、shiftまとめ
+    + チャート描画までのまとめ
+        + メソッド一覧
+        + 使用メソッドフローチャート
+    + 指標の操作
+        + 指標の追加
+        + 指標の削除
+        + 指標の初期化
+    + 指標操作のまとめと補足
+        + 使用メソッドフローチャート
+        + ボリンジャーバンドについて
+        + サブチャートについて
+        + トップのgifファイルについて
+    + 追記
++ read_hst.py
+    + 何をするためのスクリプト？
+    + インストール
+    + データのダウンロード
+    + 使用方法
+        + jupyter notebook や ipython上で使うとき
+        + bashなどのshell上で使うとき
++ 参考
+
+<!-- /MarkdownTOC -->
+
 
 ## 下準備
 
+### インストール
+
+githubにソースコードを置きました。
+> [github - u1and0/stockplot](https://github.com/u1and0/stockplot/tree/master)
+
+
+```sh
+git clone https://github.com/u1and0/stockplot.git ~/the_path_of_your_repository
+```
+
 ### モジュールインポート
+
+パスを追加します。
+
+```python
+import sys
+sys.path.append('~/the_path_of_your_repository/stockplot/bin/')
+```
 
 必要なモジュールをインポートします。
 
-
 ```python
-# ----------General Module----------
-import numpy as np
-import pandas as pd
-# ----------User Module----------
 from randomwalk import randomwalk
 import stockplot as sp
 ```
 
-
+必要に応じて一般に配布されているモジュールをインストールしてきて下さい。
+`stockplot.py`は以下のパッケージに依存しているので、環境になければ`ImportError`が吐かれます。
 
 ```python
-# ----------Hide General Module----------
+import numpy as np
+import pandas as pd
 import stockstats
 import plotly
 ```
 
-* General Module, Hide General Moduleは一般に配布されているパッケージなので、condaやpipといったパッケージ管理ソフトなどで追加してください。
-    * General ModuleはこのJupyter Notebook内で使います。
-    * Hide General Moduleは`stockplot`内で使用します。
+インストールするときは
 
 ```sh
-conda install plotly
+conda install numpy pandas plotly
 pip install stockstats
 ```
 
-* User Moduleのstockplotについては以下にソースコード貼ります。
-    * 旧バージョン[Qiita - u1and0 / plotlyでキャンドルチャートプロット](http://qiita.com/u1and0/items/0ebcf097a1d61c636eb9)
-* random_walkについては[Qiita - u1and0 / pythonでローソク足(candle chart)の描画](http://qiita.com/u1and0/items/1d9afdb7216c3d2320ef)
 
 ### サンプルデータの作成
 
@@ -96,24 +107,35 @@ df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 
 ランダムな為替チャートを作成します。
 randomwalk関数で**2017/3/20からの1分足を90日分**作成します。
 
+
+> ランダムなOHLCを使う代わりに、MT4で使うhstファイルなどからOHCLデータを読み込んで使うこともできます。
+> 最後に記述する`bin/read_hst.py`を使うとzipの展開からhstの読み込み、データフレームの読み込みまで自動で行ってくれます。
+> 参考: [MT4ヒストリカルデータをpython上で扱えるようにしたりcsvに保存する](https://qiita.com/u1and0/items/6a690f6b0080b8efc2c7)
+>
+> ```python
+> import read_hst as h
+> df = h.read_hst('data/USDJPY.zip')  # zipファイルの相対/絶対パス
+> ```
+>
+> shellからcsv, pickle形式への変換を行うこともできます。
+> ```shell-session
+> $ cd ~/python/stockplot
+> $ bin/read_hst.py -c ~/Data/USDJPY.zip  # Convert .hst to .csv
+> ```
+
+
+
+
+
+
 ### インスタンス化
 
+StockPlotクラスでインスタンス化します。
 
 ```python
 # Convert DataFrame as StockPlot
 fx = sp.StockPlot(df)
 ```
-
-StockPlotクラスでインスタンス化します。
-
-
-
-
-
-
-
-
-
 
 
 
@@ -134,7 +156,7 @@ StockPlotクラスでインスタンス化します。
 ### 時間足の変更
 
 
-`fx = sp.StockPlot(sdf)`でインスタンス化されたらまずは時間足を指定します。
+`fx = sp.StockPlot(df)`でインスタンス化されたらまずは時間足を指定します。
 変換する際は`resample`メソッドを使います。
 
 
@@ -275,7 +297,8 @@ df.resample('D').ohlc()  # やりがちなohlcデータを再度resampleしてoh
                                    ...
 ```
 
-そこで、OHLC->OHLCの変換をメソッドでできるように[`ohlc2()`メソッドを作成](https://qiita.com/u1and0/items/8e7bcaaf3668ed2afee1)しました。
+そこで、OHLC->OHLCの変換をメソッドでできるように`ohlc2()`メソッドを作成しました。
+> 参考: [ローソク足OHLCの時間足を変える](https://qiita.com/u1and0/items/8e7bcaaf3668ed2afee1)
 
 ```python
 from pandas.core import resample
@@ -409,7 +432,7 @@ fx.plot()
 
 
 ```python
-def plot(self, how='candle', start_view=None, end_view=None, periods_view=None, shift=None,
+def plot(self, bar='candle', start_view=None, end_view=None, periods_view=None, shift=None,
              start_plot=None, end_plot=None, periods_plot=None,
              showgrid=True, validate=False, **kwargs):
         """Retrun plotly candle chart graph
@@ -417,7 +440,7 @@ def plot(self, how='candle', start_view=None, end_view=None, periods_view=None, 
         Usage: `fx.plot()`
 
         * Args:
-            * how: 'candle', 'c' -> candle_plot / 'heikin', 'h' -> heikin_ahi plot
+            * bar: 'candle', 'c' -> candle_plot / 'heikin', 'h' -> heikin_ahi plot
             * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
             * periods: 足の本数
             > **start, end, periods合わせて2つの引数が必要**
@@ -439,14 +462,14 @@ def plot(self, how='candle', start_view=None, end_view=None, periods_view=None, 
                                  .format(type(self.stock_dataframe)))
         # Set "plot_dataframe"
         start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
-        if how in ('candle', 'c'):
+        if bar in ('candle', 'c'):
             plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
             self._fig = FF.create_candlestick(plot_dataframe.open,
                                               plot_dataframe.high,
                                               plot_dataframe.low,
                                               plot_dataframe.close,
                                               dates=plot_dataframe.index)
-        elif how in ('heikin', 'h'):
+        elif bar in ('heikin', 'h'):
             self.stock_dataframe.heikin_ashi()
             plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
             self._fig = FF.create_candlestick(plot_dataframe.hopen,
@@ -455,7 +478,7 @@ def plot(self, how='candle', start_view=None, end_view=None, periods_view=None, 
                                               plot_dataframe.hclose,
                                               dates=plot_dataframe.index)
         else:
-            raise KeyError('Use how = "[c]andle" or "[h]eikin"')
+            raise KeyError('Use bar = "[c]andle" or "[h]eikin"')
         # ---------Append indicators----------
         for indicator in self._indicators.keys():
             self._append_graph(indicator, start_plot, end_plot)  # Re-append indicator in graph
@@ -611,17 +634,17 @@ def heikin_ashi(self):
 pd.DataFrame.heikin_ashi = heikin_ashi
 ```
 
-`plot`メソッドで描画方法を`heikin`(または`h`)と指定するとデフォルトのローソク足(`candle`)から平均足の描画に切り替わります。
+`plot`メソッドで描画方法`bar`(第一引数なので省略可)を`heikin`(または`h`)と指定するとデフォルトのローソク足(`candle`)から平均足の描画に切り替わります。
 
 ```python
 fx.plot('h')
 fx.show(how='png', filebasename = 'heikin')
 ```
-USDJPY 2017年1月 時間足
+USDJPY 2017年1月 1時間足
 平均足
 ![USDJPYheikin](note/heikin/heikin_files/heikin.png)
 
-同通貨同期間
+同通貨 同期間 同時間足
 ローソク足
 ![USDJPYcandle](note/heikin/heikin_files/candle.png)
 
@@ -694,7 +717,7 @@ fx.stock_dataframe.index
     * `end_plot`: グラフ化する最後の日付・時間
     * `periods_plot`: グラフ化する足の数(int型)
 * start, end, periodsのうち二つが指定されている必要がある。
-* 何も指定しなければ、デフォルト値が入力される。
+* 何も指定しなければ、デフォルトとして最後の足から数えて300本が描画される。
 
 ```python
 # Default Args
@@ -868,7 +891,7 @@ end_view = set_span(start=end_view, periods=shift,
 
 ![png4](./note/candle_plot_movable/candle_plot_movable_files/png4.PNG)
 
-## まとめ
+## チャート描画までのまとめ
 
 ### メソッド一覧
 
@@ -1339,7 +1362,7 @@ fx.show('png', filebasename='png6')
 
 の点が`__init__`と異なります。
 
-## まとめと補足
+## 指標操作のまとめと補足
 
 ### 使用メソッドフローチャート
 各メソッドの使用順序は以下に示すフローチャートの通りです。
@@ -1464,12 +1487,7 @@ git clone https://github.com/u1and0/stockplot.git
 ```
 
 binディレクトリ下のread_hst.pyを使用してください。
-その他のファイルは次のページで説明しています。
 
-* [pythonでローソク足(candle chart)の描画](https://qiita.com/u1and0/items/1d9afdb7216c3d2320ef)
-* [plotlyでキャンドルチャートプロット](https://qiita.com/u1and0/items/0ebcf097a1d61c636eb9)
-* [Plotlyでぐりぐり動かせる為替チャートを作る(1)](https://qiita.com/u1and0/items/e2273bd8e03c670be45a)
-* [Plotlyでぐりぐり動かせる為替チャートを作る(2)](https://qiita.com/u1and0/items/b6e1cfba55778d505e7d)
 
 
 ## データのダウンロード
@@ -1533,6 +1551,11 @@ optional arguments:
   -p, --pickle  Convert to pickle file
 ```
 
-## 参考
+# 参考
+* stockplot使い方
+    * 旧バージョン: [Qiita - u1and0 / plotlyでキャンドルチャートプロット](http://qiita.com/u1and0/items/0ebcf097a1d61c636eb9)
+    * random_walkについて: [Qiita - u1and0 / pythonでローソク足(candle chart)の描画](http://qiita.com/u1and0/items/1d9afdb7216c3d2320ef)
+    * stockplot使い方1: [Plotlyでぐりぐり動かせる為替チャートを作る(1)](https://qiita.com/u1and0/items/e2273bd8e03c670be45a)
+    * stockplot使い方2: [Plotlyでぐりぐり動かせる為替チャートを作る(2)](https://qiita.com/u1and0/items/b6e1cfba55778d505e7d)
 * numpyを使用して高速にバイナリ→テキスト変換 >> [(´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む](http://fatbald.seesaa.net/article/447016624.html)
 * 引数読み込み >> [Converting MT4 binary history files: hst to csv using a python script](http://mechanicalforex.com/2015/12/converting-mt4-binary-history-files-hst-to-csv-using-a-python-script.html)
