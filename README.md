@@ -1,49 +1,98 @@
-![append_pop_gif8](./note/stockplot_append_pop/stockplot_append_pop_files/gif8.gif)
-
-
 # stockplot.py
 
-```python
-import sys
-sys.path.append('../../bin/')
-```
+![append_pop_gif8](./note/stockplot_append_pop/stockplot_append_pop_files/gif8.gif)
+
+TOC
+
+<!-- MarkdownTOC -->
+
++ stockplot.py
+    + 下準備
+        + インストール
+        + モジュールインポート
+        + サンプルデータの作成
+        + インスタンス化
+    + チャートの作成
+        + 時間足の変更
+        + ローソク足の描画
+        + チャートの表示
+        + 再度時間足の変更
+        + 平均足の描画
+    + 描画の範囲
+        + plot範囲の指定
+        + view範囲の指定
+        + 右側に空白を作る
+        + data範囲、plot範囲, view範囲、shiftまとめ
+    + チャート描画までのまとめ
+        + メソッド一覧
+        + 使用メソッドフローチャート
+    + 指標の操作
+        + 指標の追加
+        + 指標の削除
+        + 指標の初期化
+    + 指標操作のまとめと補足
+        + 使用メソッドフローチャート
+        + ボリンジャーバンドについて
+        + サブチャートについて
+        + トップのgifファイルについて
+    + 追記
++ read_hst.py
+    + 何をするためのスクリプト？
+    + インストール
+    + データのダウンロード
+    + 使用方法
+        + jupyter notebook や ipython上で使うとき
+        + bashなどのshell上で使うとき
++ 参考
+
+<!-- /MarkdownTOC -->
+
 
 ## 下準備
 
+### インストール
+
+githubにソースコードを置きました。
+> [github - u1and0/stockplot](https://github.com/u1and0/stockplot/tree/master)
+
+
+```sh
+git clone https://github.com/u1and0/stockplot.git ~/the_path_of_your_repository
+```
+
 ### モジュールインポート
+
+パスを追加します。
+
+```python
+import sys
+sys.path.append('~/the_path_of_your_repository/stockplot/bin/')
+```
 
 必要なモジュールをインポートします。
 
-
 ```python
-# ----------General Module----------
-import numpy as np
-import pandas as pd
-# ----------User Module----------
 from randomwalk import randomwalk
 import stockplot as sp
 ```
 
-
+必要に応じて一般に配布されているモジュールをインストールしてきて下さい。
+`stockplot.py`は以下のパッケージに依存しているので、環境になければ`ImportError`が吐かれます。
 
 ```python
-# ----------Hide General Module----------
+import numpy as np
+import pandas as pd
 import stockstats
 import plotly
 ```
 
-* General Module, Hide General Moduleは一般に配布されているパッケージなので、condaやpipといったパッケージ管理ソフトなどで追加してください。
-    * General ModuleはこのJupyter Notebook内で使います。
-    * Hide General Moduleは`stockplot`内で使用します。
+インストールするときは
 
 ```sh
-conda install plotly
+conda install numpy pandas plotly
 pip install stockstats
 ```
 
-* User Moduleのstockplotについては以下にソースコード貼ります。
-    * 旧バージョン[Qiita - u1and0 / plotlyでキャンドルチャートプロット](http://qiita.com/u1and0/items/0ebcf097a1d61c636eb9)
-* random_walkについては[Qiita - u1and0 / pythonでローソク足(candle chart)の描画](http://qiita.com/u1and0/items/1d9afdb7216c3d2320ef)
 
 ### サンプルデータの作成
 
@@ -58,19 +107,56 @@ df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 
 ランダムな為替チャートを作成します。
 randomwalk関数で**2017/3/20からの1分足を90日分**作成します。
 
+
+> ランダムなOHLCを使う代わりに、MT4で使うhstファイルなどからOHCLデータを読み込んで使うこともできます。
+> 最後に記述する`bin/read_hst.py`を使うとzipの展開からhstの読み込み、データフレームの読み込みまで自動で行ってくれます。
+> 参考: [MT4ヒストリカルデータをpython上で扱えるようにしたりcsvに保存する](https://qiita.com/u1and0/items/6a690f6b0080b8efc2c7)
+>
+> ```python
+> import read_hst as h
+> df = h.read_hst('data/USDJPY.zip')  # zipファイルの相対/絶対パス
+> ```
+>
+> shellからcsv, pickle形式への変換を行うこともできます。
+> ```shell-session
+> $ cd ~/python/stockplot
+> $ bin/read_hst.py -c ~/Data/USDJPY.zip  # Convert .hst to .csv
+> ```
+
+
+
+
+
+
 ### インスタンス化
 
+StockPlotクラスでインスタンス化します。
 
 ```python
 # Convert DataFrame as StockPlot
 fx = sp.StockPlot(df)
 ```
 
-StockPlotクラスでインスタンス化します。
 
-## ローソク足の描画
 
-`fx = sp.StockPlot(sdf)`でインスタンス化されたら時間足を変換します。
+
+
+
+
+
+
+
+
+
+
+
+## チャートの作成
+
+
+### 時間足の変更
+
+
+`fx = sp.StockPlot(df)`でインスタンス化されたらまずは時間足を指定します。
 変換する際は`resample`メソッドを使います。
 
 
@@ -162,134 +248,113 @@ fx.stock_dataframe.head(), fx.stock_dataframe.tail()
 
 2017/3/20-2017/6/17の日足ができたことを確認しました。
 
-時間足の変換が済むと、プロットが可能です。
-プロットするときは`plot`メソッドを使います。
-
-
-```python
-fx.plot()
-```
-
-`fx.plot()`で`plotly`で出力する形式`plotly.graph_objs.graph_objs.Figure`(`data`と`layout`がキーとなった辞書)が返されます。
-
-画像を見るには`matplotlib.pyplot`のように`show`メソッドを使います。
-`show`メソッドの第一引数`how`のデフォルト引数は`html`です。
-引数なしで`show`するとブラウザの新しいタブが立ち上がってそこに表示されます。
-今はJupyter Notebook上で描きたいので、`how=jupyter`、または単に`jupyter`を引数にします。
-
-```python
-def show(self, how='html', filebasename='candlestick_and_trace'):
-    """Export file type"""
-    if how == 'html':
-        ax = pyo.plot(self._fig, filename=filebasename + '.html',
-                      validate=False)  # for HTML
-    elif how == 'jupyter':
-        ax = pyo.iplot(self._fig, filename=filebasename + '.html',
-                       validate=False)  # for Jupyter Notebook
-    elif how in ('png', 'jpeg', 'webp', 'svg'):
-        ax = pyo.plot(self._fig, image=how, image_filename=filebasename,
-                      validate=False)  # for file exporting
-    else:
-        raise KeyError(how)
-    return ax
-```
-
-
-```python
-fx.show(how='jupyter')
-```
-
-
-
-![gif1](./note/candle_plot_movable/candle_plot_movable_files/gif1.gif)
-
-2017/3/20-2017/6/17の日足が描かれました。
-
-plotlyの操作は
-
-* グラフ上のマウスオーバーで値の表示
-* グラフ上のドラッグでズームイン
-* 軸上(真ん中)のドラッグでスクロール
-* 軸上(端)のドラッグでズームアウト
-* ダブルクリックで元のビューに戻る
-* トリプルクリックで全体表示
-
-## 時間足の変更
-
-日足だけじゃなくて別の時間足も見たいです。
-
-そういうときは`resample`メソッドを使って時間幅を変更します。
-
-
-```python
-fx.resample('H')  # 1時間足に変更
-fx.plot()  # ローソク足プロット
-fx.show('jupyter')  # プロットの表示をJupyter Notebookで開く
-```
-
-
-
-![gif2](./note/candle_plot_movable/candle_plot_movable_files/gif2.gif)
-
-1時間足がプロットされました。
-あえて時間をかけてマウスオーバーしているのですが、1時間ごとにプロットされていることがわかりましたでしょうか。
-
-ここで再度`stock_dataframe`を確認してみますと、1時間足に変わっていることがわかります。
-
-
-```python
-fx.stock_dataframe.head(), fx.stock_dataframe.tail()
-```
 
 
 
 
-    (                        low    open   close    high
-     2017-03-20 00:00:00  114.76  115.00  115.26  115.49
-     2017-03-20 01:00:00  115.27  115.27  116.11  116.47
-     2017-03-20 02:00:00  115.69  116.10  115.69  116.53
-     2017-03-20 03:00:00  115.62  115.68  116.02  116.19
-     2017-03-20 04:00:00  115.74  116.01  116.00  116.31,
-                             low    open   close    high
-     2017-06-17 19:00:00  108.50  108.65  109.91  109.93
-     2017-06-17 20:00:00  109.56  109.90  109.76  110.03
-     2017-06-17 21:00:00  109.47  109.76  109.77  110.06
-     2017-06-17 22:00:00  109.27  109.77  109.31  110.10
-     2017-06-17 23:00:00  108.96  109.30  109.22  109.70)
 
 
 
-`'open', 'high', 'low', 'close'`のカラムを持ったデータフレームの変換を行う`resample`メソッドは以下のように記述しました。
+resampleメソッドは`'open', 'high', 'low', 'close'`のカラムを持ったデータフレーム(OHLC)の時間足変換を行います。
 
 ```python
 def resample(self, freq: str):
     """Convert ohlc time span
 
-    USAGE: `fx.resample('D')  # 日足に変換`
+    Usage: `fx.resample('D')  # 日足に変換`
 
     * Args:  変更したい期間 M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
     * Return: スパン変更後のデータフレーム
     """
-    self.freq = freq  # plotやviewの範囲を決めるために後で使うのでインスタンス変数に入れる
-    self.stock_dataframe = self._init_stock_dataframe.ix[:, ['open', 'high', 'low', 'close']]\
-        .resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})\
-        .dropna()
+    self.freq = freq
+    df = self._init_stock_dataframe.resample(freq).ohlc2().dropna()
+    self.stock_dataframe = ss.StockDataFrame(df)
+    for indicator in self._indicators.keys():
+        self.append(indicator)  # Re-append indicator in dataframe
     return self.stock_dataframe
 ```
 
-```python
-df.resample(freq).ohlc()
-```
 
-とすると階層が分かれたohlcのデータフレームが出来上がってしまうので
+
+OHLCの時間足を変えたいとき、`fx.resample('D').ohlc()`とやりがちですが、`open high low close`それぞれに対して`open high low close`を分けようとするため思ったように変換してくれません。
 
 ```python
-df.resample(freq).agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last'})
+df.resample('D').ohlc()  # やりがちなohlcデータを再度resampleしてohlcで集計
+
+           open                high                 low                close  \
+           open high low close open high low close open high low close  open   
+2017-11-25    1   13   1    13    2   13   2    13    1   12   1    12     2   
+2017-11-26   12   15  10    13   14   16  10    13   12   14   9    13    14   
+2017-11-27   12   15   7    15   12   16   9    15   10   15   7    14    10   
+
+           high low close  
+2017-11-25   10   0     8  
+2017-11-26   15   6     9  
+2017-11-27   14   6     8  
+2017-11-28    6 -10    -9  
+2017-11-29   -6 -17    -9  
+
+                                   ...
 ```
 
-のように`agg`メソッドを使います。
+そこで、OHLC->OHLCの変換をメソッドでできるように`ohlc2()`メソッドを作成しました。
+> 参考: [ローソク足OHLCの時間足を変える](https://qiita.com/u1and0/items/8e7bcaaf3668ed2afee1)
 
-`freq`は`df.resample`で使える時間であれば自由なので、例えばfreq='1D4H2T24S'とすると'1日と4時間2分24秒足'といった変な時間足を作れます。
+```python
+from pandas.core import resample
+
+def ohlc2(self):
+    """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
+    Resample method converting OHLC to OHLC
+    """
+    agdict = {'open': 'first',
+              'high': 'max',
+              'low': 'min',
+              'close': 'last'}
+    columns = list(agdict.keys())
+    if all(i in columns for i in self.columns):
+        pass
+    elif all(i in columns + ['volume'] for i in self.columns):
+        agdict['volume'] = 'sum'
+    else:
+        raise KeyError("columns must have ['open', 'high', 'low', 'close'(, 'volume')]")
+    return self.agg(agdict)
+
+
+# Add instance as `pd.DataFrame.resample('<TimeFrame>').ohlc2()`
+resample.DatetimeIndexResampler.ohlc2 = ohlc2
+
+
+# 使い方
+
+df
+
+                     open  high  low  close
+2017-11-25 00:00:00     1     2    1      2
+2017-11-25 01:00:00     1     3    1      3
+2017-11-25 02:00:00     4     5    4      5
+2017-11-25 03:00:00     6     8    6      7
+2017-11-25 04:00:00     7     8    7      7
+                 ...
+# ↑これが
+
+
+df.resample('D').ohlc2()
+
+# ↓こう
+            open  high  low  close
+2017-11-25     1    13    1     12
+2017-11-26    12    16    9     13
+2017-11-27    12    16    7     14
+2017-11-28    13    14    3     10
+2017-11-29    11    21   11     12
+                 ...
+```
+
+
+
+
+`freq`は`df.resample`で使える時間であれば自由なので、例えばfreq="1D4H2T24S"とすると"1日と4時間2分24秒足"といった変な時間足を作れます。
 
 
 ```python
@@ -352,7 +417,252 @@ fx.resample('1D4H2T24S').head()
 
 
 
-## plot範囲の指定
+
+### ローソク足の描画
+
+時間足の変換が済むと、プロットが可能です。
+プロットするときは`plot`メソッドを使います。
+
+
+```python
+fx.plot()
+```
+
+`fx.plot()`で`plotly`で出力する形式`plotly.graph_objs.graph_objs.Figure`(`data`と`layout`がキーとなった辞書)が返されます。
+
+
+```python
+def plot(self, bar='candle', start_view=None, end_view=None, periods_view=None, shift=None,
+             start_plot=None, end_plot=None, periods_plot=None,
+             showgrid=True, validate=False, **kwargs):
+        """Retrun plotly candle chart graph
+
+        Usage: `fx.plot()`
+
+        * Args:
+            * bar: 'candle', 'c' -> candle_plot / 'heikin', 'h' -> heikin_ahi plot
+            * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
+            * periods: 足の本数
+            > **start, end, periods合わせて2つの引数が必要**
+            * shift: shiftの本数の足だけ右側に空白
+        * Return: グラフデータとレイアウト(plotly.graph_objs.graph_objs.Figure)
+        """
+        # ---------Set "plot_dataframe"----------
+        # Default Args
+        if com._count_not_none(start_plot,
+                               end_plot, periods_plot) == 0:
+            end_plot = 'last'
+            periods_plot = 300
+        try:
+            # first/last
+            start_plot = self.stock_dataframe.index[0] if start_plot == 'first' else start_plot
+            end_plot = self.stock_dataframe.index[-1] if end_plot == 'last' else end_plot
+        except AttributeError:
+            raise AttributeError('{} Use `fx.resample(<TimeFrame>)` at first'
+                                 .format(type(self.stock_dataframe)))
+        # Set "plot_dataframe"
+        start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
+        if bar in ('candle', 'c'):
+            plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+            self._fig = FF.create_candlestick(plot_dataframe.open,
+                                              plot_dataframe.high,
+                                              plot_dataframe.low,
+                                              plot_dataframe.close,
+                                              dates=plot_dataframe.index)
+        elif bar in ('heikin', 'h'):
+            self.stock_dataframe.heikin_ashi()
+            plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+            self._fig = FF.create_candlestick(plot_dataframe.hopen,
+                                              plot_dataframe.hhigh,
+                                              plot_dataframe.hlow,
+                                              plot_dataframe.hclose,
+                                              dates=plot_dataframe.index)
+        else:
+            raise KeyError('Use bar = "[c]andle" or "[h]eikin"')
+        # ---------Append indicators----------
+        for indicator in self._indicators.keys():
+            self._append_graph(indicator, start_plot, end_plot)  # Re-append indicator in graph
+        # ---------Set "view"----------
+        # Default Args
+        if com._count_not_none(start_view,
+                               end_view, periods_view) == 0:
+            end_view = 'last'
+            periods_view = 50
+        # first/last
+        start_view = plot_dataframe.index[0] if start_view == 'first' else start_view
+        end_view = plot_dataframe.index[-1] if end_view == 'last' else end_view
+        # Set "view"
+        start_view, end_view = set_span(start_view, end_view, periods_view, self.freq)
+        end_view = set_span(start=end_view, periods=shift,
+                            freq=self.freq)[-1] if shift else end_view
+        view = list(to_unix_time(start_view, end_view))
+        # ---------Plot graph----------
+        self._fig['layout'].update(xaxis={'showgrid': showgrid, 'range': view},
+                                   yaxis={"autorange": True})
+        return self._fig
+```
+
+### チャートの表示
+
+チャートを見るには`matplotlib.pyplot`のように`show`メソッドを使います。
+`show`メソッドの第一引数`how`のデフォルト引数は`html`です。
+引数なしで`show`するとブラウザの新しいタブが立ち上がってそこに表示されます。
+今はJupyter Notebook上で描きたいので、`how=jupyter`、または単に`jupyter`を引数にします。
+
+```python
+def show(self, how='html', filebasename='candlestick_and_trace'):
+    """Export file type"""
+    if how == 'html':
+        ax = pyo.plot(self._fig, filename=filebasename + '.html',
+                      validate=False)  # for HTML
+    elif how == 'jupyter':
+        ax = pyo.iplot(self._fig, filename=filebasename + '.html',
+                       validate=False)  # for Jupyter Notebook
+    elif how in ('png', 'jpeg', 'webp', 'svg'):
+        ax = pyo.plot(self._fig, image=how, image_filename=filebasename,
+                      validate=False)  # for file exporting
+    else:
+        raise KeyError(how)
+    return ax
+```
+
+
+```python
+fx.show(how='jupyter')
+```
+
+
+
+![gif1](./note/candle_plot_movable/candle_plot_movable_files/gif1.gif)
+
+2017/3/20-2017/6/17の日足が描かれました。
+
+plotlyの操作は
+
+* グラフ上のマウスオーバーで値の表示
+* グラフ上のドラッグでズームイン
+* 軸上(真ん中)のドラッグでスクロール
+* 軸上(端)のドラッグでズームアウト
+* ダブルクリックで元のビューに戻る
+* トリプルクリックで全体表示
+
+
+
+
+
+
+
+
+
+
+
+
+### 再度時間足の変更
+
+日足だけじゃなくて別の時間足も見たいです。
+
+そういうときは再度`resample`メソッドを使って時間幅を変更します。
+
+
+```python
+fx.resample('H')  # 1時間足に変更
+fx.plot()  # ローソク足プロット
+fx.show('jupyter')  # プロットの表示をJupyter Notebookで開く
+```
+
+
+
+![gif2](./note/candle_plot_movable/candle_plot_movable_files/gif2.gif)
+
+1時間足がプロットされました。
+あえて時間をかけてマウスオーバーしているのですが、1時間ごとにプロットされていることがわかりましたでしょうか。
+
+ここで再度`stock_dataframe`を確認してみますと、1時間足に変わっていることがわかります。
+
+
+```python
+fx.stock_dataframe.head(), fx.stock_dataframe.tail()
+```
+
+
+
+
+    (                        low    open   close    high
+     2017-03-20 00:00:00  114.76  115.00  115.26  115.49
+     2017-03-20 01:00:00  115.27  115.27  116.11  116.47
+     2017-03-20 02:00:00  115.69  116.10  115.69  116.53
+     2017-03-20 03:00:00  115.62  115.68  116.02  116.19
+     2017-03-20 04:00:00  115.74  116.01  116.00  116.31,
+                             low    open   close    high
+     2017-06-17 19:00:00  108.50  108.65  109.91  109.93
+     2017-06-17 20:00:00  109.56  109.90  109.76  110.03
+     2017-06-17 21:00:00  109.47  109.76  109.77  110.06
+     2017-06-17 22:00:00  109.27  109.77  109.31  110.10
+     2017-06-17 23:00:00  108.96  109.30  109.22  109.70)
+
+
+
+
+### 平均足の描画
+
+[平均足の計算](http://www.craigmasonforcongress.com/keisan.html)は以下のとおりです。
+
+
+```
+始値　＝　（一本前の始値（平均足）　＋　一本前の終値（平均足））÷２
+高値　＝　高値（ローソク足）
+安値　＝　安値（ローソク足）
+終値　＝　（始値（ローソク足）　＋　高値（ローソク足）　＋　安値（ローソク足）　＋　終値（ローソク足） ）÷４ 
+```
+
+![heikin_calc](note/heikin/heikin_files/heikin_calc.png)
+
+
+
+pythonで書くと次のようになります。
+
+```python
+def heikin_ashi(self):
+    """Return HEIKIN ASHI columns"""
+    self['hopen'] = (self.open.shift() + self.close.shift()) / 2
+    self['hclose'] = (self[['open', 'high', 'low', 'close']]).mean(1)
+    self['hhigh'] = self[['high', 'hopen', 'hclose']].max(1)
+    self['hlow'] = self[['low', 'hopen', 'hclose']].min(1)
+    return self[['hopen', 'hhigh', 'hlow', 'hclose']]
+
+
+pd.DataFrame.heikin_ashi = heikin_ashi
+```
+
+`plot`メソッドで描画方法`bar`(第一引数なので省略可)を`heikin`(または`h`)と指定するとデフォルトのローソク足(`candle`)から平均足の描画に切り替わります。
+
+```python
+fx.plot('h')
+fx.show(how='png', filebasename = 'heikin')
+```
+USDJPY 2017年1月 1時間足
+平均足
+![USDJPYheikin](note/heikin/heikin_files/heikin.png)
+
+同通貨 同期間 同時間足
+ローソク足
+![USDJPYcandle](note/heikin/heikin_files/candle.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 描画の範囲
+
+### plot範囲の指定
 
 `plot`メソッドは`stock_dataframe`の中身を**すべてグラフ化しません**。
 デフォルトの場合、**最後の足から数えて300本足**がグラフ化されます。
@@ -407,7 +717,7 @@ fx.stock_dataframe.index
     * `end_plot`: グラフ化する最後の日付・時間
     * `periods_plot`: グラフ化する足の数(int型)
 * start, end, periodsのうち二つが指定されている必要がある。
-* 何も指定しなければ、デフォルト値が入力される。
+* 何も指定しなければ、デフォルトとして最後の足から数えて300本が描画される。
 
 ```python
 # Default Args
@@ -436,7 +746,7 @@ fx.show('jupyter')
 
 2017/6/17 09:00 - 2017/6/17 23:00の5分足が描かれました。
 
-## view範囲の指定
+### view範囲の指定
 
 plotlyのズームイン / アウト、スクロールを使えば表示範囲外のところも見れます。
 しかし、見たい期間が最初から決まっているのにもかかわらず、グラフ化してからスクロールするのはメンドウです。
@@ -470,8 +780,6 @@ fx.show('html')  # html形式で表示
 
 
 
-
-    'file://C:\\Users\\U1and0\\Dropbox\\Program\\python\\fxpy\\note\\candle_plot_movable\\candlestick_and_trace.html'
 
 
 
@@ -545,7 +853,7 @@ self._fig['layout'].update(xaxis={'showgrid': showgrid, 'range': view},
                            yaxis={"autorange": True})
 ```
 
-## 右側に空白を作る
+### 右側に空白を作る
 
 引数`shift`に指定した足の本数だけ、右側に空白を作ります。
 > 時間足が短いとうまくいきません。原因究明中です。
@@ -583,7 +891,7 @@ end_view = set_span(start=end_view, periods=shift,
 
 ![png4](./note/candle_plot_movable/candle_plot_movable_files/png4.PNG)
 
-## まとめ
+## チャート描画までのまとめ
 
 ### メソッド一覧
 
@@ -611,7 +919,7 @@ end_view = set_span(start=end_view, periods=shift,
     * ファイル名を決める。
         * `filebasename`
 
-### フローチャート
+### 使用メソッドフローチャート
 各メソッドの呼び出しに使う引数と戻り値、プロットに使うフローは以下の図の通りです。
 
 ![figure1](./note/candle_plot_movable/candle_plot_movable_files/figure1.PNG)
@@ -1054,9 +1362,9 @@ fx.show('png', filebasename='png6')
 
 の点が`__init__`と異なります。
 
-## まとめと補足
+## 指標操作のまとめと補足
 
-### フローチャート
+### 使用メソッドフローチャート
 各メソッドの使用順序は以下に示すフローチャートの通りです。
 ![png8](./note/stockplot_append_pop/stockplot_append_pop_files/png8.png)
 
@@ -1179,12 +1487,7 @@ git clone https://github.com/u1and0/stockplot.git
 ```
 
 binディレクトリ下のread_hst.pyを使用してください。
-その他のファイルは次のページで説明しています。
 
-* [pythonでローソク足(candle chart)の描画](https://qiita.com/u1and0/items/1d9afdb7216c3d2320ef)
-* [plotlyでキャンドルチャートプロット](https://qiita.com/u1and0/items/0ebcf097a1d61c636eb9)
-* [Plotlyでぐりぐり動かせる為替チャートを作る(1)](https://qiita.com/u1and0/items/e2273bd8e03c670be45a)
-* [Plotlyでぐりぐり動かせる為替チャートを作る(2)](https://qiita.com/u1and0/items/b6e1cfba55778d505e7d)
 
 
 ## データのダウンロード
@@ -1248,6 +1551,11 @@ optional arguments:
   -p, --pickle  Convert to pickle file
 ```
 
-## 参考
+# 参考
+* stockplot使い方
+    * 旧バージョン: [Qiita - u1and0 / plotlyでキャンドルチャートプロット](http://qiita.com/u1and0/items/0ebcf097a1d61c636eb9)
+    * random_walkについて: [Qiita - u1and0 / pythonでローソク足(candle chart)の描画](http://qiita.com/u1and0/items/1d9afdb7216c3d2320ef)
+    * stockplot使い方1: [Plotlyでぐりぐり動かせる為替チャートを作る(1)](https://qiita.com/u1and0/items/e2273bd8e03c670be45a)
+    * stockplot使い方2: [Plotlyでぐりぐり動かせる為替チャートを作る(2)](https://qiita.com/u1and0/items/b6e1cfba55778d505e7d)
 * numpyを使用して高速にバイナリ→テキスト変換 >> [(´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む](http://fatbald.seesaa.net/article/447016624.html)
 * 引数読み込み >> [Converting MT4 binary history files: hst to csv using a python script](http://mechanicalforex.com/2015/12/converting-mt4-binary-history-files-hst-to-csv-using-a-python-script.html)
