@@ -5,6 +5,7 @@ import numpy as np
 from pandas.core import common as com
 import jsm
 from stockplot import set_span
+from pandas_datareader import wb
 
 
 def get_jstock(code, freq='D', start=None, end=None, periods=None):
@@ -43,15 +44,15 @@ def get_jstock(code, freq='D', start=None, end=None, periods=None):
 
     # Return "start" and "end"
     start, end = map(lambda x: x.date(), set_span(start, end, periods, freq))
-    print('start={}\nend={}'.format(start, end))
+    print('Get data from {} to {}'.format(start, end))
 
     data = jsm.Quotes().get_historical_prices(
         code, range_type=freq_dict[freq], start_date=start, end_date=end) if not data else data
-    df = convert_dataframe(data)
+    df = _convert_dataframe(data)
     return df[start:end]
 
 
-def convert_dataframe(target):
+def _convert_dataframe(target):
     """Convert <jsm.pricebase.PriceData> to <pandas.DataFrame>"""
     date = [data.date for data in target]
     open = [data.open for data in target]
