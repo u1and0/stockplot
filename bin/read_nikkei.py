@@ -13,16 +13,24 @@ from stockplot import set_span
 #     return df
 
 
-def drange(code, freq='D', all=False, start=None, end=None, periods=None):
+def drange(code, freq='D', start=None, end=None, periods=None):
     freq_dict = {'D': jsm.DAILY, 'W': jsm.WEEKLY, 'M': jsm.MONTHLY}
-    if all:
+    # Default args
+    if com._count_not_none(start, end, periods) == 0:  # When NO args
+        end, periods = 'last', 30
+
+    if com._count_not_none(start, end, periods) != 2:  # Like a pd.date_range Error
+        raise ValueError('Must specify two of start, end, or periods')
+    if start == 'first':
         data = jsm.Quotes().get_historical_prices(
             code, range_type=freq_dict[freq], all=True)
-    elif com._count_not_none(start, end, periods) != 2:  # Like a pd.date_range Error
-        raise ValueError('Must specify two of start, end, or periods')
-        start = start if start else (pd.Period(end, freq) - periods).start_time
-        end = end if end else (pd.Period(start, freq) + periods).start_time
-        data = jsm.Quotes().get_historical_prices(
+        start = [i.date for i in data][-1]
+    if end == 'last':
+        end = pd.datetime.today().date()
+
+    start = start if start else (pd.Period(end, freq) - periods).start_time
+    end = end if end else (pd.Period(start, freq) + periods).start_time
+    data = jsm.Quotes().get_historical_prices(
             code, range_type=freq_dict[freq], start_date=start, end_date=end)
     df = convert_dataframe(data)
     return df[start:end]
