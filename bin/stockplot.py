@@ -1,13 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from numpy.random import seed
 import pandas as pd
 from pandas.core import common as com
 from pandas.core import resample
 import stockstats as ss
+from randomwalk import randomwalk
 from plotly import figure_factory as FF
 import plotly.offline as pyo
 import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
+
+
+def data_gen(random_state=1):
+    """Generate sample OHLC data"""
+    seed(random_state)
+    df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 1, 1))\
+        .resample('T').ohlc() + 115  # 90日分の1分足, 初期値が115
+    return df
 
 
 def cleansing(df):
