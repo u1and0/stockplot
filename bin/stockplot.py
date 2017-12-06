@@ -10,6 +10,16 @@ import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
 
 
+def cleansing(df):
+    """Columns must set OHLC(V)"""
+    df.columns = map(lambda x: x.lower(), df.columns)  # columns -> lower case
+    co = ['open', 'high', 'low', 'close']
+    if not all(i in df.columns for i in co):  # Columns check
+        raise KeyError("columns must have {} (, 'volume')], but it has {}".format(co, df.columns))
+    df = df.loc[:, co + ['volume']].dropna(1)  # Extract OHLC (and Volume)
+    return df
+
+
 def heikin_ashi(self):
     """Return HEIKIN ASHI columns"""
     self['hopen'] = (self.open.shift() + self.close.shift()) / 2
@@ -46,7 +56,7 @@ resample.DatetimeIndexResampler.ohlc2 = ohlc2
 
 def reset_dataframe(df):
     """Reset dataframe as stockstats"""
-    return ss.StockDataFrame(df.ix[:, ['open', 'high', 'low', 'close']])
+    return ss.StockDataFrame(df.loc[:, ['open', 'high', 'low', 'close']])
 
 
 def set_span(start=None, end=None, periods=None, freq='D'):
@@ -154,11 +164,8 @@ class StockPlot:
     """
 
     def __init__(self, df: pd.core.frame.DataFrame):
-        # Arg Check
-        co = ['open', 'high', 'low', 'close']
-        if not all(i in df.columns for i in co):
-            raise KeyError("arg's columns must have {}, but it has {}".format(co, df.columns))
-        self._init_stock_dataframe = ss.StockDataFrame(df)  # スパン変更前のデータフレーム
+        sdf = cleansing(df.copy())
+        self._init_stock_dataframe = ss.StockDataFrame(sdf)  # スパン変更前のデータフレーム
         self.stock_dataframe = None  # スパン変更後、インジケータ追加後のデータフレーム
         self.freq = None  # 足の時間幅
         self._fig = None  # <-- plotly.graph_objs
