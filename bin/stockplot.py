@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from numpy.random import seed
+import numpy as np
 import pandas as pd
 from pandas.core import common as com
 from pandas.core import resample
@@ -12,11 +12,13 @@ import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
 
 
-def data_gen(random_state=1):
+def datagen(random_state=1, n=100, volume=False):
     """Generate sample OHLC data"""
-    seed(random_state)
-    df = randomwalk(60 * 60 * 24 * 90, freq='S', tick=0.01, start=pd.datetime(2017, 1, 1))\
-        .resample('T').ohlc() + 115  # 90日分の1分足, 初期値が115
+    np.random.seed(random_state)
+    df = randomwalk(60 * 60 * 24 * n, freq='S', tick=0.01, start=pd.datetime(2017, 1, 1))\
+        .resample('T').ohlc() + 115  # 100日分の1分足, 初期値が115
+    if volume:
+        df['volume'] = np.random.randint(1000, 10000, len(df))
     return df
 
 
@@ -42,21 +44,20 @@ def heikin_ashi(self):
 pd.DataFrame.heikin_ashi = heikin_ashi
 
 
-def ohlc2(self):
+def ohlc2(self, *args, **kwargs):
     """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
     Resample method converting OHLC to OHLC
     """
-    agdict = {'open': 'first',
-              'high': 'max',
-              'low': 'min',
-              'close': 'last'}
-    columns = list(agdict.keys())
-    if all(i in columns for i in self.columns):
-        pass
-    elif all(i in columns + ['volume'] for i in self.columns):
-        agdict['volume'] = 'sum'
-    else:
-        raise KeyError("columns must have ['open', 'high', 'low', 'close'(, 'volume')]")
+    cdict = dict([(v.lower(), v) for v in self.columns])
+    try:
+        agdict = {cdict['open']: 'first',
+                  cdict['high']: 'max',
+                  cdict['low']: 'min',
+                  cdict['close']: 'last'}
+    except KeyError as e:
+        raise KeyError('Columns not enough {}'.format(*e.args))
+    if 'volume' in map(lambda x: x.lower(), self.columns):
+        agdict[cdict['volume']] = 'sum'
     return self.agg(agdict)
 
 
