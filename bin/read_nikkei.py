@@ -5,7 +5,6 @@ import numpy as np
 from pandas.core import common as com
 import jsm
 from stockplot import set_span
-from pandas_datareader import wb
 
 
 def get_jstock(code, freq='D', start=None, end=None, periods=None):

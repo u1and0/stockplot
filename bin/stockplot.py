@@ -48,7 +48,7 @@ def ohlc2(self, *args, **kwargs):
     """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
     Resample method converting OHLC to OHLC
     """
-    cdict = dict([(v.lower(), v) for v in self.columns])
+    cdict = dict([(v.lower(), v) for v in self.asfreq().columns])
     try:
         agdict = {cdict['open']: 'first',
                   cdict['high']: 'max',
@@ -56,7 +56,7 @@ def ohlc2(self, *args, **kwargs):
                   cdict['close']: 'last'}
     except KeyError as e:
         raise KeyError('Columns not enough {}'.format(*e.args))
-    if 'volume' in map(lambda x: x.lower(), self.columns):
+    if 'volume' in map(lambda x: x.lower(), self.asfreq().columns):
         agdict[cdict['volume']] = 'sum'
     return self.agg(agdict)
 
