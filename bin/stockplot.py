@@ -44,20 +44,30 @@ def heikin_ashi(self):
 pd.DataFrame.heikin_ashi = heikin_ashi
 
 
-def ohlc2(self, *args, **kwargs):
+def ohlc2(self, open=None, high=None, low=None, close=None, volume=None, **kwargs):
     """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
     Resample method converting OHLC to OHLC
     """
-    cdict = dict([(v.lower(), v) for v in self.asfreq().columns])
+    # `auto_dict` is lower case of columns
+    auto_dict = dict([(str(v).lower(), v) for v in self.asfreq().columns])
+    # User defined OHLCV
+    my_dict = {'open': open, 'high': high, 'low': low, 'close': close, 'volume': volume}
+    for _ in my_dict.keys():
+        try:
+            auto_dict[_] = my_dict[_] if my_dict[_] else auto_dict[_]
+        except KeyError:
+            pass
+    # Make dict as `agdict` for `df.resample(<Time>).agg(<dict>)`
     try:
-        agdict = {cdict['open']: 'first',
-                  cdict['high']: 'max',
-                  cdict['low']: 'min',
-                  cdict['close']: 'last'}
+        agdict = {auto_dict['open']: 'first',
+                  auto_dict['high']: 'max',
+                  auto_dict['low']: 'min',
+                  auto_dict['close']: 'last'}
     except KeyError as e:
         raise KeyError('Columns not enough {}'.format(*e.args))
-    if 'volume' in map(lambda x: x.lower(), self.asfreq().columns):
-        agdict[cdict['volume']] = 'sum'
+    # Add `volume` columns
+    if 'volume' in auto_dict.keys():
+        agdict[auto_dict['volume']] = 'sum'
     return self.agg(agdict)
 
 
@@ -318,7 +328,7 @@ class StockPlot:
 
         Usage:
             fx.clear()
-            """
+        """
         self._fig = None  # <-- plotly.graph_objs
         self._indicators = {}
         if hard:
