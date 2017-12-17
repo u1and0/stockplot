@@ -42,7 +42,8 @@ def get_jstock(code, freq='D', start=None, end=None, periods=None):
         end = pd.datetime.today()
 
     # Return "start" and "end"
-    start, end = (x.date() for x in set_span(start, end, periods, freq))
+    start, end = (x.date() if hasattr(x, 'date')
+                  else x for x in set_span(start, end, periods, freq))
     print('Get data from {} to {}'.format(start, end))
 
     data = jsm.Quotes().get_historical_prices(

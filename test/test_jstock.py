@@ -9,7 +9,6 @@ end = pd.datetime(2009, 12, 8)
 print(get_jstock(9302, freq='W', start=start, end=end))
 print(get_jstock(9302, start=start, periods=5))
 print(get_jstock(9302, freq='M', start='first', end='last'))
-print(get_jstock(9302, freq='W', start='first', end=pd.datetime(2000, 2, 28)))
 print(get_jstock(9302, freq='D', end=pd.datetime.today().date(), periods=50))
 start = pd.Period(pd.datetime.today().date(), 'D') - 100
 print(get_jstock(9302, freq='D', start=start.start_time, periods=50))
