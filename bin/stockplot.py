@@ -44,19 +44,17 @@ def heikin_ashi(self):
 pd.DataFrame.heikin_ashi = heikin_ashi
 
 
-def ohlc2(self, open=None, high=None, low=None, close=None, volume=None, **kwargs):
+def ohlc2(self, open=None, high=None, low=None, close=None, volume=None):
     """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
     Resample method converting OHLC to OHLC
     """
     # `auto_dict` is lower case of columns
-    auto_dict = dict([(str(v).lower(), v) for v in self.asfreq().columns])
+    auto_dict = {str(v).lower(): v for v in self.asfreq().columns}
     # User defined OHLCV
     my_dict = {'open': open, 'high': high, 'low': low, 'close': close, 'volume': volume}
-    for _ in my_dict.keys():
-        try:
-            auto_dict[_] = my_dict[_] if my_dict[_] else auto_dict[_]
-        except KeyError:
-            pass
+    # Remove `None` values in `my_dict`
+    updater = {k: v for k, v in my_dict.items() if v}
+    auto_dict.update(updater)
     # Make dict as `agdict` for `df.resample(<Time>).agg(<dict>)`
     try:
         agdict = {auto_dict['open']: 'first',
@@ -66,7 +64,7 @@ def ohlc2(self, open=None, high=None, low=None, close=None, volume=None, **kwarg
     except KeyError as e:
         raise KeyError('Columns not enough {}'.format(*e.args))
     # Add `volume` columns
-    if 'volume' in auto_dict.keys():
+    if 'volume' in auto_dict:
         agdict[auto_dict['volume']] = 'sum'
     return self.agg(agdict)
 
