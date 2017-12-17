@@ -24,7 +24,7 @@ def datagen(random_state=1, n=100, volume=False):
 
 def cleansing(df):
     """Columns must set OHLC(V)"""
-    df.columns = map(lambda x: x.lower(), df.columns)  # columns -> lower case
+    df.columns = [_.lower() for _ in df.columns]  # columns -> lower case
     co = ['open', 'high', 'low', 'close']
     if not all(i in df.columns for i in co):  # Columns check
         raise KeyError("columns must have {} (, 'volume')], but it has {}".format(co, df.columns))
