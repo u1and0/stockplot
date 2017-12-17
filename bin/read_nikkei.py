@@ -42,7 +42,7 @@ def get_jstock(code, freq='D', start=None, end=None, periods=None):
         end = pd.datetime.today()
 
     # Return "start" and "end"
-    start, end = map(lambda x: x.date(), set_span(start, end, periods, freq))
+    start, end = (x.date() for x in set_span(start, end, periods, freq))
     print('Get data from {} to {}'.format(start, end))
 
     data = jsm.Quotes().get_historical_prices(
@@ -53,14 +53,20 @@ def get_jstock(code, freq='D', start=None, end=None, periods=None):
 
 def _convert_dataframe(target):
     """Convert <jsm.pricebase.PriceData> to <pandas.DataFrame>"""
-    date = [data.date for data in target]
-    open = [data.open for data in target]
-    high = [data.high for data in target]
-    low = [data.low for data in target]
-    close = [data.close for data in target]
-    volume = [data.volume for data in target]
-    adj_close = [data._adj_close for data in target]
-    ar = np.array([open, high, low, close, volume, adj_close])
-    df = pd.DataFrame(ar.T, index=date,
-                      columns=['open', 'high', 'low', 'close', 'volume', 'adj_close']).sort_index()
+    date = [_.date for _ in target]
+    open = [_.open for _ in target]
+    high = [_.high for _ in target]
+    low = [_.low for _ in target]
+    close = [_.close for _ in target]
+    adj_close = [_._adj_close for _ in target]
+    volume = [_.volume for _ in target]
+    data = {'Open': open,
+            'High': high,
+            'Low': low,
+            'Close': close,
+            'Adj Close': adj_close,
+            'Volume': volume}
+    columns = *data.keys(),
+    df = pd.DataFrame(data, index=date, columns=columns).sort_index()
+    df.index.name = 'Date'
     return df

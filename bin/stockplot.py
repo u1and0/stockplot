@@ -78,7 +78,7 @@ def reset_dataframe(df):
     return ss.StockDataFrame(df.loc[:, ['open', 'high', 'low', 'close']])
 
 
-def set_span(start=None, end=None, periods=None, freq='D'):
+def set_span(start=None, end=None, periods=None, freq=None):
     """ 引数のstart, end, periodsに対して
     startとendの時間を返す。
 

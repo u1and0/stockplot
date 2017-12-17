@@ -16,4 +16,4 @@ print(get_jstock(9302, freq='D', start=start.start_time, periods=50))
 try:
     print(get_jstock(9302, freq='D', periods=50))
 except ValueError as v:
-    raise ValueError('期待通りのエラー')
+    raise ValueError('期待通りのエラー', v)
