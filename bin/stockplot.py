@@ -32,13 +32,29 @@ def cleansing(df):
     return df
 
 
-def heikin_ashi(self):
+def _ohlcv(columns, open=None, high=None, low=None, close=None, volume=None):
+    # `auto_dict` is lower case of columns
+    auto_dict = {str(v).lower(): v for v in columns}
+    # User defined OHLCV
+    my_dict = {'open': open, 'high': high, 'low': low, 'close': close, 'volume': volume}
+    # Remove `None` values in `my_dict`
+    updater = {k: v for k, v in my_dict.items() if v}
+    auto_dict.update(updater)
+    return auto_dict
+
+
+def heikin_ashi(self, open=None, high=None, low=None, close=None):
     """Return HEIKIN ASHI columns"""
-    self['hopen'] = (self.open.shift() + self.close.shift()) / 2
-    self['hclose'] = (self[['open', 'high', 'low', 'close']]).mean(1)
-    self['hhigh'] = self[['high', 'hopen', 'hclose']].max(1)
-    self['hlow'] = self[['low', 'hopen', 'hclose']].min(1)
-    return self[['hopen', 'hhigh', 'hlow', 'hclose']]
+    df = self.copy()
+    auto_dict = _ohlcv(df.columns, open, high, low, close)
+    df['hopen'] = (df[auto_dict['open']].shift() + df[auto_dict['close']].shift()) / 2
+    df['hclose'] = df[[auto_dict['open'],
+                      auto_dict['high'],
+                      auto_dict['low'],
+                      auto_dict['close']]].mean(1)
+    df['hhigh'] = df[[auto_dict['high'], 'hopen', 'hclose']].max(1)
+    df['hlow'] = df[[auto_dict['low'], 'hopen', 'hclose']].min(1)
+    return df[['hopen', 'hhigh', 'hlow', 'hclose']]
 
 
 pd.DataFrame.heikin_ashi = heikin_ashi
@@ -48,13 +64,7 @@ def ohlc2(self, open=None, high=None, low=None, close=None, volume=None):
     """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
     Resample method converting OHLC to OHLC
     """
-    # `auto_dict` is lower case of columns
-    auto_dict = {str(v).lower(): v for v in self.asfreq().columns}
-    # User defined OHLCV
-    my_dict = {'open': open, 'high': high, 'low': low, 'close': close, 'volume': volume}
-    # Remove `None` values in `my_dict`
-    updater = {k: v for k, v in my_dict.items() if v}
-    auto_dict.update(updater)
+    auto_dict = _ohlcv(self.asfreq().columns, open, high, low, close, volume)
     # Make dict as `agdict` for `df.resample(<Time>).agg(<dict>)`
     try:
         agdict = {auto_dict['open']: 'first',
