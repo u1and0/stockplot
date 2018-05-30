@@ -5,7 +5,7 @@ import pandas as pd
 from pandas.core import common as com
 from pandas.core import resample
 import stockstats as ss
-from randomwalk import randomwalk
+from .randomwalk import randomwalk
 from plotly import figure_factory as FF
 import plotly.offline as pyo
 import plotly.graph_objs as go
@@ -27,7 +27,9 @@ def cleansing(df):
     df.columns = [_.lower() for _ in df.columns]  # columns -> lower case
     co = ['open', 'high', 'low', 'close']
     if not all(i in df.columns for i in co):  # Columns check
-        raise KeyError("columns must have {} (, 'volume')], but it has {}".format(co, df.columns))
+        raise KeyError(
+            "columns must have {} (, 'volume')], but it has {}".format(
+                co, df.columns))
     df = df.loc[:, co + ['volume']].dropna(1)  # Extract OHLC (and Volume)
     return df
 
@@ -36,7 +38,13 @@ def _ohlcv(columns, open=None, high=None, low=None, close=None, volume=None):
     # `auto_dict` is lower case of columns
     auto_dict = {str(v).lower(): v for v in columns}
     # User defined OHLCV
-    my_dict = {'open': open, 'high': high, 'low': low, 'close': close, 'volume': volume}
+    my_dict = {
+        'open': open,
+        'high': high,
+        'low': low,
+        'close': close,
+        'volume': volume
+    }
     # Remove `None` values in `my_dict`
     updater = {k: v for k, v in my_dict.items() if v}
     auto_dict.update(updater)
@@ -47,11 +55,12 @@ def heikin_ashi(self, open=None, high=None, low=None, close=None):
     """Return HEIKIN ASHI columns"""
     df = self.copy()
     auto_dict = _ohlcv(df.columns, open, high, low, close)
-    df['hopen'] = (df[auto_dict['open']].shift() + df[auto_dict['close']].shift()) / 2
-    df['hclose'] = df[[auto_dict['open'],
-                      auto_dict['high'],
-                      auto_dict['low'],
-                      auto_dict['close']]].mean(1)
+    df['hopen'] = (
+        df[auto_dict['open']].shift() + df[auto_dict['close']].shift()) / 2
+    df['hclose'] = df[[
+        auto_dict['open'], auto_dict['high'], auto_dict['low'],
+        auto_dict['close']
+    ]].mean(1)
     df['hhigh'] = df[[auto_dict['high'], 'hopen', 'hclose']].max(1)
     df['hlow'] = df[[auto_dict['low'], 'hopen', 'hclose']].min(1)
     return df[['hopen', 'hhigh', 'hlow', 'hclose']]
@@ -67,10 +76,12 @@ def ohlc2(self, open=None, high=None, low=None, close=None, volume=None):
     auto_dict = _ohlcv(self.asfreq().columns, open, high, low, close, volume)
     # Make dict as `agdict` for `df.resample(<Time>).agg(<dict>)`
     try:
-        agdict = {auto_dict['open']: 'first',
-                  auto_dict['high']: 'max',
-                  auto_dict['low']: 'min',
-                  auto_dict['close']: 'last'}
+        agdict = {
+            auto_dict['open']: 'first',
+            auto_dict['high']: 'max',
+            auto_dict['low']: 'min',
+            auto_dict['close']: 'last'
+        }
     except KeyError as e:
         raise KeyError('Columns not enough {}'.format(*e.args))
     # Add `volume` columns
@@ -97,7 +108,8 @@ def set_span(start=None, end=None, periods=None, freq=None):
     * start, periodsが指定されていたら、endを計算する
     * end, periodsが指定されていたら、startを計算する
     """
-    if com._count_not_none(start, end, periods) != 2:  # Like a pd.date_range Error
+    if com._count_not_none(start, end,
+                           periods) != 2:  # Like a pd.date_range Error
         raise ValueError('Must specify two of start, end, or periods')
     start = start if start else (pd.Period(end, freq) - periods).start_time
     end = end if end else (pd.Period(start, freq) + periods).start_time
@@ -215,9 +227,18 @@ class StockPlot:
             self.append(indicator)  # Re-append indicator in dataframe
         return self.stock_dataframe
 
-    def plot(self, bar='candle', start_view=None, end_view=None, periods_view=None, shift=None,
-             start_plot=None, end_plot=None, periods_plot=None,
-             showgrid=True, validate=False, **kwargs):
+    def plot(self,
+             bar='candle',
+             start_view=None,
+             end_view=None,
+             periods_view=None,
+             shift=None,
+             start_plot=None,
+             end_plot=None,
+             periods_plot=None,
+             showgrid=True,
+             validate=False,
+             **kwargs):
         """Retrun plotly candle chart graph
 
         Usage: `fx.plot()`
@@ -232,56 +253,67 @@ class StockPlot:
         """
         # ---------Set "plot_dataframe"----------
         # Default Args
-        if com._count_not_none(start_plot,
-                               end_plot, periods_plot) == 0:
+        if com._count_not_none(start_plot, end_plot, periods_plot) == 0:
             end_plot = 'last'
             periods_plot = 300
         try:
             # first/last
-            start_plot = self.stock_dataframe.index[0] if start_plot == 'first' else start_plot
-            end_plot = self.stock_dataframe.index[-1] if end_plot == 'last' else end_plot
+            start_plot = self.stock_dataframe.index[
+                0] if start_plot == 'first' else start_plot
+            end_plot = self.stock_dataframe.index[
+                -1] if end_plot == 'last' else end_plot
         except AttributeError:
             raise AttributeError('{} Use `fx.resample(<TimeFrame>)` at first'
                                  .format(type(self.stock_dataframe)))
         # Set "plot_dataframe"
-        start_plot, end_plot = set_span(start_plot, end_plot, periods_plot, self.freq)
+        start_plot, end_plot = set_span(start_plot, end_plot, periods_plot,
+                                        self.freq)
         if bar in ('candle', 'c'):
             plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
-            self._fig = FF.create_candlestick(plot_dataframe.open,
-                                              plot_dataframe.high,
-                                              plot_dataframe.low,
-                                              plot_dataframe.close,
-                                              dates=plot_dataframe.index)
+            self._fig = FF.create_candlestick(
+                plot_dataframe.open,
+                plot_dataframe.high,
+                plot_dataframe.low,
+                plot_dataframe.close,
+                dates=plot_dataframe.index)
         elif bar in ('heikin', 'h'):
             self.stock_dataframe.heikin_ashi()
             plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
-            self._fig = FF.create_candlestick(plot_dataframe.hopen,
-                                              plot_dataframe.hhigh,
-                                              plot_dataframe.hlow,
-                                              plot_dataframe.hclose,
-                                              dates=plot_dataframe.index)
+            self._fig = FF.create_candlestick(
+                plot_dataframe.hopen,
+                plot_dataframe.hhigh,
+                plot_dataframe.hlow,
+                plot_dataframe.hclose,
+                dates=plot_dataframe.index)
         else:
             raise KeyError('Use bar = "[c]andle" or "[h]eikin"')
         # ---------Append indicators----------
         for indicator in self._indicators.keys():
-            self._append_graph(indicator, start_plot, end_plot)  # Re-append indicator in graph
+            # Re-append indicator in graph
+            self._append_graph(indicator, start_plot, end_plot)
         # ---------Set "view"----------
         # Default Args
-        if com._count_not_none(start_view,
-                               end_view, periods_view) == 0:
+        if com._count_not_none(start_view, end_view, periods_view) == 0:
             end_view = 'last'
             periods_view = 50
         # first/last
-        start_view = plot_dataframe.index[0] if start_view == 'first' else start_view
+        start_view = plot_dataframe.index[
+            0] if start_view == 'first' else start_view
         end_view = plot_dataframe.index[-1] if end_view == 'last' else end_view
         # Set "view"
-        start_view, end_view = set_span(start_view, end_view, periods_view, self.freq)
-        end_view = set_span(start=end_view, periods=shift,
-                            freq=self.freq)[-1] if shift else end_view
+        start_view, end_view = set_span(start_view, end_view, periods_view,
+                                        self.freq)
+        end_view = set_span(
+            start=end_view, periods=shift,
+            freq=self.freq)[-1] if shift else end_view
         view = list(to_unix_time(start_view, end_view))
         # ---------Plot graph----------
-        self._fig['layout'].update(xaxis={'showgrid': showgrid, 'range': view},
-                                   yaxis={"autorange": True})
+        self._fig['layout'].update(
+            xaxis={
+                'showgrid': showgrid,
+                'range': view
+            },
+            yaxis={"autorange": True})
         return self._fig
 
     def show(self, how='html', filebasename='candlestick_and_trace'):
@@ -293,20 +325,26 @@ class StockPlot:
             * fx.show('png', filename='hoge')  # Plot as 'hoge.png' file
         """
         if how == 'html':
-            ax = pyo.plot(self._fig, filename=filebasename + '.html',
-                          validate=False)  # for HTML
+            ax = pyo.plot(
+                self._fig, filename=filebasename + '.html',
+                validate=False)  # for HTML
         elif how == 'jupyter':
-            ax = pyo.iplot(self._fig, filename=filebasename + '.html',
-                           validate=False)  # for Jupyter Notebook
+            ax = pyo.iplot(
+                self._fig, filename=filebasename + '.html',
+                validate=False)  # for Jupyter Notebook
         elif how in ('png', 'jpeg', 'webp', 'svg'):
-            ax = pyo.plot(self._fig, image=how, image_filename=filebasename,
-                          validate=False)  # for file exporting
+            ax = pyo.plot(
+                self._fig,
+                image=how,
+                image_filename=filebasename,
+                validate=False)  # for file exporting
         else:
             raise KeyError(how)
         return ax
 
 
 # ---------Indicator----------
+
     def append(self, indicator):
         """Add indicator in self._indicators & self.stock_dataframe NOT self._fig.
 
@@ -326,8 +364,10 @@ class StockPlot:
             Used in `plot` method
         """
         graph_value = self._indicators[indicator].loc[start:end]
-        plotter = go.Scatter(x=graph_value.index, y=graph_value,
-                             name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
+        plotter = go.Scatter(
+            x=graph_value.index,
+            y=graph_value,
+            name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
         self._fig['data'].append(plotter)
 
     def clear(self, hard=False):

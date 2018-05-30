@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from pandas.core import common as com
 import jsm
-from stockplot import set_span
+from .stockplot import set_span
 
 
 def get_jstock(code, freq='D', start=None, end=None, periods=None):
@@ -42,12 +42,13 @@ def get_jstock(code, freq='D', start=None, end=None, periods=None):
         end = pd.datetime.today()
 
     # Return "start" and "end"
-    start, end = (x.date() if hasattr(x, 'date')
-                  else x for x in set_span(start, end, periods, freq))
+    start, end = (x.date() if hasattr(x, 'date') else x
+                  for x in set_span(start, end, periods, freq))
     print('Get data from {} to {}'.format(start, end))
 
     data = jsm.Quotes().get_historical_prices(
-        code, range_type=freq_dict[freq], start_date=start, end_date=end) if not data else data
+        code, range_type=freq_dict[freq], start_date=start,
+        end_date=end) if not data else data
     df = _convert_dataframe(data)
     return df[start:end]
 
@@ -61,12 +62,14 @@ def _convert_dataframe(target):
     close = [_.close for _ in target]
     adj_close = [_._adj_close for _ in target]
     volume = [_.volume for _ in target]
-    data = {'Open': open,
-            'High': high,
-            'Low': low,
-            'Close': close,
-            'Adj Close': adj_close,
-            'Volume': volume}
+    data = {
+        'Open': open,
+        'High': high,
+        'Low': low,
+        'Close': close,
+        'Adj Close': adj_close,
+        'Volume': volume
+    }
     columns = *data.keys(),
     df = pd.DataFrame(data, index=date, columns=columns).sort_index()
     df.index.name = 'Date'
