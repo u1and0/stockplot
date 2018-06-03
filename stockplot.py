@@ -1,15 +1,85 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import stockstats as ss
 import numpy as np
 import pandas as pd
 from pandas.core import common as com
 from pandas.core import resample
-import stockstats as ss
-from .randomwalk import randomwalk
 from plotly import figure_factory as FF
 import plotly.offline as pyo
 import plotly.graph_objs as go
 pyo.init_notebook_mode(connected=True)
+
+
+def randomwalk(periods=None,
+               start=None,
+               end=None,
+               freq='B',
+               tz=None,
+               normalize=False,
+               name=None,
+               closed=None,
+               tick=1,
+               **kwargs):
+    """Returns random up/down pandas Series
+
+    Usage:
+        ```
+        import datetime
+
+        # Returns +-1up/down 100days from now.
+        randomwalk(100)
+
+        # Returns +-1up/down 100hours from now.
+        randomwalk(100, freq='H')
+
+        # Returns +-0.1up/down 100seconds from now.
+        randomwalk(100, ,tick=0.1 freq='S')
+
+        # Returns +-1up/down 100days from now.
+        randomwalk(100, start=datetime.datetime.today())
+
+        # Returns +-1up/down back to 100 days from now.
+        randomwalk(100, end=datetime.datetime.today())
+
+        # Returns +-1up/down from 2000-1-1 to now.
+        randomwalk(start=datetime.datetime(2000,1,1),
+                   end=datetime.datetime.today())
+
+        # random OHLC data
+        randomwalk(100, freq='H').resample('D').ohlc()
+        ```
+
+    Args:
+        periods: int
+        start: start time (default datetime.now())
+        end: end time
+        freq: ('M','W','D','B','H','T','S') (default 'B')
+        tz: time zone
+        tick: up/down unit size (default 1)
+
+    Returns:
+        pandas Series with datetime index
+    """
+    if not start and not end:
+        start = pd.datetime.today().date()  # default arg of `start`
+    index = pd.DatetimeIndex(
+        start=start,
+        end=end,
+        periods=periods,
+        freq=freq,
+        tz=tz,
+        normalize=normalize,
+        name=name,
+        closed=closed,
+        **kwargs)
+    bullbear = pd.Series(
+        tick * np.random.randint(-1, 2, len(index)),
+        index=index,
+        name=name,
+        **kwargs)  # tick * (-1,0,1のどれか)
+    price = bullbear.cumsum()  # 累積和
+    return price
 
 
 def datagen(random_state=1, n=100, volume=False):
@@ -63,7 +133,17 @@ def heikin_ashi(self, open=None, high=None, low=None, close=None):
     ]].mean(1)
     df['hhigh'] = df[[auto_dict['high'], 'hopen', 'hclose']].max(1)
     df['hlow'] = df[[auto_dict['low'], 'hopen', 'hclose']].min(1)
-    return df[['hopen', 'hhigh', 'hlow', 'hclose']]
+    heikin_df = df[['hopen', 'hhigh', 'hlow', 'hclose']]
+    heikin_df.rename(
+        {
+            'hopen': 'open',
+            'hhigh': 'high',
+            'hlow': 'low',
+            'hclose': 'close'
+        },
+        axis='columns',
+        inplace=True)
+    return heikin_df
 
 
 pd.DataFrame.heikin_ashi = heikin_ashi
@@ -150,8 +230,9 @@ class StockPlot:
         * _fig: plotlyのプロットデータ
 
     ```python
+    # 90日分の1分足を日足に直す
     df = randomwalk(60 * 24 * 90, freq='T', tick=0.01,
-                    start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115  # 90日分の1分足を日足に直す
+                    start=pd.datetime(2017, 3, 20)).resample('B').ohlc() + 115
     dfs = stockstats.StockDataFrame(df)
     dfs.add('hoge'): インジケーターの追加
     dfs.plot(): キャンドルチャートとインジケータの表示
@@ -171,8 +252,6 @@ class StockPlot:
             * figに対してadd / remove_inidcatorで指標の追加 / 削除が行われる。
             * self_figを返す
      * dfs.show()
-            * plt.show()に当たる
-
     # removeメソッドについて
     * `fx.df` is a dataframe. datafraemeの削除の仕方に従うこと
         * カラムの削除
@@ -186,7 +265,9 @@ class StockPlot:
                     リスト内辞書のnameだけ抜き出せる
                  * x.add_iine.index('*name*')でなんとかならないかな
             * `del fx.add_line[*num1* : *num2*]`
-            * list.removeは使えない。なぜなら、長い長いデータフレームのような辞書形式をリストに格納しているから、実用的には打ち込めない。
+            * list.removeは使えない。
+            * なぜなら、長い長いデータフレームのような辞書形式をリストに格納している
+            * だから、実用的には打ち込めない。
         * 初期化
             * `fx.add_line.clear(): clear関数
             * `del fx.add_line[:]`: すべての要素をdel
@@ -217,8 +298,10 @@ class StockPlot:
 
         Usage: `fx.resample('D')  # 日足に変換`
 
-        * Args:  変更したい期間 M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
-        * Return: スパン変更後のデータフレーム
+        Args:  変更したい期間
+            M(onth) | W(eek) | D(ay) | H(our) | T(Minute) | S(econd)
+
+        Return: スパン変更後のデータフレーム
         """
         self.freq = freq
         df = self._init_stock_dataframe.resample(freq).ohlc2().dropna()
@@ -244,7 +327,9 @@ class StockPlot:
         Usage: `fx.plot()`
 
         * Args:
-            * bar: 'candle', 'c' -> candle_plot / 'heikin', 'h' -> heikin_ashi plot
+            * bar:
+                'candle', 'c' -> candle_plot 
+                'heikin', 'h' -> heikin_ashi plot
             * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
             * periods: 足の本数
             > **start, end, periods合わせて2つの引数が必要**
@@ -316,19 +401,19 @@ class StockPlot:
             yaxis={"autorange": True})
         return self._fig
 
-    def show(self, how='html', filebasename='candlestick_and_trace'):
+    def show(self, how='note', filebasename='candlestick_and_trace'):
         """Export file type
 
         Usage:
             * fx.show()  # Plot in HTML file
-            * fx.show('jupyter')  # Plot in Jupyter Notebook
+            * fx.show('note')  # Plot in Jupyter Notebook
             * fx.show('png', filename='hoge')  # Plot as 'hoge.png' file
         """
         if how == 'html':
             ax = pyo.plot(
                 self._fig, filename=filebasename + '.html',
                 validate=False)  # for HTML
-        elif how == 'jupyter':
+        elif how == 'note':
             ax = pyo.iplot(
                 self._fig, filename=filebasename + '.html',
                 validate=False)  # for Jupyter Notebook
@@ -389,7 +474,8 @@ class StockPlot:
         """Remove indicator from StockDataFrame & figure
 
         Usage:
-            `fx.remove('close_25_sma')`  # remove indicator named 'close_25_sma'.
+            # remove indicator named 'close_25_sma'
+            `fx.remove('close_25_sma')`
         """
         popper = self._indicators.pop(indicator)
         self.stock_dataframe = reset_dataframe(self.stock_dataframe)
