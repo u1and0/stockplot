@@ -153,7 +153,7 @@ def ohlc2(self, open=None, high=None, low=None, close=None, volume=None):
     """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
     Resample method converting OHLC to OHLC
     """
-    auto_dict = _ohlcv(self.asfreq().columns, open, high, low, close, volume)
+    auto_dict = _ohlcv(self.mean().columns, open, high, low, close, volume)
     # Make dict as `agdict` for `df.resample(<Time>).agg(<dict>)`
     try:
         agdict = {
