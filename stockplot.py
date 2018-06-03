@@ -100,7 +100,8 @@ def cleansing(df):
         raise KeyError(
             "columns must have {} (, 'volume')], but it has {}".format(
                 co, df.columns))
-    df = df.loc[:, co + ['volume']].dropna(1)  # Extract OHLC (and Volume)
+    # Extract OHLC (and Volume)
+    df = df.reindex(columns=co + ['volume']).dropna(1)
     return df
 
 
