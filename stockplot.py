@@ -215,6 +215,9 @@ class StockPlot:
         self.data = self.resample(freq)  # スパン変更後、インジケータ追加後のデータフレーム
         self._fig = None  # <-- plotly.graph_objs
 
+    def __repr__(self):
+        return self.data.__repr__()
+
     def resample(self, freq: str):
         """Convert ohlc time span
 
