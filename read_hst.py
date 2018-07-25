@@ -83,10 +83,12 @@ optional arguments:
 ```
 
 # 参考
-* numpyを使用して高速にバイナリ→テキスト変換 >> [(´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む](http://fatbald.seesaa.net/article/447016624.html)
-* 引数読み込み >> [Converting MT4 binary history files: hst to csv using a python script](http://mechanicalforex.com/2015/12/converting-mt4-binary-history-files-hst-to-csv-using-a-python-script.html)
+* numpyを使用して高速にバイナリ→テキスト変換 >>
+[(´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む](http://fatbald.seesaa.net/article/447016624.html)
+* 引数読み込み >>
+[Converting MT4 binary history files: hst to csv using a python script](http://mechanicalforex.com/2015/12/converting-mt4-binary-history-files-hst-to-csv-using-a-python-script.html)
 """
-import os
+import pathlib
 import argparse
 import zipfile
 import numpy as np
@@ -145,7 +147,7 @@ def tickdata(filepath):
         return df
 
 
-def read_hst(fullpath, freq='T', start=None, end=None):
+def read_hst(hstfiles, freq='T', start=None, end=None):
     """Extracting hst file from zip file.
 
     Usage:
@@ -157,15 +159,24 @@ def read_hst(fullpath, freq='T', start=None, end=None):
     return:
         pandas DataFrame
     """
-    # Extract zip in current directory.
-    hstfile = zip2hst(fullpath)
-    print('Extracting {}...'.format(hstfile))
-    # Convert binary to pandas DataFrame.
-    df = tickdata(hstfile)
-    # Delete unpacked zip file unless extension is ".hst".
-    if not os.path.splitext(fullpath)[1] == '.hst':
-        os.remove(hstfile)
-    return df.resample(freq).ohlc2().dropna().loc[start:end]
+    if isinstance(hstfiles, list):
+        hst_dict = {
+            pathlib.Path(hstfile).stem: read_hst(
+                hstfile, freq=freq, start=start, end=end)
+            for hstfile in hstfiles
+        }
+        return pd.Panel(hst_dict)
+    else:
+        # Extract zip in current directory.
+        hstfile = zip2hst(hstfiles)
+        print('Extracting {}...'.format(hstfile))
+        # Convert binary to pandas DataFrame.
+        ohlc_data = tickdata(hstfile)
+        # Delete unpacked zip file unless extension is ".hst".
+        path = pathlib.Path(hstfile)
+        if not path.suffix == '.hst':
+            path.unlink()  # remove file
+        return ohlc_data.resample(freq).ohlc2().dropna().loc[start:end]
 
 
 def main():
@@ -211,7 +222,7 @@ def main():
     else:
         for filename in filenames:
             df = read_hst(filename)  # convert historical to pandas Dataframe
-            basename = os.path.splitext(filename)[0]
+            basename = pathlib.Path(filename).stem
             if csv:
                 outfile = basename + '.csv'
                 df.to_csv(outfile)
