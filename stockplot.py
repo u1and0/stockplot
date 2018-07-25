@@ -9,7 +9,6 @@ from plotly import figure_factory as FF
 import plotly.offline as pyo
 import plotly.graph_objs as go
 from .randomwalk import randomwalk
-pyo.init_notebook_mode(connected=True)
 
 
 def datagen(random_state=1, n=100, volume=False):
@@ -151,7 +150,6 @@ class StockPlot:
 
     # Plot candle chart
     fx.plot()
-    fx.show()
     ```
 
     # What do i want do
@@ -182,7 +180,6 @@ class StockPlot:
             * `fig = FF.create_candlestick... `でキャンドルチャートを取得できる
             * figに対してadd / remove_inidcatorで指標の追加 / 削除が行われる。
             * self_figを返す
-     * dfs.show()
     # removeメソッドについて
     * `fx.df` is a dataframe. datafraemeの削除の仕方に従うこと
         * カラムの削除
@@ -208,12 +205,6 @@ class StockPlot:
         append, removeして残った指標を記憶
         追加したindicatorの情報をインスタンス変数に保持しておいて
         freq変えたり、session保存するときに、自動で追加してくれる機能
-
-    # TODO
-        * heikin_plot
-        * pop, del
-        * clear
-        * subplot
     """
 
     def __init__(self, df: pd.core.frame.DataFrame, freq='D'):
@@ -335,6 +326,7 @@ class StockPlot:
             yaxis={"autorange": True})
         # ---------Select graph type----------
         if how == 'note':
+            pyo.init_notebook_mode(connected=True)
             pyo.iplot(
                 self._fig, filename=filebasename + '.html',
                 validate=False)  # for Jupyter Notebook
