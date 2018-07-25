@@ -86,11 +86,12 @@ optional arguments:
 * numpyを使用して高速にバイナリ→テキスト変換 >> [(´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む](http://fatbald.seesaa.net/article/447016624.html)
 * 引数読み込み >> [Converting MT4 binary history files: hst to csv using a python script](http://mechanicalforex.com/2015/12/converting-mt4-binary-history-files-hst-to-csv-using-a-python-script.html)
 """
+import os
 import argparse
 import zipfile
-import pandas as pd
-import os
 import numpy as np
+import pandas as pd
+import stockplot
 
 
 def zip2hst(fullpath):
@@ -112,12 +113,12 @@ def zip2hst(fullpath):
             zf.extractall()  # zip展開
             ziplist = zf.namelist()
             if not len(ziplist) == 1:
-                print('There are {} files in zipfile. Try again.'.format(len(ziplist)))
+                print('There are {} files in zipfile. Try again.'.format(
+                    len(ziplist)))
                 raise IOError
         hstfile = ziplist[0]
         return hstfile  # フルパスかファイルネームだけを返す
-    else:  # zipファイルでなければそのまま返す
-        return fullpath
+    return fullpath  # zipファイルでなければそのまま返す
 
 
 def tickdata(filepath):
@@ -134,14 +135,17 @@ def tickdata(filepath):
             df = pd.DataFrame(np.frombuffer(f.read(), dtype=dtype))
             df = df['time open high low close volume'.split()]
         elif ver == 401:
-            dtype = [('time', 'u8'), ('open', 'f8'), ('high', 'f8'), ('low', 'f8'),
-                     ('close', 'f8'), ('volume', 'i8'), ('s', 'i4'), ('r', 'i8')]
-            df = pd.DataFrame(np.frombuffer(f.read(), dtype=dtype).astype(dtype[:-2]))
-        df = df.set_index(pd.to_datetime(df['time'], unit='s')).drop('time', axis=1)
+            dtype = [('time', 'u8'), ('open', 'f8'), ('high', 'f8'),
+                     ('low', 'f8'), ('close', 'f8'), ('volume', 'i8'),
+                     ('s', 'i4'), ('r', 'i8')]
+            df = pd.DataFrame(
+                np.frombuffer(f.read(), dtype=dtype).astype(dtype[:-2]))
+        df = df.set_index(pd.to_datetime(df['time'], unit='s')).drop(
+            'time', axis=1)
         return df
 
 
-def read_hst(fullpath):
+def read_hst(fullpath, freq='T', start=None, end=None):
     """Extracting hst file from zip file.
 
     Usage:

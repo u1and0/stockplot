@@ -8,78 +8,8 @@ from pandas.core import resample
 from plotly import figure_factory as FF
 import plotly.offline as pyo
 import plotly.graph_objs as go
+from .randomwalk import randomwalk
 pyo.init_notebook_mode(connected=True)
-
-
-def randomwalk(periods=None,
-               start=None,
-               end=None,
-               freq='B',
-               tz=None,
-               normalize=False,
-               name=None,
-               closed=None,
-               tick=1,
-               **kwargs):
-    """Returns random up/down pandas Series
-
-    Usage:
-        ```
-        import datetime
-
-        # Returns +-1up/down 100days from now.
-        randomwalk(100)
-
-        # Returns +-1up/down 100hours from now.
-        randomwalk(100, freq='H')
-
-        # Returns +-0.1up/down 100seconds from now.
-        randomwalk(100, ,tick=0.1 freq='S')
-
-        # Returns +-1up/down 100days from now.
-        randomwalk(100, start=datetime.datetime.today())
-
-        # Returns +-1up/down back to 100 days from now.
-        randomwalk(100, end=datetime.datetime.today())
-
-        # Returns +-1up/down from 2000-1-1 to now.
-        randomwalk(start=datetime.datetime(2000,1,1),
-                   end=datetime.datetime.today())
-
-        # random OHLC data
-        randomwalk(100, freq='H').resample('D').ohlc()
-        ```
-
-    Args:
-        periods: int
-        start: start time (default datetime.now())
-        end: end time
-        freq: ('M','W','D','B','H','T','S') (default 'B')
-        tz: time zone
-        tick: up/down unit size (default 1)
-
-    Returns:
-        pandas Series with datetime index
-    """
-    if not start and not end:
-        start = pd.datetime.today().date()  # default arg of `start`
-    index = pd.DatetimeIndex(
-        start=start,
-        end=end,
-        periods=periods,
-        freq=freq,
-        tz=tz,
-        normalize=normalize,
-        name=name,
-        closed=closed,
-        **kwargs)
-    bullbear = pd.Series(
-        tick * np.random.randint(-1, 2, len(index)),
-        index=index,
-        name=name,
-        **kwargs)  # tick * (-1,0,1のどれか)
-    price = bullbear.cumsum()  # 累積和
-    return price
 
 
 def datagen(random_state=1, n=100, volume=False):
@@ -288,10 +218,10 @@ class StockPlot:
 
     def __init__(self, df: pd.core.frame.DataFrame, freq='D'):
         sdf = cleansing(df.copy())
-        self._init_stock_dataframe = ss.StockDataFrame(sdf)  # スパン変更前のデータフレーム
+        self._init_data = ss.StockDataFrame(sdf)  # スパン変更前のデータフレーム
         self.freq = freq  # 足の時間幅
         self._indicators = {}  # Plotするときに使う指標
-        self.stock_dataframe = self.resample(freq)  # スパン変更後、インジケータ追加後のデータフレーム
+        self.data = self.resample(freq)  # スパン変更後、インジケータ追加後のデータフレーム
         self._fig = None  # <-- plotly.graph_objs
 
     def resample(self, freq: str):
@@ -305,11 +235,11 @@ class StockPlot:
         Return: スパン変更後のデータフレーム
         """
         self.freq = freq
-        df = self._init_stock_dataframe.resample(freq).ohlc2().dropna()
-        self.stock_dataframe = ss.StockDataFrame(df)
+        df = self._init_data.resample(freq).ohlc2().dropna()
+        self.data = ss.StockDataFrame(df)
         for indicator in self._indicators.keys():
             self.append(indicator)  # Re-append indicator in dataframe
-        return self.stock_dataframe
+        return self.data
 
     def plot(self,
              bar='candle',
@@ -322,19 +252,23 @@ class StockPlot:
              periods_plot=None,
              showgrid=True,
              validate=False,
+             how='note',
+             filebasename='candlestick_and_trace',
              **kwargs):
         """Retrun plotly candle chart graph
-
-        Usage: `fx.plot()`
-
+        Usage:
+            * fx.plot(how='note')  # Plot in Jupyter Notebook (default)
+            * fx.plot(how='html')  # Plot in HTML file
+            * fx.plot(how='png', filename='hoge')  # Plot as 'hoge.png' file
         * Args:
             * bar:
-                'candle', 'c' -> candle_plot 
+                'candle', 'c' -> candle_plot
                 'heikin', 'h' -> heikin_ashi plot
             * start, end: 最初と最後のdatetime, 'first'でindexの最初、'last'でindexの最後
             * periods: 足の本数
             > **start, end, periods合わせて2つの引数が必要**
             * shift: shiftの本数の足だけ右側に空白
+            * how: jupyter notebook, html, png形式などを選択
         * Return: グラフデータとレイアウト(plotly.graph_objs.graph_objs.Figure)
         """
         # ---------Set "plot_dataframe"----------
@@ -344,18 +278,17 @@ class StockPlot:
             periods_plot = 300
         try:
             # first/last
-            start_plot = self.stock_dataframe.index[
+            start_plot = self.data.index[
                 0] if start_plot == 'first' else start_plot
-            end_plot = self.stock_dataframe.index[
-                -1] if end_plot == 'last' else end_plot
+            end_plot = self.data.index[-1] if end_plot == 'last' else end_plot
         except AttributeError:
             raise AttributeError('{} Use `fx.resample(<TimeFrame>)` at first'
-                                 .format(type(self.stock_dataframe)))
+                                 .format(type(self.data)))
         # Set "plot_dataframe"
         start_plot, end_plot = set_span(start_plot, end_plot, periods_plot,
                                         self.freq)
         if bar in ('candle', 'c'):
-            plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+            plot_dataframe = self.data.loc[start_plot:end_plot]
             self._fig = FF.create_candlestick(
                 plot_dataframe.open,
                 plot_dataframe.high,
@@ -363,8 +296,8 @@ class StockPlot:
                 plot_dataframe.close,
                 dates=plot_dataframe.index)
         elif bar in ('heikin', 'h'):
-            self.stock_dataframe.heikin_ashi()
-            plot_dataframe = self.stock_dataframe.loc[start_plot:end_plot]
+            self.data.heikin_ashi()
+            plot_dataframe = self.data.loc[start_plot:end_plot]
             self._fig = FF.create_candlestick(
                 plot_dataframe.hopen,
                 plot_dataframe.hhigh,
@@ -374,8 +307,8 @@ class StockPlot:
         else:
             raise KeyError('Use bar = "[c]andle" or "[h]eikin"')
         # ---------Append indicators----------
+        # Re-append indicator in graph
         for indicator in self._indicators.keys():
-            # Re-append indicator in graph
             self._append_graph(indicator, start_plot, end_plot)
         # ---------Set "view"----------
         # Default Args
@@ -400,16 +333,7 @@ class StockPlot:
                 'range': view
             },
             yaxis={"autorange": True})
-        return self._fig
-
-    def show(self, how='note', filebasename='candlestick_and_trace'):
-        """Export file type
-
-        Usage:
-            * fx.show()  # Plot in HTML file
-            * fx.show('note')  # Plot in Jupyter Notebook
-            * fx.show('png', filename='hoge')  # Plot as 'hoge.png' file
-        """
+        # ---------Select graph type----------
         if how == 'html':
             ax = pyo.plot(
                 self._fig, filename=filebasename + '.html',
@@ -432,12 +356,12 @@ class StockPlot:
 # ---------Indicator----------
 
     def append(self, indicator):
-        """Add indicator in self._indicators & self.stock_dataframe NOT self._fig.
+        """Add indicator in self._indicators & self.data NOT self._fig.
 
         Usage:
             `sp.append('close_25_sma')`  # add indicator of 'close 25 sma'
         """
-        indicator_value = self.stock_dataframe[indicator]
+        indicator_value = self.data[indicator]
         self._indicators[indicator] = indicator_value
         return indicator_value
 
@@ -458,7 +382,7 @@ class StockPlot:
 
     def clear(self, hard=False):
         """Remove all indicators.
-        Keep self.freq, self.stock_dataframe
+        Keep self.freq, self.data
 
         Usage:
             fx.clear()
@@ -466,10 +390,10 @@ class StockPlot:
         self._fig = None  # <-- plotly.graph_objs
         self._indicators = {}
         if hard:
-            self.stock_dataframe = None
+            self.data = None
             self.freq = None  # 足の時間幅
         else:
-            self.stock_dataframe = reset_dataframe(self.stock_dataframe)
+            self.data = reset_dataframe(self.data)
 
     def pop(self, indicator):
         """Remove indicator from StockDataFrame & figure
@@ -479,7 +403,7 @@ class StockPlot:
             `fx.remove('close_25_sma')`
         """
         popper = self._indicators.pop(indicator)
-        self.stock_dataframe = reset_dataframe(self.stock_dataframe)
+        self.data = reset_dataframe(self.data)
         for reindicator in self._indicators.keys():
-            self.stock_dataframe.get(reindicator)
+            self.data.get(reindicator)
         return popper
