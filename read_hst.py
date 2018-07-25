@@ -157,12 +157,15 @@ def read_hst(fullpath, freq='T', start=None, end=None):
     return:
         pandas DataFrame
     """
-    hstfile = zip2hst(fullpath)  # Extract zip in current directory.
+    # Extract zip in current directory.
+    hstfile = zip2hst(fullpath)
     print('Extracting {}...'.format(hstfile))
-    df = tickdata(hstfile)  # Convert binary to pandas DataFrame.
-    if not os.path.splitext(fullpath)[1] == '.hst':  # fullpathにhstファイル以外が与えられた場合、ファイルを消す
+    # Convert binary to pandas DataFrame.
+    df = tickdata(hstfile)
+    # Delete unpacked zip file unless extension is ".hst".
+    if not os.path.splitext(fullpath)[1] == '.hst':
         os.remove(hstfile)
-    return df
+    return df.resample(freq).ohlc2().dropna().loc[start:end]
 
 
 def main():
@@ -190,8 +193,10 @@ def main():
     description = 'Convering historical file (.hst) to csv or pickle file.'
     parser = argparse.ArgumentParser(prog=__file__, description=description)
     parser.add_argument('filenames', nargs='+')  # 1個以上のファイルネーム
-    parser.add_argument('-c', '--csv', action='store_true', help='Convert to csv file')
-    parser.add_argument('-p', '--pickle', action='store_true', help='Convert to pickle file')
+    parser.add_argument(
+        '-c', '--csv', action='store_true', help='Convert to csv file')
+    parser.add_argument(
+        '-p', '--pickle', action='store_true', help='Convert to pickle file')
 
     args = parser.parse_args()
     filenames = args.filenames
@@ -201,7 +206,8 @@ def main():
     if not filenames:
         raise KeyError("Enter a valid filenames")
     elif not (csv or pickle):
-        raise KeyError("Enter a valid output - filetype '-c'(--csv) or '-p'(--pickle).")
+        raise KeyError(
+            "Enter a valid output - filetype '-c'(--csv) or '-p'(--pickle).")
     else:
         for filename in filenames:
             df = read_hst(filename)  # convert historical to pandas Dataframe
