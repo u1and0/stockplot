@@ -325,24 +325,21 @@ class StockPlot:
             },
             yaxis={"autorange": True})
         # ---------Select graph type----------
-        if how == 'note':
+        if how == 'note':  # for Jupyter Notebook
             pyo.init_notebook_mode(connected=True)
             pyo.iplot(
-                self._fig, filename=filebasename + '.html',
-                validate=False)  # for Jupyter Notebook
-        elif how == 'html':
-            ax = pyo.plot(
-                self._fig, filename=filebasename + '.html',
-                validate=False)  # for HTML
-        elif how in ('png', 'jpeg', 'webp', 'svg'):
-            ax = pyo.plot(
+                self._fig, filename=filebasename + '.html', validate=False)
+        elif how == 'html':  # for HTML
+            return pyo.plot(
+                self._fig, filename=filebasename + '.html', validate=False)
+        elif how in ('png', 'jpeg', 'webp', 'svg'):  # for file exporting
+            return pyo.plot(
                 self._fig,
                 image=how,
                 image_filename=filebasename,
-                validate=False)  # for file exporting
+                validate=False)
         else:
             raise KeyError(how)
-        return ax
 
 
 # ---------Indicator----------

@@ -1,29 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import pandas as pd
-import numpy as np
-from pandas.core import common as com
 import jsm
 from .stockplot import set_span
 
 
-def get_jstock(code, freq='D', start=None, end=None, periods=None):
+def read_nikkei(code, freq='D', start=None, end=None, periods=None):
     """get Japanese stock data using jsm
     Usage:
-        `get_jstock(6502)`
-        To get TOSHIBA daily from today back to 30days except holiday.
+        `read_nikkei(6502)`
+        Get TOSHIBA daily from today back to 30days except holiday.
 
-        `get_jstock(6502, 'W', start=pd.Timestamp('2016'), end=pd.Timestamp('2017'))`
-        To get TOSHIBA weekly from 2016-01-01 to 2017-01-01.
+        ```
+        read_nikkei(6502, 'W',
+            start=pd.Timestamp('2016'),
+            end=pd.Timestamp('2017'))
+        ```
+        Get TOSHIBA weekly from 2016-01-01 to 2017-01-01.
 
-        `get_jstock(6502, end=pd.Timestamp('20170201'), periods=50)`
-        To get TOSHIBA daily from 2017-02-01 back to 50days except holiday.
+        `read_nikkei(6502, end=pd.Timestamp('20170201'), periods=50)`
+        Get TOSHIBA daily from 2017-02-01 back to 50days except holiday.
 
-        `get_jstock(6502, 'M', start='first', end='last')`
-        To get TOSHIBA monthly from 2000-01-01 (the date of start recording) to today.
+        `read_nikkei(6502, 'M', start='first', end='last')`
+        Get TOSHIBA monthly from 2000-01-01 (the date of start recording)
+        to today.
     """
     # Default args
-    if com._count_not_none(start, end, periods) == 0:  # All of args is None
+    # All of args is None
+    if pd.core.common._count_not_none(start, end, periods) == 0:
         end, periods = 'last', 30
 
     # Switch frequency Dayly, Weekly or Monthly
