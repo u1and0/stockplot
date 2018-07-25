@@ -334,14 +334,14 @@ class StockPlot:
             },
             yaxis={"autorange": True})
         # ---------Select graph type----------
-        if how == 'html':
+        if how == 'note':
+            pyo.iplot(
+                self._fig, filename=filebasename + '.html',
+                validate=False)  # for Jupyter Notebook
+        elif how == 'html':
             ax = pyo.plot(
                 self._fig, filename=filebasename + '.html',
                 validate=False)  # for HTML
-        elif how == 'note':
-            ax = pyo.iplot(
-                self._fig, filename=filebasename + '.html',
-                validate=False)  # for Jupyter Notebook
         elif how in ('png', 'jpeg', 'webp', 'svg'):
             ax = pyo.plot(
                 self._fig,
