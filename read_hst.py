@@ -150,14 +150,21 @@ def tickdata(filepath):
 def read_hst(hstfiles, freq='T', start=None, end=None):
     """Extracting hst file from zip file.
 
-    Usage:
-        import hst_extract as h
-        df = h.read_hst('~/Data/USDJPY.zip')
+    usage:
+        # one hist file, return pandas DataFrame
+        df = read_hst('~/Data/USDJPY.zip')
+
+        # some hist files, return pandas Panel
+        panel = read_hst(['~/Data/USDJPY.zip','~/Data/EURJPY.zip'])
 
     args:
-        fullpath: zip / hst file path
+        * hstfiles: historical file path(s), extension is .zip or .hst
+        * freq: Resample time frame
+        * start: Slice first of time
+        * end: Slice last of time
+
     return:
-        pandas DataFrame
+        pandas DataFrame or Panel
     """
     if isinstance(hstfiles, list):
         hst_dict = {
