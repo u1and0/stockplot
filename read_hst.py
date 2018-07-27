@@ -93,7 +93,7 @@ import argparse
 import zipfile
 import numpy as np
 import pandas as pd
-import stockplot
+import stockplot  # for using `ohlc2()`
 
 
 def zip2hst(fullpath):
@@ -112,15 +112,15 @@ def zip2hst(fullpath):
     """
     if zipfile.is_zipfile(fullpath):
         with zipfile.ZipFile(fullpath, 'r') as zf:
-            zf.extractall()  # zip展開
+            zf.extractall()
             ziplist = zf.namelist()
             if not len(ziplist) == 1:
-                print('There are {} files in zipfile. Try again.'.format(
-                    len(ziplist)))
-                raise IOError
-        hstfile = ziplist[0]
-        return hstfile  # フルパスかファイルネームだけを返す
-    return fullpath  # zipファイルでなければそのまま返す
+                raise IOError(f'{len(ziplist)} files in zipfile.\
+                              Should be 1 file')
+            else:
+                hstfile = ziplist[0]
+        return hstfile  # .hst file name after extracting
+    return fullpath  # .hst file name before extracting
 
 
 def tickdata(filepath):
@@ -147,7 +147,7 @@ def tickdata(filepath):
         return df
 
 
-def read_hst(hstfiles, freq='T', start=None, end=None):
+def read_hst(files, freq='T', start=None, end=None):
     """Extracting hst file from zip file.
 
     usage:
@@ -166,24 +166,26 @@ def read_hst(hstfiles, freq='T', start=None, end=None):
     return:
         pandas DataFrame or Panel
     """
-    if isinstance(hstfiles, list):
+    if isinstance(files, list):
         hst_dict = {
-            pathlib.Path(hstfile).stem: read_hst(
-                hstfile, freq=freq, start=start, end=end)
-            for hstfile in hstfiles
-        }
+            pathlib.Path(zip_or_hst).stem:  # basename
+            read_hst(zip_or_hst, freq=freq, start=start, end=end)  # OHLC
+            for zip_or_hst in files
+        }  # key is `files` basename, value is OHLC DataFrame
         return pd.Panel(hst_dict)
     else:
         # Extract zip in current directory.
-        hstfile = zip2hst(hstfiles)
+        hstfile = zip2hst(files)
         print('Extracting {}...'.format(hstfile))
         # Convert binary to pandas DataFrame.
         ohlc_data = tickdata(hstfile)
-        # Delete unpacked zip file unless extension is ".hst".
-        path = pathlib.Path(hstfile)
-        if not path.suffix == '.hst':
-            path.unlink()  # remove file
-        return ohlc_data.resample(freq).ohlc2().dropna().loc[start:end]
+        # Delete unpacked hst file unless extension is ".hst".
+        extension = pathlib.Path(files).suffix
+        if not extension == '.hst':
+            pathlib.Path(hstfile).unlink()  # remove .hst file
+        resample_ohlc = ohlc_data.resample(freq).ohlc2().dropna()
+        cut_ohlc = resample_ohlc.loc[start:end]
+        return cut_ohlc
 
 
 def main():
