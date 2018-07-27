@@ -14,8 +14,13 @@ from .randomwalk import randomwalk
 def datagen(random_state=1, n=100, volume=False):
     """Generate sample OHLC data"""
     np.random.seed(random_state)
-    df = randomwalk(60 * 60 * 24 * n, freq='S', tick=0.01, start=pd.datetime(2017, 1, 1))\
-        .resample('T').ohlc() + 115  # 100日分の1分足, 初期値が115
+    # 1 minute 100 days open value 115 like USDJPY
+    open_value, freq, days = 115, 'T', n
+    df = randomwalk(60 * 60 * 24 * days,
+                    freq='S',
+                    tick=0.01,
+                    start=pd.datetime(2017, 1, 1))\
+        .resample(freq).ohlc() + open_value
     if volume:
         df['volume'] = np.random.randint(1000, 10000, len(df))
     return df
