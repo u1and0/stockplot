@@ -9,6 +9,7 @@ from plotly import figure_factory as FF
 import plotly.offline as pyo
 import plotly.graph_objs as go
 from .randomwalk import randomwalk
+from .heatmap import applydict
 
 
 def datagen(random_state=1, n=100, volume=False):

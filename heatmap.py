@@ -4,6 +4,29 @@
 import pandas as pd
 
 
+def applydict(func=lambda x: x, **kwargs):
+    """Apply some function to keyword arguments
+
+    description:
+        Unless designate `func`, `func` is identity function
+
+    usage:
+        # same as dict() function
+        >>> applydict(apple=5, orrange=10)
+        {'apple': 5, 'orrange': 10}
+
+        # apply some function to dict
+        >>> applydict(func=lambda x**2, apple=5, orrange=10)
+        {'apple': 25, 'orrange': 100}
+
+        >>> def pow_plus(x, n):
+                return x**2 + n
+        >>> applydict(lambda x: powplus(x,2), apple=5, orrange=10)
+        {'apple': 27, 'orrange': 102}
+    """
+    return {k: func(v) for k, v in kwargs.items()}
+
+
 def heat_candle(df: pd.DataFrame) -> pd.Series:
     """Downconvert for making heat map
     descriptions:
