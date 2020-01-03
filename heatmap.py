@@ -49,8 +49,25 @@ def heat_candle(df: pd.DataFrame) -> pd.Series:
     return sr
 
 
-def cross_currency(panel, base: str, freq: str):
-    """Convert 1 min panel to another base currency
+# pd.DataFrame.heat_candle() -> make Series
+# pd.Panel.heat_candle() -> make DataFrame
+setattr(pd.DataFrame, 'heat_candle', heat_candle)
+setattr(pd.Panel, 'heat_candle',
+        lambda x: pd.DataFrame(applydict(heat_candle, **x)))
+
+
+def cross_currency(panel, freq: str, base=None):
+    """Panel OHLC resampler
+    If base , change base currency from JPY to other.
+    If not base, return JPY based panel.
+
+    usage:
+        pl = pd.Panel(...)
+        pl.cross_currency('W')  # 週足に変換
+    ohlc2と呼び出し方が違うので注意
+
+    Convert 1 min panel to another base currency
+
     description:
         Function for calculating cross USD from cross JPY
         EURUSD = EURJPY / USDJPY so `base='USDJPY'`
@@ -65,7 +82,6 @@ def cross_currency(panel, base: str, freq: str):
         >>> cross_currency(panel=xjpy, base='USDJPY', freq='D')
 
     # USD cross
-        USDUSD = USDJPY / USDJPY
         EURUSD = EURJPY / USDJPY
         JPYUSD =      1 / USDJPY
         GBPUSD = GBPJPY / USDJPY
@@ -74,7 +90,6 @@ def cross_currency(panel, base: str, freq: str):
         AUDUSD = AUDJPY / USDJPY
     # EUR cross
         USDEUR = USDJPY / EURJPY
-        EUREUR = EURJPY / EURJPY
         JPYEUR =      1 / EURJPY
         GBPEUR = GBPJPY / EURJPY
         CADEUR = CADJPY / EURJPY
@@ -84,7 +99,6 @@ def cross_currency(panel, base: str, freq: str):
         USDGBP = USDJPY / GBPJPY
         EURGBP = EURJPY / GBPJPY
         JPYGBP =      1 / GBPJPY
-        GBPGBP = GBPJPY / GBPJPY
         CADGBP = CADJPY / GBPJPY
         CHFGBP = CHFJPY / GBPJPY
         AUDGBP = AUDJPY / GBPJPY
@@ -93,7 +107,6 @@ def cross_currency(panel, base: str, freq: str):
         EURCAD = EURJPY / CADJPY
         JPYCAD =      1 / CADJPY
         GBPCAD = GBPJPY / CADJPY
-        CADCAD = CADJPY / CADJPY
         CHFCAD = CHFJPY / CADJPY
         AUDCAD = AUDJPY / CADJPY
     # CHF cross
@@ -102,7 +115,6 @@ def cross_currency(panel, base: str, freq: str):
         JPYCHF =      1 / CHFJPY
         GBPCHF = GBPJPY / CHFJPY
         CADCHF = CADJPY / CHFJPY
-        CHFCHF = CHFJPY / CHFJPY
         AUDCHF = AUDJPY / CHFJPY
     # AUD cross
         USDAUD = USDJPY / AUDJPY
@@ -111,20 +123,32 @@ def cross_currency(panel, base: str, freq: str):
         GBPAUD = GBPJPY / AUDJPY
         CADAUD = CADJPY / AUDJPY
         CHFAUD = CHFJPY / AUDJPY
-        AUDAUD = AUDJPY / AUDJPY
     """
-    cross_panel = {}
-    for item in panel.items:
-        cross_series = panel[item, :, 'close'] / panel[base, :, 'close']
-        cross_dataframe = cross_series.resample(freq).ohlc().dropna()
-        new = item[:3] + base[:3]
-        cross_panel[new] = cross_dataframe
-    reverse = base[3:] + base[:3]
-    reverse_series = panel[base].rdiv(1)['close']
-    reverse_dataframe = reverse_series.resample(freq).ohlc().dropna()
-    cross_panel[reverse] = reverse_dataframe
-    return pd.Panel(cross_panel)
+    if base:
+        cross_panel = {}
+        # Add all item/base (AUDUSD = AUDJPY / USDJPY)
+        for item in panel.items:
+            if not item == base:  # except USDUSD
+                cross_close = panel[item, :, 'close'] / panel[base, :, 'close']
+                new_name = item[:3] + base[:3]
+                cross_panel[new_name] =\
+                    cross_close.resample(freq).ohlc(
+                ).dropna()  # Add OHLC in panel
+        # Add 1/base (JPYUSD = 1 / USDJPY)
+        reverse_name = base[3:] + base[:3]
+        reverse_close = panel[base].rdiv(1)['close']
+        cross_panel[reverse_name] =\
+            reverse_close.resample(freq).ohlc().dropna()  # Add OHLC in panel
+        return pd.Panel(cross_panel)
+    else:
+        adict = applydict(lambda x: x.resample(freq).ohlc2(), **panel)
+        return pd.Panel(adict)
 
 
-# To use xjpy.cross_currency('USDJPY', 'D') <- based USD, resample daily
+# USAGE: xjpy.cross_currency('USDJPY', 'D') <- based USD, resample daily
 setattr(pd.Panel, 'cross_currency', cross_currency)
+
+
+class HeatCandle(pd.Panel):
+    def __init__(self, freq, base=None, *args, **kwargs):
+        super().__init__(self, *args, **kwargs)

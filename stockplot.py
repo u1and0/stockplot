@@ -4,7 +4,7 @@ import stockstats as ss
 import numpy as np
 import pandas as pd
 from pandas.core import common as com
-from pandas.core import resample
+from pandas.core.resample import DatetimeIndexResampler
 from plotly import figure_factory as FF
 import plotly.offline as pyo
 import plotly.graph_objs as go
@@ -27,16 +27,14 @@ def datagen(random_state=1, n=100, volume=False):
     return df
 
 
-def cleansing(df):
-    """Columns must set OHLC(V)"""
+def ohlcv_check(df):
+    """Raise Error unless columns set OHLC(V)"""
     df.columns = [_.lower() for _ in df.columns]  # columns -> lower case
     co = ['open', 'high', 'low', 'close']
     if not all(i in df.columns for i in co):  # Columns check
         raise KeyError(
             "columns must have {} (, 'volume')], but it has {}".format(
                 co, df.columns))
-    # Extract OHLC (and Volume)
-    df = df.reindex(columns=co + ['volume']).dropna(1)
     return df
 
 
@@ -61,8 +59,8 @@ def heikin_ashi(self, open=None, high=None, low=None, close=None):
     """Return HEIKIN ASHI columns"""
     df = self.copy()
     auto_dict = _ohlcv(df.columns, open, high, low, close)
-    df['hopen'] = (
-        df[auto_dict['open']].shift() + df[auto_dict['close']].shift()) / 2
+    df['hopen'] = (df[auto_dict['open']].shift() +
+                   df[auto_dict['close']].shift()) / 2
     df['hclose'] = df[[
         auto_dict['open'], auto_dict['high'], auto_dict['low'],
         auto_dict['close']
@@ -86,7 +84,8 @@ pd.DataFrame.heikin_ashi = heikin_ashi
 
 
 def ohlc2(self, open=None, high=None, low=None, close=None, volume=None):
-    """`pd.DataFrame.resample(<TimeFrame>).ohlc2()`
+    """DataFrame OHLC resampler
+    `pd.DataFrame.resample(<TimeFrame>).ohlc2()`
     Resample method converting OHLC to OHLC
     """
     auto_dict = _ohlcv(self.mean().columns, open, high, low, close, volume)
@@ -107,7 +106,7 @@ def ohlc2(self, open=None, high=None, low=None, close=None, volume=None):
 
 
 # Add instance as `pd.DataFrame.resample('<TimeFrame>').ohlc2()`
-resample.DatetimeIndexResampler.ohlc2 = ohlc2
+setattr(DatetimeIndexResampler, 'ohlc2', ohlc2)
 
 
 def reset_dataframe(df):
@@ -124,8 +123,8 @@ def set_span(start=None, end=None, periods=None, freq=None):
     * start, periodsが指定されていたら、endを計算する
     * end, periodsが指定されていたら、startを計算する
     """
-    if com._count_not_none(start, end,
-                           periods) != 2:  # Like a pd.date_range Error
+    if com.count_not_none(start, end,
+                          periods) != 2:  # Like a pd.date_range Error
         raise ValueError('Must specify two of start, end, or periods')
     start = start if start else (pd.Period(end, freq) - periods).start_time
     end = end if end else (pd.Period(start, freq) + periods).start_time
@@ -214,7 +213,7 @@ class StockPlot:
     """
 
     def __init__(self, df: pd.core.frame.DataFrame, freq='D'):
-        sdf = cleansing(df.copy())
+        sdf = ohlcv_check(df.copy())
         self._init_data = ss.StockDataFrame(sdf)  # スパン変更前のデータフレーム
         self.freq = freq  # 足の時間幅
         self._indicators = {}  # Plotするときに使う指標
@@ -273,7 +272,7 @@ class StockPlot:
         """
         # ---------Set "plot_dataframe"----------
         # Default Args
-        if com._count_not_none(start_plot, end_plot, periods_plot) == 0:
+        if com.count_not_none(start_plot, end_plot, periods_plot) == 0:
             end_plot = 'last'
             periods_plot = 300
         try:
@@ -282,28 +281,27 @@ class StockPlot:
                 0] if start_plot == 'first' else start_plot
             end_plot = self.data.index[-1] if end_plot == 'last' else end_plot
         except AttributeError:
-            raise AttributeError('{} Use `fx.resample(<TimeFrame>)` at first'
-                                 .format(type(self.data)))
+            raise AttributeError(
+                '{} Use `fx.resample(<TimeFrame>)` at first'.format(
+                    type(self.data)))
         # Set "plot_dataframe"
         start_plot, end_plot = set_span(start_plot, end_plot, periods_plot,
                                         self.freq)
         if bar in ('candle', 'c'):
             plot_dataframe = self.data.loc[start_plot:end_plot]
-            self._fig = FF.create_candlestick(
-                plot_dataframe.open,
-                plot_dataframe.high,
-                plot_dataframe.low,
-                plot_dataframe.close,
-                dates=plot_dataframe.index)
+            self._fig = FF.create_candlestick(plot_dataframe.open,
+                                              plot_dataframe.high,
+                                              plot_dataframe.low,
+                                              plot_dataframe.close,
+                                              dates=plot_dataframe.index)
         elif bar in ('heikin', 'h'):
             self.data.heikin_ashi()
             plot_dataframe = self.data.loc[start_plot:end_plot]
-            self._fig = FF.create_candlestick(
-                plot_dataframe.hopen,
-                plot_dataframe.hhigh,
-                plot_dataframe.hlow,
-                plot_dataframe.hclose,
-                dates=plot_dataframe.index)
+            self._fig = FF.create_candlestick(plot_dataframe.hopen,
+                                              plot_dataframe.hhigh,
+                                              plot_dataframe.hlow,
+                                              plot_dataframe.hclose,
+                                              dates=plot_dataframe.index)
         else:
             raise KeyError('Use bar = "[c]andle" or "[h]eikin"')
         # ---------Append indicators----------
@@ -312,7 +310,7 @@ class StockPlot:
             self._append_graph(indicator, start_plot, end_plot)
         # ---------Set "view"----------
         # Default Args
-        if com._count_not_none(start_view, end_view, periods_view) == 0:
+        if com.count_not_none(start_view, end_view, periods_view) == 0:
             end_view = 'last'
             periods_view = 50
         # first/last
@@ -322,31 +320,30 @@ class StockPlot:
         # Set "view"
         start_view, end_view = set_span(start_view, end_view, periods_view,
                                         self.freq)
-        end_view = set_span(
-            start=end_view, periods=shift,
-            freq=self.freq)[-1] if shift else end_view
+        end_view = set_span(start=end_view, periods=shift,
+                            freq=self.freq)[-1] if shift else end_view
         view = list(to_unix_time(start_view, end_view))
         # ---------Plot graph----------
-        self._fig['layout'].update(
-            xaxis={
-                'showgrid': showgrid,
-                'range': view
-            },
-            yaxis={"autorange": True})
+        self._fig['layout'].update(xaxis={
+            'showgrid': showgrid,
+            'range': view
+        },
+                                   yaxis={"autorange": True})
         # ---------Select graph type----------
         if how == 'note':  # for Jupyter Notebook
             pyo.init_notebook_mode(connected=True)
-            pyo.iplot(
-                self._fig, filename=filebasename + '.html', validate=False)
+            pyo.iplot(self._fig,
+                      filename=filebasename + '.html',
+                      validate=False)
         elif how == 'html':  # for HTML
-            return pyo.plot(
-                self._fig, filename=filebasename + '.html', validate=False)
+            return pyo.plot(self._fig,
+                            filename=filebasename + '.html',
+                            validate=False)
         elif how in ('png', 'jpeg', 'webp', 'svg'):  # for file exporting
-            return pyo.plot(
-                self._fig,
-                image=how,
-                image_filename=filebasename,
-                validate=False)
+            return pyo.plot(self._fig,
+                            image=how,
+                            image_filename=filebasename,
+                            validate=False)
         else:
             raise KeyError(how)
 
@@ -372,10 +369,10 @@ class StockPlot:
             Used in `plot` method
         """
         graph_value = self._indicators[indicator].loc[start:end]
-        plotter = go.Scatter(
-            x=graph_value.index,
-            y=graph_value,
-            name=indicator.upper().replace('_', ' '))  # グラフに追加する形式変換
+        plotter = go.Scatter(x=graph_value.index,
+                             y=graph_value,
+                             name=indicator.upper().replace(
+                                 '_', ' '))  # グラフに追加する形式変換
         self._fig['data'].append(plotter)
 
     def clear(self, hard=False):
