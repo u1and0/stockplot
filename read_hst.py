@@ -83,14 +83,17 @@ optional arguments:
 ```
 
 # 参考
-* numpyを使用して高速にバイナリ→テキスト変換 >> [(´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む](http://fatbald.seesaa.net/article/447016624.html)
-* 引数読み込み >> [Converting MT4 binary history files: hst to csv using a python script](http://mechanicalforex.com/2015/12/converting-mt4-binary-history-files-hst-to-csv-using-a-python-script.html)
+* numpyを使用して高速にバイナリ→テキスト変換 >>
+[(´・ω・｀；)ﾋｨｨｯ　すいません - pythonでMT4のヒストリファイルを読み込む](http://fatbald.seesaa.net/article/447016624.html)
+* 引数読み込み >>
+[Converting MT4 binary history files: hst to csv using a python script](http://mechanicalforex.com/2015/12/converting-mt4-binary-history-files-hst-to-csv-using-a-python-script.html)
 """
+import pathlib
 import argparse
 import zipfile
-import pandas as pd
-import os
 import numpy as np
+import pandas as pd
+import stockplot  # for using `ohlc2()`
 
 
 def zip2hst(fullpath):
@@ -109,15 +112,15 @@ def zip2hst(fullpath):
     """
     if zipfile.is_zipfile(fullpath):
         with zipfile.ZipFile(fullpath, 'r') as zf:
-            zf.extractall()  # zip展開
+            zf.extractall()
             ziplist = zf.namelist()
             if not len(ziplist) == 1:
-                print('There are {} files in zipfile. Try again.'.format(len(ziplist)))
-                raise IOError
-        hstfile = ziplist[0]
-        return hstfile  # フルパスかファイルネームだけを返す
-    else:  # zipファイルでなければそのまま返す
-        return fullpath
+                raise IOError(f'{len(ziplist)} files in zipfile.\
+                              Should be 1 file')
+            else:
+                hstfile = ziplist[0]
+        return hstfile  # .hst file name after extracting
+    return fullpath  # .hst file name before extracting
 
 
 def tickdata(filepath):
@@ -134,31 +137,55 @@ def tickdata(filepath):
             df = pd.DataFrame(np.frombuffer(f.read(), dtype=dtype))
             df = df['time open high low close volume'.split()]
         elif ver == 401:
-            dtype = [('time', 'u8'), ('open', 'f8'), ('high', 'f8'), ('low', 'f8'),
-                     ('close', 'f8'), ('volume', 'i8'), ('s', 'i4'), ('r', 'i8')]
-            df = pd.DataFrame(np.frombuffer(f.read(), dtype=dtype).astype(dtype[:-2]))
-        df = df.set_index(pd.to_datetime(df['time'], unit='s')).drop('time', axis=1)
+            dtype = [('time', 'u8'), ('open', 'f8'), ('high', 'f8'),
+                     ('low', 'f8'), ('close', 'f8'), ('volume', 'i8'),
+                     ('s', 'i4'), ('r', 'i8')]
+            df = pd.DataFrame(
+                np.frombuffer(f.read(), dtype=dtype).astype(dtype[:-2]))
+        df = df.set_index(pd.to_datetime(df['time'], unit='s')).drop(
+            'time', axis=1)
         return df
 
 
-def read_hst(fullpath):
+def read_hst(files, freq='T', start=None, end=None):
     """Extracting hst file from zip file.
 
-    Usage:
-        import hst_extract as h
-        df = h.read_hst('~/Data/USDJPY.zip')
+    usage:
+        # one hist file, return pandas DataFrame
+        df = read_hst('~/Data/USDJPY.zip')
+
+        # some hist files, return pandas Panel
+        panel = read_hst(['~/Data/USDJPY.zip','~/Data/EURJPY.zip'])
 
     args:
-        fullpath: zip / hst file path
+        * hstfiles: historical file path(s), extension is .zip or .hst
+        * freq: Resample time frame
+        * start: Slice first of time
+        * end: Slice last of time
+
     return:
-        pandas DataFrame
+        pandas DataFrame or Panel
     """
-    hstfile = zip2hst(fullpath)  # Extract zip in current directory.
-    print('Extracting {}...'.format(hstfile))
-    df = tickdata(hstfile)  # Convert binary to pandas DataFrame.
-    if not os.path.splitext(fullpath)[1] == '.hst':  # fullpathにhstファイル以外が与えられた場合、ファイルを消す
-        os.remove(hstfile)
-    return df
+    if isinstance(files, list):
+        hst_dict = {
+            pathlib.Path(zip_or_hst).stem:  # basename
+            read_hst(zip_or_hst, freq=freq, start=start, end=end)  # OHLC
+            for zip_or_hst in files
+        }  # key is `files` basename, value is OHLC DataFrame
+        return pd.Panel(hst_dict)
+    else:
+        # Extract zip in current directory.
+        hstfile = zip2hst(files)
+        print('Extracting {}...'.format(hstfile))
+        # Convert binary to pandas DataFrame.
+        ohlc_data = tickdata(hstfile)
+        # Delete unpacked hst file unless extension is ".hst".
+        extension = pathlib.Path(files).suffix
+        if not extension == '.hst':
+            pathlib.Path(hstfile).unlink()  # remove .hst file
+        resample_ohlc = ohlc_data.resample(freq).ohlc2().dropna()
+        cut_ohlc = resample_ohlc.loc[start:end]
+        return cut_ohlc
 
 
 def main():
@@ -186,8 +213,10 @@ def main():
     description = 'Convering historical file (.hst) to csv or pickle file.'
     parser = argparse.ArgumentParser(prog=__file__, description=description)
     parser.add_argument('filenames', nargs='+')  # 1個以上のファイルネーム
-    parser.add_argument('-c', '--csv', action='store_true', help='Convert to csv file')
-    parser.add_argument('-p', '--pickle', action='store_true', help='Convert to pickle file')
+    parser.add_argument(
+        '-c', '--csv', action='store_true', help='Convert to csv file')
+    parser.add_argument(
+        '-p', '--pickle', action='store_true', help='Convert to pickle file')
 
     args = parser.parse_args()
     filenames = args.filenames
@@ -197,11 +226,12 @@ def main():
     if not filenames:
         raise KeyError("Enter a valid filenames")
     elif not (csv or pickle):
-        raise KeyError("Enter a valid output - filetype '-c'(--csv) or '-p'(--pickle).")
+        raise KeyError(
+            "Enter a valid output - filetype '-c'(--csv) or '-p'(--pickle).")
     else:
         for filename in filenames:
             df = read_hst(filename)  # convert historical to pandas Dataframe
-            basename = os.path.splitext(filename)[0]
+            basename = pathlib.Path(filename).stem
             if csv:
                 outfile = basename + '.csv'
                 df.to_csv(outfile)
