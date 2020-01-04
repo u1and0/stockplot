@@ -1,0 +1,6 @@
+http://tools.fxdd.com/tools/M1Data/USDJPY.zip
+http://tools.fxdd.com/tools/M1Data/EURJPY.zip
+http://tools.fxdd.com/tools/M1Data/GBPJPY.zip
+http://tools.fxdd.com/tools/M1Data/CADJPY.zip
+http://tools.fxdd.com/tools/M1Data/CHFJPY.zip
+http://tools.fxdd.com/tools/M1Data/AUDJPY.zip
