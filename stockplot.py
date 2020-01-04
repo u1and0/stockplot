@@ -85,8 +85,15 @@ pd.DataFrame.heikin_ashi = heikin_ashi
 
 def ohlc2(self, open=None, high=None, low=None, close=None, volume=None):
     """DataFrame OHLC resampler
-    `pd.DataFrame.resample(<TimeFrame>).ohlc2()`
-    Resample method converting OHLC to OHLC
+    Usage:
+        `pd.DataFrame.resample(<TimeFrame>).ohlc2()`
+        Resample method converting OHLC to OHLC
+
+    Args:
+        open:
+            * list-like pd.Seriesなど。特別に指定する列。
+            * 引数なしだと、小文字openのcolumnをopen列として扱う。
+        high, low, close, volumeも同様
     """
     auto_dict = _ohlcv(self.mean().columns, open, high, low, close, volume)
     # Make dict as `agdict` for `df.resample(<Time>).agg(<dict>)`
